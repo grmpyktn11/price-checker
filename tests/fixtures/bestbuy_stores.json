@@ -1,0 +1,43 @@
+{
+  "from": 1,
+  "to": 3,
+  "currentPage": 1,
+  "total": 3,
+  "totalPages": 1,
+  "queryTime": "0.004",
+  "totalTime": "0.022",
+  "partial": false,
+  "canonicalUrl": "/v1/stores(area(37.7749,-122.4194,25))?format=json&apiKey=REDACTED",
+  "stores": [
+    {
+      "storeId": 186,
+      "name": "Harrison Street",
+      "longName": "Best Buy - San Francisco Harrison Street",
+      "city": "San Francisco",
+      "region": "CA",
+      "distance": 1.24,
+      "lat": 37.774929,
+      "lng": -122.406417
+    },
+    {
+      "storeId": 1370,
+      "name": "Colma",
+      "longName": "Best Buy - Colma",
+      "city": "Colma",
+      "region": "CA",
+      "distance": 8.61,
+      "lat": 37.674583,
+      "lng": -122.466225
+    },
+    {
+      "storeId": 110,
+      "name": "Emeryville",
+      "longName": "Best Buy - Emeryville",
+      "city": "Emeryville",
+      "region": "CA",
+      "distance": 11.37,
+      "lat": 37.83107,
+      "lng": -122.290703
+    }
+  ]
+}

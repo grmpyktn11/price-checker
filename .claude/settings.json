@@ -1,0 +1,8 @@
+{
+  "model": "claude-opus-5",
+  "fallbackModel": ["claude-sonnet-5", "claude-haiku-4-5"],
+  "permissions": {
+    "allow": ["Edit", "Write", "Bash(npm *)", "Bash(git *)", "mcp__playwright"],
+    "deny": ["Bash(rm -rf *)", "Bash(git push --force*)"]
+  }
+}

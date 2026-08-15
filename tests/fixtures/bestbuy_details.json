@@ -1,0 +1,33 @@
+{
+  "from": 1,
+  "to": 1,
+  "currentPage": 1,
+  "total": 1,
+  "totalPages": 1,
+  "queryTime": "0.006",
+  "totalTime": "0.031",
+  "partial": false,
+  "canonicalUrl": "/v1/products(sku=6447382)?show=details&format=json&apiKey=REDACTED",
+  "products": [
+    {
+      "sku": 6447382,
+      "name": "Anker - 737 Power Bank 24,000 mAh 140W Portable Charger - Black",
+      "customerReviewAverage": 4.7,
+      "customerReviewCount": 1843,
+      "details": [
+        {"name": "Battery Capacity", "value": "24,000 milliamp hours"},
+        {"name": "Maximum Output Power", "value": "140 watts"},
+        {"name": "Number of USB Ports", "value": "3"},
+        {"name": "USB-C Ports", "value": "2"},
+        {"name": "USB-A Ports", "value": "1"},
+        {"name": "Product Height", "value": "2.2 inches"},
+        {"name": "Product Width", "value": "2.1 inches"},
+        {"name": "Product Depth", "value": "5.1 inches"},
+        {"name": "Product Weight", "value": "1.4 pounds"},
+        {"name": "Pass-Through Charging", "value": "Yes"},
+        {"name": "Display", "value": "Smart digital display"},
+        {"name": "Manufacturer's Warranty - Parts", "value": "18 months"}
+      ]
+    }
+  ]
+}
