@@ -7,6 +7,8 @@ import httpx
 
 from backend.scrapers.base import ScraperBase, load_fixture
 
+# 2026-08-16: redsky started answering this host with a PerimeterX captcha 403 on every
+# endpoint, plp_search_v2 included. nothing below changed; it may work from another IP.
 RETAILER = "target"
 BASE_URL = "https://redsky.target.com/redsky_aggregations/v1/web"
 # public web key lifted from target.com's own JS, not a credential and not a secret.

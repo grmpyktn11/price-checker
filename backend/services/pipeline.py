@@ -41,11 +41,13 @@ SCRAPERS = [
 ]
 
 # live, each search returns ~24 products and each detail page is a browser launch, so both
-# numbers are hard caps. per Playwright retailer that is 1 search page + 2 product pages
-# (get_specs and get_reviews share one load through the 60s cache) = 3 loads, so 6 across
-# Best Buy and Amazon, roughly 30 seconds. Target's json calls are not page loads.
+# numbers are hard caps. per Playwright retailer that is 1 search page + 3 product pages
+# (get_specs and get_reviews share one load through the 60s cache) = 4 loads, so 8 across
+# Best Buy and Amazon, roughly 40 seconds. Target's json calls are not page loads.
+# the two numbers match on purpose: a candidate past the detail cutoff is dropped outright
+# whenever must_haves or min_review_count is set, so a lower lookup cap bought nothing.
 MAX_PRODUCTS_PER_RETAILER = 3
-DETAIL_LOOKUPS_PER_RETAILER = 2
+DETAIL_LOOKUPS_PER_RETAILER = 3
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,9 @@
+import logging
 import re
 from dataclasses import dataclass
 from math import log10
+
+logger = logging.getLogger(__name__)
 
 FULL_CONFIDENCE_REVIEW_COUNT = 1000   # review count where rating is trusted at face value
 NEUTRAL_SCORE = 0.5                   # used wherever a signal is missing entirely
@@ -26,16 +29,36 @@ def build_query(criteria: dict) -> str:
     return re.sub(r"\s+", " ", " ".join(parts)).strip().lower()
 
 
-# exact key match ignoring case first, then the first key containing the field
+# lowercase, punctuation to spaces, split. "Dimensions (Overall)" -> ("dimensions", "overall")
+def normalize_spec_name(name: str) -> tuple[str, ...]:
+    return tuple(re.sub(r"[^a-z0-9]+", " ", name.lower()).split())
+
+
+# retailers print the same spec under different names: Best Buy's "Capacity" is Amazon's
+# "Battery Capacity". exact normalized match first, then any key whose tokens are a subset
+# or superset of the field's, fewest tokens winning and insertion order breaking ties
+# (scrapers build specs in page order, so real spec tables come before marketing bullets).
+# limits, accepted:
+# - no stemming: "Port" will not match "Ports"
+# - a vague one-word field ("Battery") has several plausible answers and picks one
+# - specs that merely share a token can still match wrongly; fail-closed only guards misses
 def find_spec_value(specs: dict, field: str) -> str | None:
-    wanted = field.lower()
-    for key, value in specs.items():
-        if key.lower() == wanted:
-            return str(value)
-    for key, value in specs.items():
-        if wanted in key.lower():
-            return str(value)
-    return None
+    wanted = normalize_spec_name(field)
+    # a field with no usable tokens would be a subset of every key
+    if not wanted:
+        return None
+    keys = {key: tokens for key in specs if (tokens := normalize_spec_name(key))}
+    for key, tokens in keys.items():
+        if tokens == wanted:
+            return str(specs[key])
+    pool = [key for key, tokens in keys.items()
+            if set(tokens) <= set(wanted) or set(tokens) >= set(wanted)]
+    if not pool:
+        return None
+    chosen = min(pool, key=lambda key: len(keys[key]))
+    if len(pool) > 1:
+        logger.debug("spec field %r matched %s, chose %r", field, pool, chosen)
+    return str(specs[chosen])
 
 
 # first number in the string, commas stripped. "24,000 milliamp hours" -> 24000.0
@@ -49,7 +72,7 @@ def first_number(raw: str) -> float | None:
 # limits, by design and not worked around:
 # - no unit conversion; the criteria value must use the unit the retailer prints
 # - only the first number in the string is read ("5.1 x 2.1 inches" -> 5.1)
-# - field names are retailer-specific strings; cross-retailer spec names are not normalized
+# - cross-retailer spec names are matched on tokens by find_spec_value, not on meaning
 def spec_passes(specs: dict, rule: dict) -> bool:
     raw = find_spec_value(specs, rule["field"])
     # fail closed: a missing spec is never satisfied
