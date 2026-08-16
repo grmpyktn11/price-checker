@@ -1,8 +1,11 @@
+import copy
 import json
 import logging
 import os
 
 import anthropic
+
+from backend.services.ranking import first_number
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 MODEL = "claude-sonnet-4-5"
@@ -10,6 +13,18 @@ MAX_TOKENS = 1000
 DEFAULT_RADIUS_MILES = 25
 DEFAULT_MIN_REVIEW_COUNT = 0   # only filter on reviews when the user actually asked for it
 LIST_FIELDS = ("keywords", "must_haves", "preferred_specs", "nice_to_haves")
+VALID_OPS = (">=", "<=", "==", "contains", "exists")
+COMPARISON_OPS = (">=", "<=", "==")
+RULE_LISTS = ("must_haves", "preferred_specs")
+# one question per op, so the user is told which side of the comparison is missing
+RULE_QUESTIONS = {
+    ">=": 'How much "{field}" do you need, at minimum? Give a number with its unit.',
+    "<=": 'What is the most "{field}" you will accept? Give a number with its unit.',
+    "==": 'What exact "{field}" do you need? Give a number.',
+}
+FALLBACK_RULE_QUESTION = 'What should "{field}" be? Describe the requirement in one line.'
+UNUSABLE_FIELD_QUESTION = ("One of your requirements did not come through clearly. "
+                           "Can you restate what it needs to have?")
 
 CANNED_QUESTION = "What is your budget, and do you need it shipped or available for pickup?"
 MALFORMED_QUESTION = "Sorry, I did not catch that. Can you rephrase what you are looking for?"
@@ -82,6 +97,40 @@ def normalize(raw: dict) -> dict:
     return raw
 
 
+# a comparison needs a number. "20,000" is a formatting quirk and is repaired in place;
+# null, empty, and booleans are rejected rather than guessed at
+def usable_comparison_value(rule: dict) -> bool:
+    value = rule.get("value")
+    if value is None or value == "" or isinstance(value, bool):
+        return False
+    if isinstance(value, (int, float)):
+        return True
+    number = first_number(str(value))
+    if number is None:
+        return False
+    rule["value"] = number
+    return True
+
+
+# a rule the matcher cannot evaluate: missing field, unknown op, or a comparison with no
+# value. returns the question for the first bad rule, or None when every rule is usable
+def bad_rule_question(criteria: dict) -> str | None:
+    for list_name in RULE_LISTS:
+        for rule in criteria.get(list_name) or []:
+            field = rule.get("field") if isinstance(rule, dict) else None
+            if not isinstance(field, str) or not field.strip():
+                return UNUSABLE_FIELD_QUESTION
+            op = rule.get("op")
+            if op not in VALID_OPS:
+                return FALLBACK_RULE_QUESTION.format(field=field)
+            if op in COMPARISON_OPS and not usable_comparison_value(rule):
+                return RULE_QUESTIONS[op].format(field=field)
+            # "exists" legitimately has no value
+            if op == "contains" and not str(rule.get("value") or "").strip():
+                return FALLBACK_RULE_QUESTION.format(field=field)
+    return None
+
+
 # tolerate a code fence or a sentence wrapped around the object
 def parse_json_reply(text: str) -> dict | None:
     stripped = text.strip()
@@ -114,13 +163,23 @@ def is_valid(parsed: dict | None) -> bool:
     return False
 
 
+# an unusable rule is a conversation problem, not an outage: ask instead of ranking on it
+def criteria_or_followup(criteria_dict: dict) -> dict:
+    question = bad_rule_question(criteria_dict)
+    if question:
+        logger.warning("criteria contained an unusable rule: %s", question)
+        return {"type": "followup", "question": question}
+    return {"type": "criteria", "criteria": criteria_dict}
+
+
 async def extract(history: list[dict], message: str) -> dict:
     # no key configured: ask once, then return the saved criteria. counts turns, reads nothing
     if not ANTHROPIC_API_KEY:
         if not history:
             return {"type": "followup", "question": CANNED_QUESTION}
-        # copy so a caller editing the returned dict cannot corrupt the constant
-        return {"type": "criteria", "criteria": normalize(dict(CANNED_CRITERIA))}
+        # deep copy: normalize and the rule validator both edit in place, and the
+        # validator reaches into the nested rule dicts a shallow copy still shares
+        return criteria_or_followup(normalize(copy.deepcopy(CANNED_CRITERIA)))
 
     client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
     response = await client.messages.create(
@@ -137,4 +196,4 @@ async def extract(history: list[dict], message: str) -> dict:
         return {"type": "followup", "question": MALFORMED_QUESTION}
     if parsed["type"] == "followup":
         return {"type": "followup", "question": parsed["question"]}
-    return {"type": "criteria", "criteria": normalize(parsed["criteria"])}
+    return criteria_or_followup(normalize(parsed["criteria"]))

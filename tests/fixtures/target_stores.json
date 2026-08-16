@@ -1,0 +1,3909 @@
+{
+ "data": {
+  "nearby_stores": {
+   "count": 20,
+   "stores": [
+    {
+     "status": "Open",
+     "store_id": "2766",
+     "is_test_location": false,
+     "location_name": "San Francisco Central",
+     "distance": 1.08,
+     "main_voice_phone_number": "415-343-6272",
+     "mailing_address": {
+      "address_line1": "789 Mission St",
+      "city": "San Francisco",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94103-3132"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "20:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "20:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "20:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "20:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "20:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "20:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "20:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "20:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "20:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "20:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "20:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "20:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "20:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "20:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "2768",
+     "is_test_location": false,
+     "location_name": "San Francisco West",
+     "distance": 1.59,
+     "main_voice_phone_number": "415-796-5280",
+     "mailing_address": {
+      "address_line1": "2675 Geary Blvd",
+      "city": "San Francisco",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94118-3400"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "3264",
+     "is_test_location": false,
+     "location_name": "San Francisco Stonestown",
+     "distance": 4.57,
+     "main_voice_phone_number": "415-680-2914",
+     "mailing_address": {
+      "address_line1": "285 Winston Dr",
+      "city": "San Francisco",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94132-1921"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "3353",
+     "is_test_location": false,
+     "location_name": "Daly City Westlake",
+     "distance": 6.22,
+     "main_voice_phone_number": "415-466-0506",
+     "mailing_address": {
+      "address_line1": "100 Westlake Ctr",
+      "city": "Daly City",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94015-1407"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "320",
+     "is_test_location": false,
+     "location_name": "Colma",
+     "distance": 7.43,
+     "main_voice_phone_number": "650-992-8433",
+     "mailing_address": {
+      "address_line1": "5001 Junipero Serra Blvd",
+      "city": "Colma",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94014-3217"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "2829",
+     "is_test_location": false,
+     "location_name": "Alameda",
+     "distance": 7.66,
+     "main_voice_phone_number": "510-214-0931",
+     "mailing_address": {
+      "address_line1": "2700 Fifth Street",
+      "city": "Alameda",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94501-6574"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "1407",
+     "is_test_location": false,
+     "location_name": "Daly City Serramonte",
+     "distance": 7.73,
+     "main_voice_phone_number": "650-755-2393",
+     "mailing_address": {
+      "address_line1": "133 Serramonte Ctr",
+      "city": "Daly City",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94015-2349"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "2767",
+     "is_test_location": false,
+     "location_name": "Oakland-Emeryville",
+     "distance": 8.02,
+     "main_voice_phone_number": "510-285-0559",
+     "mailing_address": {
+      "address_line1": "1555 40th Street",
+      "city": "Emeryville",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94608-3515"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "3240",
+     "is_test_location": false,
+     "location_name": "Marin City",
+     "distance": 8.47,
+     "main_voice_phone_number": "415-944-5540",
+     "mailing_address": {
+      "address_line1": "180 Donahue St",
+      "city": "Sausalito",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94965-1250"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "1054",
+     "is_test_location": false,
+     "location_name": "Tanforan",
+     "distance": 9.55,
+     "main_voice_phone_number": "650-827-0171",
+     "mailing_address": {
+      "address_line1": "1150 El Camino Real",
+      "city": "San Bruno",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94066-2420"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "1926",
+     "is_test_location": false,
+     "location_name": "Albany",
+     "distance": 9.68,
+     "main_voice_phone_number": "510-982-0512",
+     "mailing_address": {
+      "address_line1": "1057 Eastshore Hwy",
+      "city": "Albany",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94710-1011"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "23:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "3267",
+     "is_test_location": false,
+     "location_name": "Berkeley Univ Ave",
+     "distance": 9.9,
+     "main_voice_phone_number": "510-542-5346",
+     "mailing_address": {
+      "address_line1": "1414 University Ave",
+      "city": "Berkeley",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94702-1548"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "3202",
+     "is_test_location": false,
+     "location_name": "Berkeley Central",
+     "distance": 10.56,
+     "main_voice_phone_number": "510-982-3726",
+     "mailing_address": {
+      "address_line1": "2187 Shattuck Ave",
+      "city": "Berkeley",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94704-1308"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "1507",
+     "is_test_location": false,
+     "location_name": "Richmond",
+     "distance": 11.95,
+     "main_voice_phone_number": "510-253-1000",
+     "mailing_address": {
+      "address_line1": "4500 Macdonald Ave",
+      "city": "Richmond",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94805-2307"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "2772",
+     "is_test_location": false,
+     "location_name": "San Rafael",
+     "distance": 13.05,
+     "main_voice_phone_number": "415-299-6112",
+     "mailing_address": {
+      "address_line1": "125 Shoreline Pkwy",
+      "city": "San Rafael",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94901-5521"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "23:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "737",
+     "is_test_location": false,
+     "location_name": "Pinole",
+     "distance": 15.87,
+     "main_voice_phone_number": "510-222-0558",
+     "mailing_address": {
+      "address_line1": "1400 Fitzgerald Dr",
+      "city": "Pinole",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94564-2250"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "1122",
+     "is_test_location": false,
+     "location_name": "San Mateo Fashion Island",
+     "distance": 16.67,
+     "main_voice_phone_number": "650-341-0734",
+     "mailing_address": {
+      "address_line1": "2220 Bridgepointe Pkwy",
+      "city": "San Mateo",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94404-1569"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "23:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "1428",
+     "is_test_location": false,
+     "location_name": "San Leandro Bayfair",
+     "distance": 16.82,
+     "main_voice_phone_number": "510-276-2699",
+     "mailing_address": {
+      "address_line1": "15555 E 14th St",
+      "city": "San Leandro",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94578-1978"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "2185",
+     "is_test_location": false,
+     "location_name": "Hayward North",
+     "distance": 18.01,
+     "main_voice_phone_number": "510-731-0001",
+     "mailing_address": {
+      "address_line1": "19661 Hesperian Blvd",
+      "city": "Hayward",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94541-4200"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "22:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "08:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "22:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    {
+     "status": "Open",
+     "store_id": "1208",
+     "is_test_location": false,
+     "location_name": "Walnut Creek",
+     "distance": 21.39,
+     "main_voice_phone_number": "925-979-0083",
+     "mailing_address": {
+      "address_line1": "1871 N Main St",
+      "city": "Walnut Creek",
+      "country_code": "US",
+      "region": "CA",
+      "state": "California",
+      "postal_code": "94596-4106"
+     },
+     "geographic_specifications": {
+      "iso_time_zone_code": "America/Los_Angeles",
+      "time_zone_code": "PST",
+      "time_zone_utc_offset_name": "UTC-08"
+     },
+     "rolling_operating_hours": {
+      "main_hours": {
+       "days": [
+        {
+         "is_open": true,
+         "date": "2026-08-16",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-16",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-17",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-17",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-18",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-18",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-19",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-19",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-20",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-20",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-21",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-21",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-22",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-22",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-23",
+         "day_name": "Sunday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-23",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-24",
+         "day_name": "Monday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-24",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-25",
+         "day_name": "Tuesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-25",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-26",
+         "day_name": "Wednesday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-26",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-27",
+         "day_name": "Thursday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-27",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-28",
+         "day_name": "Friday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-28",
+           "end_time": "23:00:00"
+          }
+         ]
+        },
+        {
+         "is_open": true,
+         "date": "2026-08-29",
+         "day_name": "Saturday",
+         "hours": [
+          {
+           "begin_time": "07:00:00",
+           "end_date": "2026-08-29",
+           "end_time": "23:00:00"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    }
+   ]
+  }
+ }
+}

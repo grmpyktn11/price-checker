@@ -1,6 +1,15 @@
 import asyncio
 
-from backend.services.criteria import extract, normalize, parse_json_reply
+import pytest
+
+from backend.services import criteria as criteria_module
+from backend.services.criteria import (
+    CANNED_CRITERIA,
+    bad_rule_question,
+    extract,
+    normalize,
+    parse_json_reply,
+)
 from backend.services.pipeline import run_pipeline
 from backend.services.ranking import RankedProduct
 
@@ -89,3 +98,49 @@ def test_parse_json_reply_in_prose():
 
 def test_parse_json_reply_garbage():
     assert parse_json_reply("no json at all") is None
+
+
+@pytest.mark.parametrize(
+    "rule_list,rule",
+    [
+        ("must_haves", {"field": "Battery Capacity", "op": ">=", "value": None}),
+        ("preferred_specs", {"field": "Battery Capacity", "op": "<=", "value": None}),
+        ("must_haves", {"field": "Battery Capacity", "op": "==", "value": ""}),
+        ("must_haves", {"field": "Battery Capacity", "op": "roughly", "value": 5}),
+        ("must_haves", {"field": "Battery Capacity", "op": "contains", "value": None}),
+    ],
+)
+def test_bad_rule_question_names_the_field(rule_list, rule):
+    question = bad_rule_question({rule_list: [rule]})
+    assert "Battery Capacity" in question
+
+
+def test_bad_rule_question_on_an_unusable_field():
+    assert bad_rule_question({"must_haves": [{"field": None, "op": ">=", "value": 3}]})
+
+
+# exists rules legitimately carry no value
+def test_exists_rule_is_fine():
+    assert bad_rule_question({"must_haves": [{"field": "Waterproof", "op": "exists"}]}) is None
+
+
+# a comma is a formatting quirk, not a missing answer: repair it rather than re-ask
+def test_numeric_string_is_coerced():
+    rule = {"field": "Battery Capacity", "op": ">=", "value": "20,000"}
+    assert bad_rule_question({"must_haves": [rule]}) is None
+    assert rule["value"] == 20000.0
+
+
+def test_canned_criteria_has_no_bad_rules():
+    assert bad_rule_question(CANNED_CRITERIA) is None
+
+
+# regression: a null value reached ranking.spec_passes and its TypeError was swallowed,
+# silently dropping a whole retailer
+def test_null_valued_rule_returns_a_followup(monkeypatch):
+    broken = {**CANNED_CRITERIA,
+              "must_haves": [{"field": "Battery Capacity", "op": ">=", "value": None}]}
+    monkeypatch.setattr(criteria_module, "CANNED_CRITERIA", broken)
+    result = asyncio.run(extract(HISTORY, "anything"))
+    assert result["type"] == "followup"
+    assert "Battery Capacity" in result["question"]

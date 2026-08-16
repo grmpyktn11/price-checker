@@ -1,6 +1,6 @@
 import pytest
 
-from backend.scrapers import bestbuy
+from backend.scrapers import amazon, bestbuy, target
 from backend.services import criteria, narration
 
 # the whole suite is written against canned/fixture mode: deterministic, free, offline.
@@ -11,4 +11,6 @@ from backend.services import criteria, narration
 def canned_mode(monkeypatch):
     monkeypatch.setattr(criteria, "ANTHROPIC_API_KEY", "")
     monkeypatch.setattr(narration, "ANTHROPIC_API_KEY", "")
-    monkeypatch.setattr(bestbuy, "BESTBUY_API_KEY", "")
+    monkeypatch.setattr(bestbuy, "LIVE_SCRAPE", "")
+    monkeypatch.setattr(target, "LIVE_SCRAPE", "")
+    monkeypatch.setattr(amazon, "LIVE_SCRAPE", "")

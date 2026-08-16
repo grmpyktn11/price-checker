@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 load_dotenv()
 
-from backend.scrapers.bestbuy import LIVE_SCRAPE, BestBuyScraper  # noqa: E402
+from backend.scrapers.amazon import LIVE_SCRAPE, AmazonScraper  # noqa: E402
 
 QUERY = "portable charger"
 FIXTURE_NOTE = ("FIXTURE MODE: get_specs and get_reviews return the same saved product page "
@@ -27,8 +27,8 @@ async def main():
     print("MODE:", "LIVE" if LIVE_SCRAPE else "FIXTURE")
     if not LIVE_SCRAPE:
         print(FIXTURE_NOTE)
-    # find_nearby_stores is not implemented: the Stores API needed the denied key
-    scraper = BestBuyScraper()
+    # find_nearby_stores is not implemented: Amazon has no stores
+    scraper = AmazonScraper()
 
     results = await scraper.search(QUERY, None)
     show("search", results)

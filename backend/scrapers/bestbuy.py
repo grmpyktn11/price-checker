@@ -1,143 +1,155 @@
 import logging
 import os
 import re
-from urllib.parse import parse_qs, quote, urlparse
+from urllib.parse import parse_qs, quote_plus, urljoin, urlparse
 
-import httpx
+from bs4 import BeautifulSoup
 
-from backend.scrapers.base import ScraperBase, load_fixture
+from backend.scrapers.base import ScraperBase, load_fixture_text
+from backend.scrapers.browser import fetch_html, fetch_product_html, looks_blocked
 
-BASE_URL = "https://api.bestbuy.com/v1"
-BESTBUY_API_KEY = os.getenv("BESTBUY_API_KEY", "")
 RETAILER = "bestbuy"
+BASE = "https://www.bestbuy.com"
+SEARCH_URL = "https://www.bestbuy.com/site/searchpage.jsp?st={query}"
+LIVE_SCRAPE = os.getenv("LIVE_SCRAPE", "")
+# Best Buy API access was applied for and denied. Do not reintroduce BESTBUY_API_KEY.
+BLOCK_MARKERS = ("access denied", "reference #18", "_sec/cp_challenge",
+                 "are you a robot", "pardon our interruption")
+SEARCH_WAIT_SELECTOR = "li.product-list-item"
 
 logger = logging.getLogger(__name__)
 
 
-# sent on every live call
-def base_params() -> dict:
-    return {"apiKey": BESTBUY_API_KEY, "format": "json"}
-
-
-async def get_json(url: str, params: dict) -> dict:
-    async with httpx.AsyncClient(timeout=10) as client:
-        response = await client.get(url, params=params)
-        response.raise_for_status()
-        return response.json()
-
-
-# skuId query param first, else the digits before ".p" in the path
+# /sku/<digits> on the current urls, skuId query param or <digits>.p on older ones
 def sku_from_url(url: str) -> str | None:
     parsed = urlparse(url)
     sku = parse_qs(parsed.query).get("skuId")
     if sku:
         return sku[0]
-    match = re.search(r"/(\d+)\.p", parsed.path)
-    return match.group(1) if match else None
+    match = re.search(r"/sku/(\d+)|/(\d+)\.p", parsed.path)
+    if not match:
+        return None
+    return match.group(1) or match.group(2)
 
 
-# search returns online inventory only; per-store availability is not wired up
-def parse_search(payload: dict) -> list[dict]:
-    return [
-        {
-            "name": product.get("name"),
-            "url": product.get("url"),
-            "price": product.get("salePrice"),
-            "in_stock": product.get("onlineAvailability"),
+# "$1,299.99" -> 1299.99
+def parse_price(raw: str) -> float | None:
+    digits = raw.replace("$", "").replace(",", "").strip()
+    try:
+        return float(digits)
+    except ValueError:
+        return None
+
+
+# urljoin constrains neither scheme nor host, and get_specs hands this url straight to
+# page.goto(), so an off-site href in the scraped markup would be followed. keep it on
+# bestbuy.com and drop the tile otherwise
+def product_url(href: str) -> str | None:
+    url = urljoin(BASE, href)
+    return url if urlparse(url).netloc == urlparse(BASE).netloc else None
+
+
+# search is national inventory: no store, no distance
+def parse_search(html: str) -> list[dict]:
+    soup = BeautifulSoup(html, "lxml")
+    rows = []
+    for tile in soup.select("li.product-list-item[data-product-id]"):
+        link = tile.select_one("a.product-list-item-link")
+        title = tile.select_one("h3.product-title")
+        # the grid is virtualized: tiles below the fold are empty shells, not products
+        if not link or not link.has_attr("href") or not title:
+            continue
+        url = product_url(link["href"])
+        if not url:
+            logger.warning("%s tile linked off-site: %s", RETAILER, link["href"])
+            continue
+        price = tile.select_one('[data-testid="price-block-customer-price"] span')
+        cart = tile.select_one('[data-testid^="plp-add-to-cart-"]')
+        rows.append({
+            "name": title.get("title") or title.get_text(" ", strip=True),
+            "url": url,
+            "price": parse_price(price.get_text(strip=True)) if price else None,
+            # no add-to-cart button rendered at all means the tile never told us
+            "in_stock": None if cart is None else "sold out" not in cart.get_text(" ", strip=True).lower(),
             "store_id": None,
             "distance_miles": None,
-        }
-        for product in payload.get("products", [])
-    ]
+        })
+    return rows
 
 
-# details is a list of {name, value}; raw strings, normalization happens in the pipeline
-def parse_details(payload: dict) -> dict:
-    products = payload.get("products", [])
-    if not products:
+# the key specs list on the product page; the full table sits behind a "See all
+# specifications" link and is not worth an extra interaction.
+# UNPROVEN LIVE: bestbuy_product.html was captured from an already-warm browser session.
+# the headless path in browser.py has never successfully loaded a Best Buy product page -
+# Akamai blocks it - so this parser and parse_reviews below are exercised by the fixture
+# only. green tests here do not mean live Best Buy specs work.
+def parse_specs(html: str) -> dict:
+    soup = BeautifulSoup(html, "lxml")
+    specs = {}
+    for row in soup.select("#key-specs-list div.items-center"):
+        cells = row.find_all("div", recursive=False)
+        if len(cells) != 2:
+            continue
+        name = cells[0].get_text(" ", strip=True)
+        value = cells[1].get_text(" ", strip=True)
+        if name and value:
+            specs[name] = value
+    return specs
+
+
+# the aggregate block reads "Rating 4.7 out of 5 stars with 166 reviews"
+def parse_reviews(html: str) -> dict:
+    soup = BeautifulSoup(html, "lxml")
+    summary = soup.select_one(".c-ratings-reviews .visually-hidden")
+    if not summary:
         return {}
-    details = products[0].get("details") or []
-    return {detail["name"]: detail["value"] for detail in details}
-
-
-def parse_reviews(payload: dict) -> dict:
-    products = payload.get("products", [])
-    if not products:
+    match = re.search(r"([\d.]+) out of 5 stars with ([\d,]+) review", summary.get_text(" ", strip=True))
+    if not match:
         return {}
     return {
-        "rating": products[0].get("customerReviewAverage"),
-        "review_count": products[0].get("customerReviewCount"),
-        # Best Buy exposes no verified-purchase ratio
+        "rating": float(match.group(1)),
+        "review_count": int(match.group(2).replace(",", "")),
+        # Best Buy publishes no verified-purchase ratio
         "verified_ratio": None,
     }
 
 
-def parse_stores(payload: dict) -> list[dict]:
-    return [
-        {
-            # listings.store_id is TEXT
-            "store_id": str(store.get("storeId")),
-            "name": store.get("longName") or store.get("name"),
-            "distance_miles": store.get("distance"),
-        }
-        for store in payload.get("stores", [])
-    ]
-
-
 class BestBuyScraper(ScraperBase):
-    # store_ids is unused: the products endpoint is online inventory only
+    # store_ids is unused: the search page is national inventory, and the Stores API needed
+    # the denied key
     async def search(self, query: str, store_ids: list[str] | None = None) -> list[dict]:
-        # no key configured: parse the saved fixture instead of calling the API
-        if not BESTBUY_API_KEY:
-            return parse_search(load_fixture("bestbuy_response.json"))
-        try:
-            # encode the query: it goes into the path, where unescaped ) or & would alter the filter
-            search = quote(query, safe="")
-            payload = await get_json(f"{BASE_URL}/products(search={search})", base_params())
-        except httpx.HTTPError as error:
-            logger.warning("bestbuy search failed: %s", error)
+        # not opted in to live scraping: parse the saved fixture instead of hitting the site
+        if not LIVE_SCRAPE:
+            return parse_search(load_fixture_text("bestbuy_search.html"))
+        html = await fetch_html(SEARCH_URL.format(query=quote_plus(query)), SEARCH_WAIT_SELECTOR)
+        if looks_blocked(html, BLOCK_MARKERS):
+            logger.warning("%s blocked on search", RETAILER)
             return []
-        return parse_search(payload)
+        rows = parse_search(html)
+        if not rows:
+            # LLM call #5's fallback extraction goes here in Phase 6, with page text from this html
+            logger.warning("%s search selectors returned nothing (page %d chars) - selectors may "
+                           "have broken", RETAILER, len(html))
+        return rows
 
     async def get_specs(self, product_url: str) -> dict:
-        if not BESTBUY_API_KEY:
-            return parse_details(load_fixture("bestbuy_details.json"))
-        sku = sku_from_url(product_url)
-        if not sku:
+        if not LIVE_SCRAPE:
+            return parse_specs(load_fixture_text("bestbuy_product.html"))
+        html = await fetch_product_html(product_url)
+        if looks_blocked(html, BLOCK_MARKERS):
+            logger.warning("%s blocked on %s", RETAILER, product_url)
             return {}
-        try:
-            payload = await get_json(
-                f"{BASE_URL}/products({sku})", {**base_params(), "show": "details"}
-            )
-        except httpx.HTTPError as error:
-            logger.warning("bestbuy get_specs failed: %s", error)
-            return {}
-        return parse_details(payload)
+        return parse_specs(html)
 
     async def get_reviews(self, product_url: str) -> dict:
-        if not BESTBUY_API_KEY:
-            return parse_reviews(load_fixture("bestbuy_details.json"))
-        sku = sku_from_url(product_url)
-        if not sku:
+        if not LIVE_SCRAPE:
+            return parse_reviews(load_fixture_text("bestbuy_product.html"))
+        html = await fetch_product_html(product_url)
+        if looks_blocked(html, BLOCK_MARKERS):
+            logger.warning("%s blocked on %s", RETAILER, product_url)
             return {}
-        try:
-            payload = await get_json(
-                f"{BASE_URL}/products({sku})",
-                {**base_params(), "show": "customerReviewAverage,customerReviewCount"},
-            )
-        except httpx.HTTPError as error:
-            logger.warning("bestbuy get_reviews failed: %s", error)
-            return {}
-        return parse_reviews(payload)
+        return parse_reviews(html)
 
     async def find_nearby_stores(self, lat: float, lon: float, radius_mi: int) -> list[dict]:
-        if not BESTBUY_API_KEY:
-            return parse_stores(load_fixture("bestbuy_stores.json"))
-        try:
-            payload = await get_json(
-                f"{BASE_URL}/stores(area({lat},{lon},{radius_mi}))", base_params()
-            )
-        except httpx.HTTPError as error:
-            logger.warning("bestbuy find_nearby_stores failed: %s", error)
-            return []
-        return parse_stores(payload)
+        # the Stores API needed a key that was denied; scraping the store locator is out of scope
+        raise NotImplementedError

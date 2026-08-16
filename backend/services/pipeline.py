@@ -1,6 +1,8 @@
 import logging
 
+from backend.scrapers.amazon import AmazonScraper
 from backend.scrapers.bestbuy import BestBuyScraper
+from backend.scrapers.target import TargetScraper
 from backend.services import nice_to_have
 from backend.services.ranking import (
     RankedProduct,
@@ -32,7 +34,18 @@ from backend.services.ranking import (
 #     "min_review_count": 100,
 # }
 
-SCRAPERS = [("bestbuy", BestBuyScraper())]   # Phase 5/6 append target and amazon
+SCRAPERS = [
+    ("bestbuy", BestBuyScraper()),
+    ("target", TargetScraper()),
+    ("amazon", AmazonScraper()),
+]
+
+# live, each search returns ~24 products and each detail page is a browser launch, so both
+# numbers are hard caps. per Playwright retailer that is 1 search page + 2 product pages
+# (get_specs and get_reviews share one load through the 60s cache) = 3 loads, so 6 across
+# Best Buy and Amazon, roughly 30 seconds. Target's json calls are not page loads.
+MAX_PRODUCTS_PER_RETAILER = 3
+DETAIL_LOOKUPS_PER_RETAILER = 2
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +57,13 @@ async def nearby_store_ids(scraper, lat: float, lon: float, radius_mi: int) -> l
     except NotImplementedError:
         return None
     return [store["store_id"] for store in stores]
+
+
+# cheap pre-spec signal from the search tile: buyable products are worth a detail page load
+# first. the sort is stable, so everything else keeps the retailer's relevance order - price
+# does not decide, since a "capacity >= 20000" style rule and cheapest-first pull opposite ways
+def tile_rank(product: dict) -> tuple:
+    return (product.get("in_stock") is False, product.get("price") is None)
 
 
 async def gather_reviews(retailer: str, scraper, product: dict) -> list[dict]:
@@ -68,20 +88,31 @@ async def run_pipeline(
         # one broken retailer must not kill the run
         try:
             store_ids = await nearby_store_ids(scraper, lat, lon, radius_mi)
-            for product in await scraper.search(query, store_ids):
-                specs = await scraper.get_specs(product["url"])
-                if not specs:
-                    # LLM call #2 (spec_extraction) goes here once a scraper returns raw page text
-                    logger.info("skip %s: no specs", product["name"])
-                    continue
-                if not passes_must_haves(specs, must_haves):
-                    logger.info("skip %s: failed must_haves", product["name"])
-                    continue
-                reviews = await gather_reviews(retailer, scraper, product)
-                review_count = max((r["review_count"] or 0) for r in reviews) if reviews else 0
-                if review_count < min_review_count:
-                    logger.info("skip %s: %s reviews", product["name"], review_count)
-                    continue
+            # relevance order decides which products survive the cap; the cheap tile signal
+            # only decides which of those are worth a detail page load
+            found = (await scraper.search(query, store_ids))[:MAX_PRODUCTS_PER_RETAILER]
+            for position, product in enumerate(sorted(found, key=tile_rank)):
+                # below the top few: no detail page load, so specs and reviews stay unknown
+                if position >= DETAIL_LOOKUPS_PER_RETAILER:
+                    if must_haves or min_review_count:
+                        logger.info("skip %s: no detail lookup, filters unverifiable",
+                                    product["name"])
+                        continue
+                    specs, reviews = {}, []
+                else:
+                    specs = await scraper.get_specs(product["url"])
+                    if not specs:
+                        # LLM call #2 (spec_extraction) goes here once a scraper returns raw page text
+                        logger.info("skip %s: no specs", product["name"])
+                        continue
+                    if not passes_must_haves(specs, must_haves):
+                        logger.info("skip %s: failed must_haves", product["name"])
+                        continue
+                    reviews = await gather_reviews(retailer, scraper, product)
+                    review_count = max((r["review_count"] or 0) for r in reviews) if reviews else 0
+                    if review_count < min_review_count:
+                        logger.info("skip %s: %s reviews", product["name"], review_count)
+                        continue
                 candidates.append(
                     RankedProduct(
                         product=product,
@@ -96,8 +127,10 @@ async def run_pipeline(
                         ),
                     )
                 )
-        except Exception as error:
-            logger.warning("%s failed: %s", retailer, error)
+        except Exception:
+            # keep the broad catch so one dead retailer does not kill a multi-retailer run,
+            # but log the traceback: a code bug must not read like a retailer outage
+            logger.exception("%s failed", retailer)
 
     # price is scored across the whole set, so it can only be done once everything is gathered
     assign_price_scores(candidates, item_criteria.get("budget_max"))

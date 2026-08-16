@@ -1,7 +1,5 @@
 import pytest
 
-from backend.scrapers.base import load_fixture
-from backend.scrapers.bestbuy import parse_details
 from backend.services.ranking import (
     RankedProduct,
     assign_price_scores,
@@ -15,7 +13,14 @@ from backend.services.ranking import (
     passes_must_haves,
 )
 
-SPECS = parse_details(load_fixture("bestbuy_details.json"))
+# retailer spec strings, inline: these tests are about ranking math, not about any scraper
+SPECS = {
+    "Battery Capacity": "24,000 milliamp hours",
+    "Product Weight": "1.4 pounds",
+    "Number of USB Ports": "3",
+    "Pass-Through Charging": "Yes",
+    "Display Type": "Smart digital display",
+}
 PREFERRED_SPECS = [
     {"field": "Number of USB Ports", "op": ">=", "value": 3},
     {"field": "Product Weight", "op": "<=", "value": 1.0},

@@ -102,7 +102,7 @@ def compute_review_score(reviews: list[dict]) -> float:
     # shrink toward neutral so a 5.0 from 3 reviews cannot beat a 4.7 from 1843
     score = confidence * rating_component + (1 - confidence) * NEUTRAL_SCORE
     verified_ratio = primary.get("verified_ratio")
-    # no current source populates this; Amazon is the first that will
+    # no MVP source populates this: none of the three retailers publish a verified ratio
     if verified_ratio is not None and verified_ratio < 0.7:
         score *= verified_ratio / 0.7
     return max(0.0, min(1.0, score))

@@ -1,0 +1,424 @@
+{
+ "data": {
+  "product": {
+   "__typename": "Product",
+   "tcin": "91803751",
+   "category": {
+    "parent_category_id": "55i30",
+    "name": "Portable Chargers",
+    "breadcrumbs": [
+     {
+      "canonical_url": "/",
+      "category_id": "root",
+      "name": "target"
+     },
+     {
+      "canonical_url": "/c/electronics/-/N-5xtg6",
+      "category_id": "5xtg6",
+      "name": "Electronics & Tech"
+     },
+     {
+      "canonical_url": "/c/tech-accessories-electronics/-/N-4vpab",
+      "category_id": "4vpab",
+      "name": "Tech Accessories"
+     },
+     {
+      "canonical_url": "/c/chargers-power-adapters-tech-accessories-electronics/-/N-55i30",
+      "category_id": "55i30",
+      "name": "Chargers & Power Adapters"
+     },
+     {
+      "canonical_url": "/c/portable-chargers-power-adapters-tech-accessories-electronics/-/N-9rdpm",
+      "category_id": "9rdpm",
+      "name": "Portable Chargers"
+     }
+    ]
+   },
+   "sales_classification_nodes": {
+    "node_ids": [
+     "9rdpm",
+     "kpc1f",
+     "zp1qi",
+     "5q0f2",
+     "azx0b"
+    ]
+   },
+   "ratings_and_reviews": {
+    "has_verified": true,
+    "statistics": {
+     "not_recommended_count": 2,
+     "question_count": 21,
+     "rating": {
+      "average": 4.72,
+      "count": 365,
+      "distribution": {
+       "rating1": 12,
+       "rating2": 2,
+       "rating3": 11,
+       "rating4": 27,
+       "rating5": 313
+      }
+     },
+     "recommended_count": 7,
+     "recommended_percentage": 77,
+     "review_count": 253
+    },
+    "most_recent": [
+     {
+      "id": "7acb9511-cb2f-4227-b1ba-138412b8fac8",
+      "text": "This charge works great, chargers really fast. Giving it a 3 stars because this doesn\u2019t work with my Owlet sock when we go camping.",
+      "author": {
+       "nickname": "Tanner B",
+       "external_id": "8029111315"
+      },
+      "rating": {
+       "value": 3.0,
+       "submitted_at": "2026-07-20T07:33:00.958Z"
+      }
+     },
+     {
+      "id": "dd438b08-18c1-42e2-9081-a846b66b6ddf",
+      "text": "This power bank is the true if you're looking for a power bank charger I recommend this one.",
+      "author": {
+       "external_id": "20183371786"
+      },
+      "rating": {
+       "value": 5.0,
+       "submitted_at": "2026-06-10T16:49:42.403Z"
+      }
+     },
+     {
+      "id": "ffe33b9f-8ecf-484a-a969-3ddebe251bb2",
+      "text": "Power went out and needed a charge right out of the box so i could work. This charger came through.",
+      "author": {
+       "external_id": "1708720998"
+      },
+      "title": "Much needed charge",
+      "rating": {
+       "value": 5.0,
+       "submitted_at": "2026-06-10T16:39:06.834Z"
+      }
+     },
+     {
+      "id": "d9376950-aa8c-4495-8c15-76634f6c5a71",
+      "text": "Excellent product",
+      "author": {
+       "nickname": "KENDALL",
+       "external_id": "20059105268"
+      },
+      "rating": {
+       "value": 5.0,
+       "submitted_at": "2026-05-29T13:30:38.324Z"
+      }
+     },
+     {
+      "id": "b549dcf9-36c8-4da9-8c82-cc872787fc68",
+      "text": "I'm sure this is an awesome power bank, but it's pretty useless without a charging block. Shame on you Anker. Why not include a charging block ?? They need to make it more OBVIOUS in the description that there is no way to charge this unless a separate and very expensive charging block is also purchased. I am returning mine (and please make it more OBVIOUS in the description about needing to purchase a separate charger for it). Useless to me with no way to charge it. Too expensive to be a paperweight. BAH!",
+      "author": {
+       "nickname": "Ms Ennpennie",
+       "external_id": "1928759007"
+      },
+      "title": "BUYER BEWARE - THIS IS SOLD WITHOUT A CHARGING BLOCK",
+      "rating": {
+       "value": 1.0,
+       "submitted_at": "2026-03-29T01:27:55.292Z"
+      }
+     },
+     {
+      "id": "3b5a28ad-cdb4-43df-978c-743fc51bd6e9",
+      "text": "It can charge faster if you have a power supply 65watt and above. For me it only takes an hour to recharge and is perfect for the rog Xbox ally.",
+      "author": {
+       "nickname": "Justin",
+       "external_id": "8077035277"
+      },
+      "rating": {
+       "value": 5.0,
+       "submitted_at": "2026-03-22T01:32:45.503Z"
+      }
+     },
+     {
+      "id": "b6384953-f1ca-49dc-a491-c914fb57865a",
+      "text": "this power bank is quite the unit. a full charge takes probably around 4-5 hours, and it automatically turns off if not used for a while to preserve battery. i have been able to charge this once and throw it in my nightstand drawer just in case the power ever goes out. it\u2019s easy to just throw into your bag if you are going out and need to charge your phone.",
+      "author": {
+       "nickname": "Grace",
+       "external_id": "20071661374"
+      },
+      "title": "great to keep around!",
+      "rating": {
+       "value": 5.0,
+       "submitted_at": "2026-03-13T15:04:24.791Z"
+      }
+     },
+     {
+      "id": "78c7e88a-da4d-4545-b533-d8e25857ec2d",
+      "text": "Love it .... charges super fast ... .",
+      "author": {
+       "nickname": "William",
+       "external_id": "10122931973"
+      },
+      "rating": {
+       "value": 5.0,
+       "submitted_at": "2026-02-04T20:14:12.661Z"
+      }
+     }
+    ],
+    "photos": [
+     "https://target.scene7.com/is/image/Target/GUEST_7610619c-ee37-4246-be28-861f96172bf7",
+     "https://target.scene7.com/is/image/Target/GUEST_654c0e3b-c023-479d-914d-e015293f47a9",
+     "https://target.scene7.com/is/image/Target/GUEST_ef431e0d-6c56-4112-85dd-062806754bb3",
+     "https://target.scene7.com/is/image/Target/GUEST_42f36a26-c7f0-4e1d-a4bc-babee92284e3",
+     "https://target.scene7.com/is/image/Target/GUEST_5e3e03f7-72ab-4d8b-b1f5-e86fa7756726",
+     "https://target.scene7.com/is/image/Target/GUEST_49c3e5b4-58c4-4cbd-8049-84cd26999b33",
+     "https://target.scene7.com/is/image/Target/GUEST_a56d841e-a87c-47fc-8242-e3e472f25f88",
+     "https://target.scene7.com/is/image/Target/GUEST_369adca5-d8cb-4fea-a32c-2ad341f753ef",
+     "https://target.scene7.com/is/image/Target/GUEST_8bc2cb7a-eaeb-41a3-a73d-e0225067a577",
+     "https://target.scene7.com/is/image/Target/GUEST_f8190076-9221-4c9f-b86d-6ab0195ec480",
+     "https://target.scene7.com/is/image/Target/GUEST_7feacc69-683a-4a88-87e6-bfc7311ae720",
+     "https://target.scene7.com/is/image/Target/GUEST_de223d56-245c-4889-893b-5b43fa9cd08b"
+    ]
+   },
+   "esp": {
+    "tcin": "51514012",
+    "enrichment": {},
+    "price": {
+     "formatted_current_price": "$17.00",
+     "formatted_current_price_type": "reg"
+    },
+    "product_description": {
+     "title": "2 Year Electronics Protection Plan ($100-$124.99) - Allstate",
+     "bullet_descriptions": [
+      "<B>Benefits:</B> Free 2-Way Shipping, 24/7 Support, No Deductible, No Additional Cost",
+      "<B>Support:</B> Online, Phone",
+      "<B>Includes:</B> Mechanical Defects, Normal Wear and Tear Coverage",
+      "<B>Minimum Qualifying Item Price:</B> 100",
+      "<B>Maximum Qualifying Item Price:</B> 124.99",
+      "<B>Service plan type:</B> Allstate - Electronics",
+      "<B>Number of years protected:</B> 2 years"
+     ]
+    }
+   },
+   "free_shipping": {
+    "enabled": true
+   },
+   "desirability_cues": [
+    {
+     "code": "highly_rated",
+     "display": "Highly rated",
+     "long_description": "Based on average star rating, number of ratings and reviews (including incentivized), and verified purchases."
+    }
+   ],
+   "ornaments": [
+    {
+     "ornament": "highly_rated",
+     "display": "Highly rated",
+     "long_description": "Based on average star rating, number of ratings and reviews (including incentivized), and verified purchases.",
+     "ornament_type": "guest",
+     "template_type": "light_marker_with_star"
+    },
+    {
+     "ornament": "top_specs",
+     "display": "24000 mAh battery;140W output;USB-C",
+     "ornament_type": "product",
+     "template_type": "top_spec_text",
+     "metadata": "{\"experiments\":[{\"factor\":\"top_spec_ornament\",\"value\":\"treatment_1\",\"default\":false}]}"
+    },
+    {
+     "ornament": "top_specs_with_pills",
+     "display": "24000 mAh battery;140W output;USB-C",
+     "ornament_type": "product",
+     "template_type": "top_spec_pills",
+     "metadata": "{\"experiments\":[{\"factor\":\"top_spec_ornament\",\"value\":\"treatment_2\",\"default\":false}]}"
+    }
+   ],
+   "item": {
+    "product_classification": {
+     "item_type": {
+      "name": "Power Banks",
+      "type": "85523545"
+     },
+     "product_type": 542,
+     "product_type_name": "ELECTRONICS",
+     "purchase_behavior": "Discretionary"
+    },
+    "compliance": {},
+    "enrichment": {
+     "buy_url": "https://www.target.com/p/anker-24000mah-140w-gan-prime-power-bank-silver/-/A-91803751",
+     "image_info": {
+      "base_url": "//target.scene7.com/is/image/Target/",
+      "primary_image": {
+       "alt_text": "A black and silver colored power bank with a digital display showing battery percentage and ports on the top.",
+       "image_name": "GUEST_9990b6a5-1078-42b6-a33e-2c427da86152",
+       "url": "https://target.scene7.com/is/image/Target/GUEST_9990b6a5-1078-42b6-a33e-2c427da86152"
+      },
+      "content_labels": [
+       {
+        "image_url": "https://target.scene7.com/is/image/Target/GUEST_9990b6a5-1078-42b6-a33e-2c427da86152"
+       },
+       {
+        "image_url": "https://target.scene7.com/is/image/Target/GUEST_b7ee3276-968b-454b-9c8f-4b4000668076"
+       },
+       {
+        "image_url": "https://target.scene7.com/is/image/Target/GUEST_626cd89f-77bb-47b8-8bbf-712acd2e17a2"
+       },
+       {
+        "image_url": "https://target.scene7.com/is/image/Target/GUEST_1d52d0e4-3e29-4123-b9e8-c43950dfbbce"
+       },
+       {
+        "image_url": "https://target.scene7.com/is/image/Target/GUEST_8f8758d5-1f9d-4872-9d80-607ef64ec578"
+       },
+       {
+        "image_url": "https://target.scene7.com/is/image/Target/GUEST_55266d98-be38-41d8-94d3-6111a9c8a453"
+       }
+      ],
+      "alternate_images": [
+       {
+        "url": "https://target.scene7.com/is/image/Target/GUEST_1d52d0e4-3e29-4123-b9e8-c43950dfbbce",
+        "image_name": "GUEST_1d52d0e4-3e29-4123-b9e8-c43950dfbbce",
+        "alt_text": "A black colored power bank with a digital display showing charging status, connected to a device via a gray cable."
+       },
+       {
+        "url": "https://target.scene7.com/is/image/Target/GUEST_8f8758d5-1f9d-4872-9d80-607ef64ec578",
+        "image_name": "GUEST_8f8758d5-1f9d-4872-9d80-607ef64ec578",
+        "alt_text": "A black and silver colored power bank attached to a laptop with a digital display showing charging status and two cables connected."
+       },
+       {
+        "url": "https://target.scene7.com/is/image/Target/GUEST_b7ee3276-968b-454b-9c8f-4b4000668076",
+        "image_name": "GUEST_b7ee3276-968b-454b-9c8f-4b4000668076",
+        "alt_text": "A black and gray colored power bank with a digital display showing battery percentage, temperature, and power output details."
+       },
+       {
+        "url": "https://target.scene7.com/is/image/Target/GUEST_626cd89f-77bb-47b8-8bbf-712acd2e17a2",
+        "image_name": "GUEST_626cd89f-77bb-47b8-8bbf-712acd2e17a2",
+        "alt_text": "Exploded view of a power bank showing its internal components, including a blue colored battery pack and circuit board."
+       },
+       {
+        "url": "https://target.scene7.com/is/image/Target/GUEST_55266d98-be38-41d8-94d3-6111a9c8a453",
+        "image_name": "GUEST_55266d98-be38-41d8-94d3-6111a9c8a453",
+        "alt_text": "A power bank is placed on a table, connected to a smartphone and a pair of wireless earbuds, with a person using a laptop nearby."
+       }
+      ],
+      "swatch_image": {}
+     },
+     "return_policies": [
+      {
+       "user_type": "regular_guest",
+       "day_count": 30
+      },
+      {
+       "user_type": "best_guest",
+       "day_count": 60
+      }
+     ]
+    },
+    "environmental_segmentation": {
+     "is_hazardous_material": false
+    },
+    "formatted_return_method": "This item must be returned to any Target store.",
+    "fulfillment": {
+     "po_box_prohibited_message": "We regret that this item cannot be shipped to PO Boxes.",
+     "shipping_exclusion_codes": [
+      "American Samoa (see also separate entry under AS)",
+      "Guam (see also separate entry under GU)",
+      "Northern Mariana Islands",
+      "Puerto Rico (see also separate entry under PR)",
+      "United States Minor Outlying Islands",
+      "Virgin Islands, U.S.",
+      "APO/FPO",
+      "Alaska",
+      "Hawaii"
+     ],
+     "is_gift_wrap_eligible": true,
+     "purchase_limit": 10
+    },
+    "package_dimensions": {
+     "depth": 6.9,
+     "dimension_unit_of_measure": "INCH",
+     "weight": 1.85,
+     "weight_unit_of_measure": "POUND",
+     "height": 2.2,
+     "width": 4.9
+    },
+    "product_description": {
+     "bullet_descriptions": [
+      "<B>Model Compatibility:</B> Samsung Galaxy S4/S5/S6/S7, Apple iPhone 14/14 Plus/14 Pro/14 Pro Max, Apple iPhone 15/15 Pro/15 Pro Max, Apple iPhone 12/12 Pro/12 Pro Max, Apple iPhone 11 Pro Max/XS Max, Personal Computer",
+      "<B>Dimensions (Overall):</B> 2.36 Inches (H) x 4.92 Inches (W) x 6.89 Inches (D)",
+      "<B>Weight:</B> 1.95 Pounds",
+      "<B>Batteries Charged Simultaneously:</B> 3 (max)",
+      "<B>Battery Capacity:</B> 24000 (mAh)",
+      "<B>Volts:</B> 5 Volts",
+      "<B>Electronics Features:</B> Quick Charge, Charge Indicator Light, Smart Charging",
+      "<B>Connection Type:</B> USB-C",
+      "<B>Package Quantity:</B> 1",
+      "<B>Wattage Output:</B> 140 Watts",
+      "<B>Rechargeable:</B> Rechargeable",
+      "<B>Battery:</B> 1 Non-Universal Lithium Ion",
+      "<B>Warranty:</B> 18 Month Limited Warranty. To obtain a copy of the manufacturer's or supplier's warranty for this item prior to purchasing the item, please call Target Guest Services at 1-800-591-3869"
+     ],
+     "downstream_description": "Harness the power of Power Delivery 3.1, boasting a remarkable 140W output for lightning-fast recharges of laptops, tablets, and phones. Charge a MacBook Pro 14\" up to 80% in just 51 minutes, or achieve the same with a 140W charger in a swift 40 minutes. Stay informed with real-time insights, showing power levels, estimated full charge times, and power bank temperature. With a generous 24,000 mAh capacity, charge a MacBook Air 1.3 times or multiple iPhones on the go. Designed for convenience and compliance, it adheres to boarding regulations while maintaining exceptional portability. Connect to any port for optimal charging efficiency. Our intelligent temperature monitoring system ensures safety with a consistent temperature 10% below international guidelines. Embrace the future of charging with unparalleled performance and safety.",
+     "soft_bullets": {
+      "bullets": [
+       "Cutting-Edge Bi-Directional Fast Charging: Unleash the potential of Power Delivery 3.1 technology with a remarkable 140W output, rapidly recharging laptops, tablets, and phones. Achieve an 80% charge on a MacBook Pro 14&quot; in just 51 minutes. With a 140W charger, it can achieve 80% charge within a swift 40 minutes.",
+       "Smart Detection and Insights: Gain real-time insights with intelligent detection, displaying power levels per port, estimated full charge times, and live power bank temperature. Stay informed and empowered.",
+       "Generous Capacity, Exceptional Portability: Empower your charging with an impressive 24,000 mAh capacity, providing the ability to charge a MacBook Air 1.3 times or multiple iPhone cycles. Purposefully designed for convenience, it adheres to boarding regulations while maintaining a compact and travel-friendly form factor.",
+       "Adaptive Power Distribution: Experience dynamic power distribution \u2013 connect to any port and receive optimal charging. Seamlessly efficient, every time.",
+       "Temperature Safety at the Core: Our intelligent temperature monitoring system ensures a consistent temperature that remains 10% below international guidelines, prioritizing. your safety without compromise"
+      ],
+      "title": "highlights"
+     },
+     "title": "Anker 24000mAh 140W GaN Prime Power Bank - Silver: USB &#38; USB-C Charging, Quick Charge",
+     "soft_bullet_description": "&bull;Cutting-Edge Bi-Directional Fast Charging: Unleash the potential of Power Delivery 3.1 technology with a remarkable 140W output, rapidly recharging laptops, tablets, and phones. Achieve an 80% charge on a MacBook Pro 14&quot; in just 51 minutes. With a 140W charger, it can achieve 80% charge within a swift 40 minutes.<br>&bull;Smart Detection and Insights: Gain real-time insights with intelligent detection, displaying power levels per port, estimated full charge times, and live power bank temperature. Stay informed and empowered.<br>&bull;Generous Capacity, Exceptional Portability: Empower your charging with an impressive 24,000 mAh capacity, providing the ability to charge a MacBook Air 1.3 times or multiple iPhone cycles. Purposefully designed for convenience, it adheres to boarding regulations while maintaining a compact and travel-friendly form factor.<br>&bull;Adaptive Power Distribution: Experience dynamic power distribution \u2013 connect to any port and receive optimal charging. Seamlessly efficient, every time.<br>&bull;Temperature Safety at the Core: Our intelligent temperature monitoring system ensures a consistent temperature that remains 10% below international guidelines, prioritizing. your safety without compromise"
+    },
+    "relationship_type_code": "SA",
+    "return_policies_guest_message": "This item must be returned within 30 days of the date it was purchased in store, delivered to the guest, delivered by a Shipt shopper, or picked up by the guest.",
+    "return_policy_url": "https://www.target.com/help/articles/returns-exchanges/returns",
+    "wellness_merchandise_attributes": [
+     {
+      "badge_url": "https://target.scene7.com/is/image/Target/GUEST_81623c42-7579-45eb-921d-bd59ffa5b922",
+      "parent_id": "304593",
+      "value_id": "844159",
+      "value_name": "Fast Charging Speeds",
+      "wellness_description": "Feature that enables your devices to charge faster"
+     }
+    ],
+    "cart_add_on_threshold": 35.0,
+    "dpci": "080-08-2775",
+    "eligibility_rules": {
+     "hold": {
+      "is_active": true
+     },
+     "scheduled_delivery": {
+      "is_active": true
+     }
+    },
+    "handling": {
+     "import_designation_description": "Imported"
+    },
+    "merchandise_classification": {
+     "class_id": 8,
+     "department_id": 80,
+     "department_name": "NO-CONTRACT MOBILE/ACCESSORIES"
+    },
+    "primary_barcode": "194644098728",
+    "primary_brand": {
+     "canonical_url": "/b/anker/-/N-vk22u",
+     "linking_id": "vk22u",
+     "name": "Anker"
+    },
+    "return_method": "Store Only"
+   },
+   "price": {
+    "current_retail": 109.99,
+    "display_was_now": false,
+    "formatted_current_price": "$109.99",
+    "formatted_current_price_type": "reg",
+    "reg_retail": 109.99,
+    "location_id": 3991,
+    "external_system_id": "91803751-3991-109.99-2026071810"
+   },
+   "promotions": [],
+   "predictive_search": {
+    "search_term": "anker power bank"
+   }
+  }
+ }
+}

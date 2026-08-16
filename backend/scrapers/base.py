@@ -11,6 +11,12 @@ def load_fixture(filename: str) -> dict:
         return json.load(f)
 
 
+# HTML fixtures for the Playwright scrapers; JSON ones use load_fixture
+def load_fixture_text(filename: str) -> str:
+    with open(FIXTURES_DIR / filename, encoding="utf-8") as f:
+        return f.read()
+
+
 class ScraperBase:
     async def search(self, query: str, store_ids: list[str] | None) -> list[dict]:
         """Returns list of {name, url, price, in_stock, store_id, distance_miles}"""

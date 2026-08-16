@@ -10,12 +10,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 load_dotenv()
 
-from backend.scrapers.bestbuy import LIVE_SCRAPE, BestBuyScraper  # noqa: E402
+from backend.scrapers.target import LIVE_SCRAPE, TargetScraper  # noqa: E402
 
 QUERY = "portable charger"
+LAT = 37.7749
+LON = -122.4194
+RADIUS_MI = 25
 FIXTURE_NOTE = ("FIXTURE MODE: get_specs and get_reviews return the same saved product page "
                 "for every url.")
-INSTALL_HINT = "run: playwright install chromium"
 
 
 def show(label, data):
@@ -27,11 +29,11 @@ async def main():
     print("MODE:", "LIVE" if LIVE_SCRAPE else "FIXTURE")
     if not LIVE_SCRAPE:
         print(FIXTURE_NOTE)
-    # find_nearby_stores is not implemented: the Stores API needed the denied key
-    scraper = BestBuyScraper()
+    scraper = TargetScraper()
 
     results = await scraper.search(QUERY, None)
     show("search", results)
+    show("find_nearby_stores", await scraper.find_nearby_stores(LAT, LON, RADIUS_MI))
     if not results:
         return
 
@@ -40,8 +42,4 @@ async def main():
     show("get_reviews", await scraper.get_reviews(url))
 
 
-try:
-    asyncio.run(main())
-except Exception as error:
-    # the chromium download is a separate manual step from pip install
-    print(INSTALL_HINT if "Executable doesn't exist" in str(error) else error)
+asyncio.run(main())
