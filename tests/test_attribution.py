@@ -279,17 +279,37 @@ def test_title_inherited_ratings_are_discounted():
     )
 
 
-# --- the documented limits (attribution.py, above same_product): pinned, not endorsed ---
+# --- the documented limit (attribution.py, above same_product): pinned, not endorsed ---
 
-# limit 1: the titles are silent about the difference
+# the titles are silent about the difference, so no rail can see it
 def test_documented_limit_titles_silent_about_the_difference():
     assert same_product("Anker Power Bank 20,000mAh",
                         "Anker Zolo Power Bank 20,000mAh") is True
 
 
-# limit 2: "10K" is bare and "20000mAh" is capacity, so the pools are never compared and the
-# shared "87w" token carries rail 3. a stated capacity difference is missed
-def test_documented_limit_scale_suffix_is_not_compared_to_a_united_number():
+# --- a scale-suffixed capacity is compared against a united one ---
+
+# "10K" is bare and "20000mAh" is capacity. without the bare-against-all comparison the pools
+# never meet, the shared "87w" token carries rail 3, and a 10,000mAh product inherits the
+# 20,000mAh specs and passes a "capacity >= 20000" must_have it fails
+def test_scale_suffixed_capacity_conflicts_with_a_united_one():
     ten_k = "Anker - Power Bank (10K, 87W, Built-In USB-C Cable) - Black"
-    assert numbers_conflict(ten_k, AMAZON_TITLE) is False
-    assert same_product(ten_k, AMAZON_TITLE) is True
+    assert numbers_conflict(ten_k, AMAZON_TITLE) is True
+    assert same_product(ten_k, AMAZON_TITLE) is False
+
+
+# the hard filter itself, end to end: the wrong donor must not reach must_haves
+def test_a_mismatched_capacity_never_reaches_the_hard_filter():
+    taker = make_candidate("bestbuy", "Anker - Power Bank (10K, 87W, Built-In USB-C Cable) - Black")
+    attribute_specs([taker, amazon_donor()])
+    assert taker.specs == {}
+    assert taker.specs_inherited_from is None
+    assert passes_must_haves(
+        taker.specs, [{"field": "Battery Capacity", "op": ">=", "value": 20000}]
+    ) is False
+
+
+# the expansion still earns its keep: same stated capacity, written two ways, still matches
+def test_scale_suffix_still_matches_the_same_capacity():
+    assert numbers_conflict(BESTBUY_TITLE, AMAZON_TITLE) is False
+    assert same_product(BESTBUY_TITLE, AMAZON_TITLE) is True

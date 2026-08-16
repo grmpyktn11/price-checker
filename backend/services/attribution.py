@@ -55,8 +55,21 @@ def title_numbers(title: str) -> tuple[dict, set]:
     return united, bare
 
 
-# rail 2, the most valuable one. a bare number is never compared against a united one: 737 is
-# not comparable with 24000 mAh, and comparing the pools would reject everything
+def all_numbers(title: str) -> set:
+    united, bare = title_numbers(title)
+    return set(bare).union(*united.values()) if united else set(bare)
+
+
+# a bare number has no unit, so it is compared against every number the other title states,
+# united or bare. "10K" is capacity written without a unit, and only this comparison can see
+# that it disagrees with "20000mAh". an empty pool on the other side is no evidence, not a
+# conflict: "Anker 737" vs "Anker Power Bank" stays a maybe
+def unmatched_bare(bare: set, other_numbers: set) -> bool:
+    return bool(bare and other_numbers and not (bare & other_numbers))
+
+
+# rail 2, the most valuable one. a wrong match defeats a stated hard filter, which is worse
+# than no match at all, so this rail rejects on any numeric disagreement it can see
 def numbers_conflict(a_title: str, b_title: str) -> bool:
     a_united, a_bare = title_numbers(a_title)
     b_united, b_bare = title_numbers(b_title)
@@ -64,13 +77,10 @@ def numbers_conflict(a_title: str, b_title: str) -> bool:
     for kind in set(a_united) & set(b_united):
         if a_united[kind] != b_united[kind]:
             return True
-    # both sides state bare numbers and none is shared: "Anker 737" vs "Anker 733"
-    return bool(a_bare and b_bare and not (a_bare & b_bare))
-
-
-def all_numbers(title: str) -> set:
-    united, bare = title_numbers(title)
-    return set(bare).union(*united.values()) if united else set(bare)
+    # a bare number the other title never states: "Anker 737" vs "Anker 733", and
+    # "Power Bank (10K, 87W)" vs "Power Bank 20000mAh 87W"
+    return (unmatched_bare(a_bare, all_numbers(b_title))
+            or unmatched_bare(b_bare, all_numbers(a_title)))
 
 
 # rail 3: generic word overlap can never establish identity, so a shared token must carry
@@ -92,16 +102,11 @@ def distinctive_shared(a_title: str, b_title: str, brand: str | None) -> set[str
 
 
 # all three rails must pass.
-# accepted limits, documented rather than tightened, because tightening also loses genuine
-# matches. both admit a wrong donor into a HARD filter, so specs_inherited_from is what makes
-# either case findable after the fact:
-# 1. titles that are silent about the difference. "Anker Power Bank 20,000mAh" matches
-#    "Anker Zolo Power Bank 20,000mAh" - same brand, same stated capacity, probably different
-#    product lines. no rail can see a difference the titles do not state.
-# 2. a scale-suffixed quantity lands in the bare pool, because "20K" does not say what it
-#    measures. so "Anker - Power Bank (10K, 87W)" does NOT conflict with "Anker Power Bank
-#    20000mAh 87W" - 10000 is bare, 20000 is capacity, and the pools are never compared - and
-#    the shared "87w" token then carries rail 3. a stated capacity difference is missed.
+# accepted limit, documented rather than tightened because no rail can close it: titles that
+# are silent about the difference. "Anker Power Bank 20,000mAh" matches "Anker Zolo Power Bank
+# 20,000mAh" - same brand, same stated capacity, probably different product lines. the rails
+# only compare what the titles say. inherited specs feed a HARD filter, so specs_inherited_from
+# is what makes such a case findable after the fact
 def same_product(a_title: str, b_title: str) -> bool:
     brand = brand_token(a_title)
     if brand is None or brand != brand_token(b_title):
