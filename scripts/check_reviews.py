@@ -19,6 +19,8 @@ FIXTURE_NOTE = ("FIXTURE MODE: every source returns the same saved capture, take
                 "'portable charger', regardless of the query above.")
 
 logging.basicConfig(level=logging.INFO)
+# httpx logs full urls at INFO and our keys ride in query strings
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 def mode(has_key: bool) -> str:

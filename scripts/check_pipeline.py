@@ -41,6 +41,8 @@ FIXTURE_NOTE = ("FIXTURE MODE: get_specs and get_reviews return the same saved p
 
 # INFO so the pipeline's per-product skip lines show up inline
 logging.basicConfig(level=logging.INFO)
+# httpx logs full urls at INFO and our keys ride in query strings
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 def show(rank: int, result):

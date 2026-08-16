@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
@@ -5,6 +6,10 @@ from fastapi import FastAPI
 
 # must run before any module that reads env vars at import time (db.py DATABASE_URL, bestbuy.py key)
 load_dotenv()
+
+# httpx logs the full request url at INFO, and our api keys travel in query strings,
+# so leaving it on writes plaintext keys into the server log
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 from backend.db import Base, engine  # noqa: E402
 from backend import models  # noqa: E402,F401  imported so create_all sees every table
