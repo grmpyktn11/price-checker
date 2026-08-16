@@ -133,6 +133,9 @@ async def post_message(body: MessageIn, db: Session = Depends(get_db)) -> Messag
     item_criteria = result["criteria"]
     profile = get_or_create_profile(db)
     if profile.lat is None or profile.lon is None:
+        # drop the turn we just appended: leaving a user message with no assistant reply
+        # would put two user turns in a row in the next prompt
+        conversation.history.pop()
         raise HTTPException(400, "Set your location first: PATCH /api/profile/location")
 
     ranked = await run_pipeline(
