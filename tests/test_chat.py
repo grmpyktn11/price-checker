@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 from backend.db import Base, get_db
 from backend.main import app
-from backend.models import Item, Listing, PriceHistory, Profile
+from backend.models import Item, Listing, PriceHistory, Profile, Review
 from backend.routers.chat import CONVERSATIONS
 
 
@@ -99,6 +99,24 @@ def test_nullable_product_fields_are_present_as_null(client, db):
     first = search(client)["products"][0]
     assert first["store_id"] is None
     assert first["distance_miles"] is None
+
+
+# provenance has to reach the client, so Phase 8 can render it without a backend change
+def test_specs_inherited_from_is_serialized(client, db):
+    set_location(db)
+    first = search(client)["products"][0]
+    assert "specs_inherited_from" in first
+
+
+# the reviews table gets its first rows here: the chosen product's row plus the shared
+# item-level ones
+def test_watch_persists_reviews(client, db):
+    set_location(db)
+    search(client)
+    decide(client, 0, "watch")
+    item_id = db.query(Item).one().id
+    sources = {row.source for row in db.query(Review).filter(Review.item_id == item_id)}
+    assert {"reddit", "forum", "youtube"} <= sources
 
 
 def test_search_without_location_is_400(client, db):

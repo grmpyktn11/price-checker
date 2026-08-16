@@ -7,6 +7,24 @@ logger = logging.getLogger(__name__)
 
 FULL_CONFIDENCE_REVIEW_COUNT = 1000   # review count where rating is trusted at face value
 NEUTRAL_SCORE = 0.5                   # used wherever a signal is missing entirely
+MODEL_KEY_MIN_LENGTH = 3
+MODEL_KEY_BLOCKLIST = ("na", "n/a", "none", "unknown", "doesnotapply", "notapplicable")
+# an inherited review row keeps the donor's retailer in its source plus a suffix recording
+# which identity rule matched: "<origin>_inherited" for exact model-number equality, and
+# "<origin>_title_inherited" for the weaker title match that spec inheritance used. both end
+# in _inherited, so "is this row first-party" stays one endswith check
+INHERITED_SUFFIX = "_inherited"
+TITLE_INHERITED_SUFFIX = "_title_inherited"
+SPEC_MATCH_INHERITED_PENALTY = 0.9    # title identity is weaker evidence than a model number
+# a title-matched rating gets the same 0.9 haircut as a title-matched spec_match, for the same
+# reason: same evidence, so it must not be trusted more than the specs it arrived with
+TITLE_INHERITED_RATING_PENALTY = 0.9
+FIVE_STAR_DOMINANCE = 0.80            # share of 5-star reviews above which the curve is suspicious
+HOLLOW_MIDDLE_MAX = 0.10              # combined 2-4 star share below which the curve is bimodal
+# both penalties are judgement calls: the signals are weak, and a heavy penalty on a weak
+# signal is worse than no signal at all
+SKEWED_DISTRIBUTION_PENALTY = 0.75
+MIXED_SIGNAL_PENALTY = 0.85
 
 
 @dataclass
@@ -21,6 +39,10 @@ class RankedProduct:
     distance_score: float
     price_score: float = 0.0   # set after the full candidate set is known
     final_score: float = 0.0   # set just before sorting
+    specs_inherited_from: str | None = None   # retailer these specs were attributed from
+    # the donor object itself, run-local and never serialized: attribute_reviews needs it to
+    # inherit the same donor's rating on the same title evidence
+    specs_donor: "RankedProduct | None" = None
 
 
 # name plus keywords, lowercased, whitespace collapsed. must_haves are filters, not search terms
@@ -109,10 +131,101 @@ def compute_spec_match(specs: dict, preferred_specs: list[dict]) -> float:
     return satisfied / len(preferred_specs)
 
 
-# not implemented in Phase 2, no placeholder code:
-# - velocity anomaly needs listing age; the schema records only scraped_at
-# - rating-distribution skew needs Amazon's star breakdown; no Phase 2 source returns one
-# - cross-source sentiment is LLM call #4 and needs Reddit/forum/YouTube text
+# uppercase, drop whitespace and hyphens, nothing else: no trailing-letter stripping, no
+# prefix matching, no edit distance. "a1383h11-1" -> "A1383H111", and A1383H11-2 stays different
+def model_key(specs: dict) -> str | None:
+    raw = find_spec_value(specs, "Model Number")
+    if not raw:
+        return None
+    key = re.sub(r"[\s-]+", "", raw).upper()
+    if len(key) < MODEL_KEY_MIN_LENGTH or raw.strip().lower() in MODEL_KEY_BLOCKLIST:
+        return None
+    return key
+
+
+# the candidate's own retailer row, which is the only row that can carry a first-party rating
+def first_party_rating_row(candidate: RankedProduct) -> dict | None:
+    for row in candidate.reviews:
+        if row.get("source") == candidate.retailer and row.get("rating") is not None:
+            return row
+    return None
+
+
+# a copy, not the shared object: the two rows can end up with different authenticity flags
+def inherited_row(row: dict, suffix: str) -> dict:
+    return {**row, "source": f"{row['source']}{suffix}", "inherited_from_retailer": row["source"]}
+
+
+# star ratings are product-level, not listing-level, so a candidate with no first-party rating
+# may take another candidate's when both describe the same product. two identity strengths:
+# exact model number (the strict rule), and the same title match that supplied its specs
+def attribute_reviews(candidates: list[RankedProduct]) -> None:
+    donors: dict[str, dict] = {}
+    for candidate in candidates:
+        # inherited specs carry the donor's model number: reading it here would launder a
+        # title match into the exact-model-number rule, so inheritors never donate this way
+        if candidate.specs_inherited_from:
+            continue
+        key, row = model_key(candidate.specs), first_party_rating_row(candidate)
+        if not key or not row:
+            continue
+        best = donors.get(key)
+        # whichever source has the most reviews wins a key collision
+        if best is None or (row.get("review_count") or 0) > (best.get("review_count") or 0):
+            donors[key] = row
+    for candidate in candidates:
+        if first_party_rating_row(candidate):
+            continue
+        if candidate.specs_inherited_from:
+            inherit_from_spec_donor(candidate)
+            continue
+        key = model_key(candidate.specs)
+        row = donors.get(key) if key else None
+        if row:
+            candidate.reviews.insert(0, inherited_row(row, INHERITED_SUFFIX))
+
+
+# same identity claim as the specs it already inherited, and marked distinctly so the weaker
+# evidence is visible in stored data
+def inherit_from_spec_donor(candidate: RankedProduct) -> None:
+    donor = candidate.specs_donor
+    row = first_party_rating_row(donor) if donor else None
+    if row:
+        candidate.reviews.insert(0, inherited_row(row, TITLE_INHERITED_SUFFIX))
+
+
+# a high 5-star share alone is normal for a good product; the hollow middle is the actual
+# fake-review shape, so both conditions must hold
+def distribution_is_skewed(distribution: dict | None) -> bool:
+    if not distribution:
+        return False
+    five = distribution.get("5") or 0.0
+    middle = sum(distribution.get(star) or 0.0 for star in ("2", "3", "4"))
+    return five >= FIVE_STAR_DOMINANCE and middle <= HOLLOW_MIDDLE_MAX
+
+
+# mutates authenticity_flag in place. precedence: skewed_distribution wins over mixed_signal,
+# because it is measured data about this exact product while the sentiment signal is
+# item-level and weaker. nothing ever writes suspicious_velocity: no source supplies a
+# listing age, so the velocity heuristic has no input
+def apply_authenticity_flags(reviews: list[dict], external_sentiment: str | None) -> None:
+    # imported here, not at module level: sentiment -> criteria -> ranking is an import cycle
+    from backend.services.sentiment import contradicts
+
+    for row in reviews:
+        rating = row.get("rating")
+        if rating is None:
+            row["authenticity_flag"] = "ok"
+        elif distribution_is_skewed(row.get("rating_distribution")):
+            row["authenticity_flag"] = "skewed_distribution"
+        elif contradicts(external_sentiment, rating):
+            row["authenticity_flag"] = "mixed_signal"
+        else:
+            row["authenticity_flag"] = "ok"
+
+
+# velocity anomaly is still not implemented: nothing supplies a listing age, and scraped_at
+# is when we first saw the listing, not when it was created
 def compute_review_score(reviews: list[dict]) -> float:
     rated = [r for r in reviews if r.get("rating") is not None]
     # missing feed, not a bad product
@@ -128,6 +241,15 @@ def compute_review_score(reviews: list[dict]) -> float:
     # no MVP source populates this: none of the three retailers publish a verified ratio
     if verified_ratio is not None and verified_ratio < 0.7:
         score *= verified_ratio / 0.7
+    flag = primary.get("authenticity_flag")
+    if flag == "skewed_distribution":
+        score *= SKEWED_DISTRIBUTION_PENALTY
+    elif flag == "mixed_signal":
+        score *= MIXED_SIGNAL_PENALTY
+    # a model-number-inherited rating is not discounted (same physical product), a
+    # title-inherited one is: the evidence is a marketing title, not a manufacturer identifier
+    if str(primary.get("source", "")).endswith(TITLE_INHERITED_SUFFIX):
+        score *= TITLE_INHERITED_RATING_PENALTY
     return max(0.0, min(1.0, score))
 
 

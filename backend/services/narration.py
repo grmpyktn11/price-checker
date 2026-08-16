@@ -47,6 +47,8 @@ def summarize(ranked: list[RankedProduct]) -> list[dict]:
                 "price_score": round(result.price_score, 2),
                 "rating": review.get("rating"),
                 "review_count": review.get("review_count"),
+                # so the model can mention that these specs came from another retailer
+                "specs_inherited_from": result.specs_inherited_from,
             }
         )
     return rows

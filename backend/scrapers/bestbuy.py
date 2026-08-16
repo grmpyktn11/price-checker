@@ -6,7 +6,7 @@ from urllib.parse import parse_qs, quote_plus, urljoin, urlparse
 from bs4 import BeautifulSoup
 
 from backend.scrapers.base import ScraperBase, load_fixture_text
-from backend.scrapers.browser import fetch_html, fetch_product_html, looks_blocked
+from backend.scrapers.browser import fetch_html, fetch_product_html, looks_blocked, page_text
 
 RETAILER = "bestbuy"
 BASE = "https://www.bestbuy.com"
@@ -109,8 +109,9 @@ def parse_reviews(html: str) -> dict:
     return {
         "rating": float(match.group(1)),
         "review_count": int(match.group(2).replace(",", "")),
-        # Best Buy publishes no verified-purchase ratio
+        # Best Buy publishes no verified-purchase ratio and no star breakdown
         "verified_ratio": None,
+        "rating_distribution": None,
     }
 
 
@@ -127,7 +128,9 @@ class BestBuyScraper(ScraperBase):
             return []
         rows = parse_search(html)
         if not rows:
-            # LLM call #5's fallback extraction goes here in Phase 6, with page text from this html
+            # LLM call #5's search-page fallback is deferred to Phase 7 or later: an
+            # invented url would become part of the listings unique key and corrupt
+            # watchlist identity permanently
             logger.warning("%s search selectors returned nothing (page %d chars) - selectors may "
                            "have broken", RETAILER, len(html))
         return rows
@@ -149,6 +152,16 @@ class BestBuyScraper(ScraperBase):
             logger.warning("%s blocked on %s", RETAILER, product_url)
             return {}
         return parse_reviews(html)
+
+    # same cached html get_specs just fetched, so no extra page load. "" when blocked, which
+    # is the normal live outcome here and is what keeps a challenge page out of the LLM
+    async def get_page_text(self, product_url: str) -> str:
+        if not LIVE_SCRAPE:
+            return page_text(load_fixture_text("bestbuy_product.html"))
+        html = await fetch_product_html(product_url)
+        if looks_blocked(html, BLOCK_MARKERS):
+            return ""
+        return page_text(html)
 
     async def find_nearby_stores(self, lat: float, lon: float, radius_mi: int) -> list[dict]:
         # the Stores API needed a key that was denied; scraping the store locator is out of scope

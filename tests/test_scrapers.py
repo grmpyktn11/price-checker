@@ -1,8 +1,11 @@
+import asyncio
+
 import pytest
 
 from backend.scrapers import amazon, bestbuy, target
 from backend.scrapers.base import load_fixture, load_fixture_text
 from backend.scrapers.browser import looks_blocked
+from backend.services.ranking import find_spec_value
 
 SEARCH_KEYS = {"name", "url", "price", "in_stock", "store_id", "distance_miles"}
 BIDI_MARKS = ("‎", "‏")
@@ -74,6 +77,40 @@ def test_reviews_are_numbers(retailer):
     assert isinstance(data["review_count"], int)
     # no MVP source publishes a verified-purchase ratio
     assert data["verified_ratio"] is None
+
+
+def test_amazon_rating_distribution():
+    distribution = REVIEWS["amazon"]["rating_distribution"]
+    assert set(distribution) == {"1", "2", "3", "4", "5"}
+    assert sum(distribution.values()) == pytest.approx(1.0, abs=0.02)
+
+
+# only Amazon publishes a star breakdown; the contract stays uniform
+@pytest.mark.parametrize("retailer", ["bestbuy", "target"])
+def test_no_distribution_from_the_others(retailer):
+    assert REVIEWS[retailer]["rating_distribution"] is None
+
+
+# both product pages already carry a model number, so review attribution needs no new parser
+def test_model_numbers_come_from_the_existing_spec_parsers():
+    assert find_spec_value(SPECS["bestbuy"], "Model Number") == "A1383H11-1"
+    assert find_spec_value(SPECS["amazon"], "Model Number") == "C2046S"
+
+
+# documented gaps: Target publishes no model number, and Best Buy's tiles carry none either,
+# which is what forces title-based spec identity
+def test_target_publishes_no_model_number():
+    assert find_spec_value(SPECS["target"], "Model Number") is None
+
+
+def test_bestbuy_tiles_carry_no_model_number():
+    for row in SEARCH_RESULTS["bestbuy"]:
+        assert "model" not in " ".join(str(value) for value in row.values()).lower()
+
+
+def test_page_text_is_plain_text():
+    text = asyncio.run(amazon.AmazonScraper().get_page_text("https://www.amazon.com/dp/X"))
+    assert text and "<" not in text
 
 
 def test_target_stores_have_string_ids():

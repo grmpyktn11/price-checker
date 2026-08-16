@@ -71,12 +71,18 @@ class Review(Base):
     __tablename__ = "reviews"
     id = Column(Integer, primary_key=True)
     item_id = Column(Integer, ForeignKey("items.id"))
-    source = Column(String)                      # amazon | bestbuy | target | reddit | forum | youtube
+    # amazon | bestbuy | target | reddit | forum | youtube | <retailer>_inherited
+    # | <retailer>_title_inherited. the two inherited values are ratings attributed from
+    # another candidate in the same run: _inherited on exact model number, _title_inherited
+    # on the weaker search-title match
+    source = Column(String)
     rating = Column(Float)
     review_count = Column(Integer)
-    verified_ratio = Column(Float)
+    verified_ratio = Column(Float)               # nothing populates this: no source publishes it
     rating_distribution_json = Column(String)
-    authenticity_flag = Column(String)           # ok | mixed_signal | suspicious_velocity | skewed_distribution
+    # ok | mixed_signal | suspicious_velocity | skewed_distribution. nothing writes
+    # suspicious_velocity: it needs a listing age and no source supplies one
+    authenticity_flag = Column(String)
     url = Column(String)
     summary_text = Column(String)
     fetched_at = Column(DateTime, default=utcnow)

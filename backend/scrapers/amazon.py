@@ -6,7 +6,7 @@ from urllib.parse import quote_plus
 from bs4 import BeautifulSoup
 
 from backend.scrapers.base import ScraperBase, load_fixture_text
-from backend.scrapers.browser import fetch_html, fetch_product_html, looks_blocked
+from backend.scrapers.browser import fetch_html, fetch_product_html, looks_blocked, page_text
 
 RETAILER = "amazon"
 BASE = "https://www.amazon.com"
@@ -91,7 +91,16 @@ def parse_specs(html: str) -> dict:
     return specs
 
 
-# rating distribution lives in #histogramTable; Phase 6 wires it into the review math
+# "71 percent of reviews have 5 stars" -> {"5": 0.71, ...}. None when the table is absent
+def parse_distribution(soup) -> dict | None:
+    distribution = {}
+    for link in soup.select("#histogramTable a[aria-label]"):
+        match = re.search(r"(\d+) percent of reviews have (\d) star", link["aria-label"])
+        if match:
+            distribution[match.group(2)] = int(match.group(1)) / 100
+    return distribution or None
+
+
 def parse_reviews(html: str) -> dict:
     soup = BeautifulSoup(html, "lxml")
     # .a-icon-alt appears dozens of times on the page, so scope it to the aggregate block
@@ -106,6 +115,8 @@ def parse_reviews(html: str) -> dict:
         "review_count": int(count_match.group(1).replace(",", "")) if count_match else None,
         # Amazon's aggregate block does not expose a verified-purchase ratio
         "verified_ratio": None,
+        # the only star breakdown any MVP source publishes; feeds the skew heuristic
+        "rating_distribution": parse_distribution(soup),
     }
 
 
@@ -121,7 +132,9 @@ class AmazonScraper(ScraperBase):
             return []
         rows = parse_search(html)
         if not rows:
-            # LLM call #5's fallback extraction goes here in Phase 6, with page text from this html
+            # LLM call #5's search-page fallback is deferred to Phase 7 or later: an
+            # invented url would become part of the listings unique key and corrupt
+            # watchlist identity permanently
             logger.warning("%s search selectors returned nothing (page %d chars) - selectors may "
                            "have broken", RETAILER, len(html))
         return rows
@@ -143,6 +156,16 @@ class AmazonScraper(ScraperBase):
             logger.warning("%s blocked on %s", RETAILER, product_url)
             return {}
         return parse_reviews(html)
+
+    # no extra page load: the 60s cache still holds the page get_specs just fetched.
+    # "" on a blocked page, so a captcha is never sent to the LLM spec fallback
+    async def get_page_text(self, product_url: str) -> str:
+        if not LIVE_SCRAPE:
+            return page_text(load_fixture_text("amazon_product.html"))
+        html = await fetch_product_html(product_url)
+        if looks_blocked(html, BLOCK_MARKERS):
+            return ""
+        return page_text(html)
 
     async def find_nearby_stores(self, lat: float, lon: float, radius_mi: int) -> list[dict]:
         raise NotImplementedError

@@ -1,18 +1,36 @@
 import pytest
 
+from backend.services.pipeline import filter_on_specs
 from backend.services.ranking import (
+    MIXED_SIGNAL_PENALTY,
+    NEUTRAL_SCORE,
+    SKEWED_DISTRIBUTION_PENALTY,
+    SPEC_MATCH_INHERITED_PENALTY,
     RankedProduct,
+    apply_authenticity_flags,
     assign_price_scores,
     build_query,
     compute_distance_score,
     compute_final_score,
     compute_review_score,
     compute_spec_match,
+    distribution_is_skewed,
     find_spec_value,
     first_number,
     over_budget_penalty,
     passes_must_haves,
 )
+
+# the real Amazon fixture curve: a strong product, not a suspicious one
+FIXTURE_DISTRIBUTION = {"5": 0.71, "4": 0.09, "3": 0.05, "2": 0.04, "1": 0.11}
+SKEWED_DISTRIBUTION = {"5": 0.88, "4": 0.02, "3": 0.01, "2": 0.02, "1": 0.07}
+AMAZON_ROW = {"source": "amazon", "rating": 4.7, "review_count": 1843, "verified_ratio": None,
+              "rating_distribution": None}
+EXTERNAL_ROWS = [
+    {"source": source, "rating": None, "review_count": None, "verified_ratio": None,
+     "summary_text": "text", "mention_count": 9, "authenticity_flag": "ok"}
+    for source in ("reddit", "forum", "youtube")
+]
 
 # retailer spec strings, inline: these tests are about ranking math, not about any scraper
 SPECS = {
@@ -159,6 +177,78 @@ def test_compute_review_score(rating, count, expected):
 
 def test_compute_review_score_no_reviews():
     assert compute_review_score([]) == 0.5
+
+
+@pytest.mark.parametrize(
+    "distribution,expected",
+    [
+        (FIXTURE_DISTRIBUTION, False),
+        (SKEWED_DISTRIBUTION, True),
+        (None, False),
+        # dominant 5-star alone is not enough: the hollow middle is the fake-review shape
+        ({"5": 0.85, "4": 0.10, "3": 0.03, "2": 0.01, "1": 0.01}, False),
+    ],
+)
+def test_distribution_is_skewed(distribution, expected):
+    assert distribution_is_skewed(distribution) is expected
+
+
+# measured data about this product beats an item-level sentiment signal
+def test_skewed_distribution_wins_over_mixed_signal():
+    row = {**AMAZON_ROW, "rating": 4.8, "rating_distribution": SKEWED_DISTRIBUTION}
+    apply_authenticity_flags([row], "negative")
+    assert row["authenticity_flag"] == "skewed_distribution"
+
+
+def test_mixed_signal_flag():
+    row = {**AMAZON_ROW, "rating": 4.8}
+    apply_authenticity_flags([row], "negative")
+    assert row["authenticity_flag"] == "mixed_signal"
+
+
+# external rows carry no rating, so there is nothing to be suspicious about
+def test_external_rows_are_always_ok():
+    rows = [dict(row) for row in EXTERNAL_ROWS]
+    apply_authenticity_flags(rows, "negative")
+    assert {row["authenticity_flag"] for row in rows} == {"ok"}
+
+
+@pytest.mark.parametrize(
+    "flag,penalty",
+    [("skewed_distribution", SKEWED_DISTRIBUTION_PENALTY),
+     ("mixed_signal", MIXED_SIGNAL_PENALTY)],
+)
+def test_authenticity_penalties(flag, penalty):
+    base = compute_review_score([dict(AMAZON_ROW)])
+    flagged = compute_review_score([{**AMAZON_ROW, "authenticity_flag": flag}])
+    assert flagged == pytest.approx(base * penalty, abs=1e-9)
+
+
+def test_external_rows_cannot_move_the_score():
+    assert compute_review_score([AMAZON_ROW, *EXTERNAL_ROWS]) == compute_review_score([AMAZON_ROW])
+
+
+def test_no_retailer_row_is_neutral():
+    assert compute_review_score(EXTERNAL_ROWS) == NEUTRAL_SCORE
+
+
+# a model-number match is the same physical product, so the rating is not discounted
+def test_model_inherited_rating_is_not_discounted():
+    inherited = [{**AMAZON_ROW, "source": "amazon_inherited"}]
+    assert compute_review_score(inherited) == compute_review_score([AMAZON_ROW])
+
+
+# title identity is weaker evidence than a model number, so the soft score says so
+def test_inherited_specs_are_discounted_in_spec_match():
+    first_party = make_candidate(99.99)
+    inherited = make_candidate(99.99)
+    for candidate in (first_party, inherited):
+        candidate.specs = SPECS
+    inherited.specs_inherited_from = "amazon"
+    filter_on_specs([first_party, inherited], [], PREFERRED_SPECS)
+    assert inherited.spec_match == pytest.approx(
+        first_party.spec_match * SPEC_MATCH_INHERITED_PENALTY, abs=1e-9
+    )
 
 
 @pytest.mark.parametrize(

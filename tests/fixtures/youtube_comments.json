@@ -1,0 +1,351 @@
+{
+ "kind": "youtube#commentThreadListResponse",
+ "etag": "jq84FvExpR3p6B_QOBfVzvD3xTY",
+ "nextPageToken": "Z2V0X3JhbmtlZF9zdHJlYW1zLS1DbWdJZ0FRVkY3ZlJPQnBlQ2xvSTJGOFFnQVFZQnlKUWh4NkwtYmJSQmdHSDhTckVFSFVqZENvRDFmSE1kcXFwaGc1OEd5bVRvRjY3N0xUUVFqZG10TE9UbDBqTzlTb1lVVWkwbmh3YkVzU0FCT3haVEJfOVowTWNacmxwUUYtRmpnVEhPOUx4WkFBUUNoSUZDS2dnR0FBU0JRaUlJQmdBRWdVSWlTQVlBQklIQ0lVZ0VBb1lBUklGQ0xzZ0dBQVNCUWlISUJnQVVBQllBUQ==",
+ "pageInfo": {
+  "totalResults": 10,
+  "resultsPerPage": 10
+ },
+ "items": [
+  {
+   "kind": "youtube#commentThread",
+   "etag": "KV-P40yP_aSCfHdlCFkkZcxkag4",
+   "id": "Ugxdn2pX4uwWHOdRVwh4AaABAg",
+   "snippet": {
+    "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+    "videoId": "zzjq7_ddb0U",
+    "topLevelComment": {
+     "kind": "youtube#comment",
+     "etag": "5NHQi7beVv3BQN5hdcUnrcps9GM",
+     "id": "Ugxdn2pX4uwWHOdRVwh4AaABAg",
+     "snippet": {
+      "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+      "videoId": "zzjq7_ddb0U",
+      "textDisplay": "Id say it also should have CCC label too otherwise useless if brought through china.",
+      "textOriginal": "Id say it also should have CCC label too otherwise useless if brought through china.",
+      "authorDisplayName": "@PulseCorpST",
+      "authorProfileImageUrl": "https://yt3.ggpht.com/ytc/AIdro_lImWjpMrIvdRovD-M6t404B4iy4JtBgKSvugbuhj_RH1T6wD48Xs1RhVDJF9ywMr1Udg=s48-c-k-c0x00ffffff-no-rj",
+      "authorChannelUrl": "http://www.youtube.com/@PulseCorpST",
+      "authorChannelId": {
+       "value": "UCWQ-mcMOs6Y7Yzq-HHCIX3Q"
+      },
+      "canRate": true,
+      "viewerRating": "none",
+      "likeCount": 13,
+      "publishedAt": "2026-07-17T09:48:57Z",
+      "updatedAt": "2026-07-17T09:48:57Z"
+     }
+    },
+    "canReply": true,
+    "totalReplyCount": 2,
+    "isPublic": true
+   }
+  },
+  {
+   "kind": "youtube#commentThread",
+   "etag": "M51614GCcYBN2tWaIMIs0damV9s",
+   "id": "UgwIX9heA4cW5TYOHwl4AaABAg",
+   "snippet": {
+    "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+    "videoId": "zzjq7_ddb0U",
+    "topLevelComment": {
+     "kind": "youtube#comment",
+     "etag": "YusASmQPGlE1V1l5vkpdrvaH2Po",
+     "id": "UgwIX9heA4cW5TYOHwl4AaABAg",
+     "snippet": {
+      "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+      "videoId": "zzjq7_ddb0U",
+      "textDisplay": "What's the charging speed like, I've heard that the slow charging warning comes up on iPhones when you use the magsafe option?",
+      "textOriginal": "What's the charging speed like, I've heard that the slow charging warning comes up on iPhones when you use the magsafe option?",
+      "authorDisplayName": "@faranahmad",
+      "authorProfileImageUrl": "https://yt3.ggpht.com/ytc/AIdro_mQuKJwH9Ossc2HUSv5NcpUy6sg0NKfrtTcTalZ2tH8olrt=s48-c-k-c0x00ffffff-no-rj",
+      "authorChannelUrl": "http://www.youtube.com/@faranahmad",
+      "authorChannelId": {
+       "value": "UCxe_iE5t74578001JkeL76g"
+      },
+      "canRate": true,
+      "viewerRating": "none",
+      "likeCount": 3,
+      "publishedAt": "2026-07-17T09:03:16Z",
+      "updatedAt": "2026-07-17T09:03:16Z"
+     }
+    },
+    "canReply": true,
+    "totalReplyCount": 1,
+    "isPublic": true
+   }
+  },
+  {
+   "kind": "youtube#commentThread",
+   "etag": "o0nfzMMf0MSBIsrMrVGqqmG_j30",
+   "id": "UgwXDVVH1lcSL-Yn2Ld4AaABAg",
+   "snippet": {
+    "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+    "videoId": "zzjq7_ddb0U",
+    "topLevelComment": {
+     "kind": "youtube#comment",
+     "etag": "zfPbs8ZataKzf_B6FczPx5uO6cA",
+     "id": "UgwXDVVH1lcSL-Yn2Ld4AaABAg",
+     "snippet": {
+      "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+      "videoId": "zzjq7_ddb0U",
+      "textDisplay": "I had to chuckle at the switch in order to charge magnetically...bet a lot of guys didn't read the instructions (raises hand sheepishly).  I do need to point out, Ridge states international shipping is available but when I tried to check out I ran into this message: \"Order contains item(s) that cannot be shipped outside the Continental U.S. at this time.\"  I live in Hawaii and it's a problem.",
+      "textOriginal": "I had to chuckle at the switch in order to charge magnetically...bet a lot of guys didn't read the instructions (raises hand sheepishly).  I do need to point out, Ridge states international shipping is available but when I tried to check out I ran into this message: \"Order contains item(s) that cannot be shipped outside the Continental U.S. at this time.\"  I live in Hawaii and it's a problem.",
+      "authorDisplayName": "@jojosmith1097",
+      "authorProfileImageUrl": "https://yt3.ggpht.com/ytc/AIdro_kgYTLL9aZ899CBnXokO3uC6eC42U4BC6WUnQp4fA-KMMY=s48-c-k-c0x00ffffff-no-rj",
+      "authorChannelUrl": "http://www.youtube.com/@jojosmith1097",
+      "authorChannelId": {
+       "value": "UCWrTuoO0eTeqfYSOA__M_bQ"
+      },
+      "canRate": true,
+      "viewerRating": "none",
+      "likeCount": 3,
+      "publishedAt": "2026-07-26T20:03:04Z",
+      "updatedAt": "2026-07-26T20:03:04Z"
+     }
+    },
+    "canReply": true,
+    "totalReplyCount": 1,
+    "isPublic": true
+   }
+  },
+  {
+   "kind": "youtube#commentThread",
+   "etag": "Dxmuy3Fr78p3MNfBZi1X5eDgsGw",
+   "id": "Ugz1uYyvyzYIxcyfNFJ4AaABAg",
+   "snippet": {
+    "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+    "videoId": "zzjq7_ddb0U",
+    "topLevelComment": {
+     "kind": "youtube#comment",
+     "etag": "gRFnpB8SONxU3dZeF-OLLIXgHLo",
+     "id": "Ugz1uYyvyzYIxcyfNFJ4AaABAg",
+     "snippet": {
+      "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+      "videoId": "zzjq7_ddb0U",
+      "textDisplay": "Thank you for that bit about the watch strap. I already have an Anker 10K slim power bank, so the watch charging is the only part that really interests me. It eliminates the convenience if I have to undo the strap. I\u2019ll stick with my Anker.",
+      "textOriginal": "Thank you for that bit about the watch strap. I already have an Anker 10K slim power bank, so the watch charging is the only part that really interests me. It eliminates the convenience if I have to undo the strap. I\u2019ll stick with my Anker.",
+      "authorDisplayName": "@KKR-g3m",
+      "authorProfileImageUrl": "https://yt3.ggpht.com/ytc/AIdro_m4jJbEjL0SIaIOtfApQMcEAEbnC-hAy2naWEzpzZ-wcWvyVBEhmP2ZNn6PyBDPQpvKQA=s48-c-k-c0x00ffffff-no-rj",
+      "authorChannelUrl": "http://www.youtube.com/@KKR-g3m",
+      "authorChannelId": {
+       "value": "UCUyWSTeTkqFUcXIs9A03xKA"
+      },
+      "canRate": true,
+      "viewerRating": "none",
+      "likeCount": 0,
+      "publishedAt": "2026-08-07T20:42:27Z",
+      "updatedAt": "2026-08-07T20:42:27Z"
+     }
+    },
+    "canReply": true,
+    "totalReplyCount": 2,
+    "isPublic": true
+   }
+  },
+  {
+   "kind": "youtube#commentThread",
+   "etag": "cnxPFYZVTDJSdnqqA9RZcnMBv4k",
+   "id": "UgyvkO45PPai0hIltMF4AaABAg",
+   "snippet": {
+    "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+    "videoId": "zzjq7_ddb0U",
+    "topLevelComment": {
+     "kind": "youtube#comment",
+     "etag": "NaGZBIk6K8g0Hh9PW1WB1h1kkOo",
+     "id": "UgyvkO45PPai0hIltMF4AaABAg",
+     "snippet": {
+      "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+      "videoId": "zzjq7_ddb0U",
+      "textDisplay": "Why did they make it with a lightning cable when they are hosed out though",
+      "textOriginal": "Why did they make it with a lightning cable when they are hosed out though",
+      "authorDisplayName": "@MegaDlarge",
+      "authorProfileImageUrl": "https://yt3.ggpht.com/ytc/AIdro_nxakPVH9BkUuJHDWEUxXE0TzbDizUc2zocng09keE=s48-c-k-c0x00ffffff-no-rj",
+      "authorChannelUrl": "http://www.youtube.com/@MegaDlarge",
+      "authorChannelId": {
+       "value": "UCZdadb7kkbRj_5kYyhVeEHQ"
+      },
+      "canRate": true,
+      "viewerRating": "none",
+      "likeCount": 3,
+      "publishedAt": "2026-07-23T05:02:18Z",
+      "updatedAt": "2026-07-23T05:02:18Z"
+     }
+    },
+    "canReply": true,
+    "totalReplyCount": 2,
+    "isPublic": true
+   }
+  },
+  {
+   "kind": "youtube#commentThread",
+   "etag": "JokNZzlUsvEctSuqXLKRCBi2XfM",
+   "id": "UgzJiWVrqZ52PldOOxx4AaABAg",
+   "snippet": {
+    "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+    "videoId": "zzjq7_ddb0U",
+    "topLevelComment": {
+     "kind": "youtube#comment",
+     "etag": "BdfnJKdo3CkiyGok2H5z3pv58Nw",
+     "id": "UgzJiWVrqZ52PldOOxx4AaABAg",
+     "snippet": {
+      "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+      "videoId": "zzjq7_ddb0U",
+      "textDisplay": "Chief creative Partner... \ud83e\udd21",
+      "textOriginal": "Chief creative Partner... \ud83e\udd21",
+      "authorDisplayName": "@koenignero",
+      "authorProfileImageUrl": "https://yt3.ggpht.com/ytc/AIdro_lghcLdnjbzMYPUC65AyKW0piash0uqOwPO7OSCwAIcKfo=s48-c-k-c0x00ffffff-no-rj",
+      "authorChannelUrl": "http://www.youtube.com/@koenignero",
+      "authorChannelId": {
+       "value": "UCmDTmOZcytpGbbuHYKSPcvA"
+      },
+      "canRate": true,
+      "viewerRating": "none",
+      "likeCount": 1,
+      "publishedAt": "2026-07-24T19:04:20Z",
+      "updatedAt": "2026-07-24T19:04:20Z"
+     }
+    },
+    "canReply": true,
+    "totalReplyCount": 0,
+    "isPublic": true
+   }
+  },
+  {
+   "kind": "youtube#commentThread",
+   "etag": "N3gAuoduifT6tSfyg9IgK8RT7_E",
+   "id": "UgwGqHaw850-mAnsCi54AaABAg",
+   "snippet": {
+    "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+    "videoId": "zzjq7_ddb0U",
+    "topLevelComment": {
+     "kind": "youtube#comment",
+     "etag": "CGFc6MBMnh3UJ2QidsJJ9HXl6ME",
+     "id": "UgwGqHaw850-mAnsCi54AaABAg",
+     "snippet": {
+      "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+      "videoId": "zzjq7_ddb0U",
+      "textDisplay": "Anker zolo power bank completely wipes this power bank and is half the price.",
+      "textOriginal": "Anker zolo power bank completely wipes this power bank and is half the price.",
+      "authorDisplayName": "@S1KMassie",
+      "authorProfileImageUrl": "https://yt3.ggpht.com/uXLAogwUD8Em90tcbF9xOf2eydFnnlCcmz_vkJqtciPpmaIHoByZD7_xnfvIeZ5wuDlufNRu-g=s48-c-k-c0x00ffffff-no-rj",
+      "authorChannelUrl": "http://www.youtube.com/@S1KMassie",
+      "authorChannelId": {
+       "value": "UCY_cO6jTM-NjtCOaCluHgeA"
+      },
+      "canRate": true,
+      "viewerRating": "none",
+      "likeCount": 0,
+      "publishedAt": "2026-08-02T06:53:04Z",
+      "updatedAt": "2026-08-02T06:53:04Z"
+     }
+    },
+    "canReply": true,
+    "totalReplyCount": 2,
+    "isPublic": true
+   }
+  },
+  {
+   "kind": "youtube#commentThread",
+   "etag": "XNRlpZwLNUbR4BkWfa4aGdJuUQQ",
+   "id": "UgxxY32I6BrNlebUeNZ4AaABAg",
+   "snippet": {
+    "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+    "videoId": "zzjq7_ddb0U",
+    "topLevelComment": {
+     "kind": "youtube#comment",
+     "etag": "E0N7eLu-ODSeOAMRHOlkl1WLBF8",
+     "id": "UgxxY32I6BrNlebUeNZ4AaABAg",
+     "snippet": {
+      "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+      "videoId": "zzjq7_ddb0U",
+      "textDisplay": "Having a lightning cable is useless.  Should have usb-c in/out functionality.",
+      "textOriginal": "Having a lightning cable is useless.  Should have usb-c in/out functionality.",
+      "authorDisplayName": "@howardp924",
+      "authorProfileImageUrl": "https://yt3.ggpht.com/ytc/AIdro_muxKzLblTOA_s_ukuvWAP4BRCRrMTYDJv4PNZXRGM=s48-c-k-c0x00ffffff-no-rj",
+      "authorChannelUrl": "http://www.youtube.com/@howardp924",
+      "authorChannelId": {
+       "value": "UC52NoA0td8THuzDBSqrPktg"
+      },
+      "canRate": true,
+      "viewerRating": "none",
+      "likeCount": 8,
+      "publishedAt": "2026-07-17T10:35:14Z",
+      "updatedAt": "2026-07-17T10:35:14Z"
+     }
+    },
+    "canReply": true,
+    "totalReplyCount": 2,
+    "isPublic": true
+   }
+  },
+  {
+   "kind": "youtube#commentThread",
+   "etag": "If590Wp6KSHfwW9_0sY5lQa61fI",
+   "id": "Ugwa71x1hyYfTQD3ddB4AaABAg",
+   "snippet": {
+    "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+    "videoId": "zzjq7_ddb0U",
+    "topLevelComment": {
+     "kind": "youtube#comment",
+     "etag": "2Id-ooTrrLyC_KHU4T65PUuQIxY",
+     "id": "Ugwa71x1hyYfTQD3ddB4AaABAg",
+     "snippet": {
+      "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+      "videoId": "zzjq7_ddb0U",
+      "textDisplay": "This is why I make my own, I get everything exactly how I want it. No text on kickstand, 10/10.",
+      "textOriginal": "This is why I make my own, I get everything exactly how I want it. No text on kickstand, 10/10.",
+      "authorDisplayName": "@callmethreeone",
+      "authorProfileImageUrl": "https://yt3.ggpht.com/lP4uVEKX0Haz7W51jbjazHI3LUDhAeyCu0md0-K48Wf8jnQfJMGXUdsyFCF4IvCDuGN1mqwFJyg=s48-c-k-c0x00ffffff-no-rj",
+      "authorChannelUrl": "http://www.youtube.com/@callmethreeone",
+      "authorChannelId": {
+       "value": "UCuF3mWV4tf6aufshPW_vj3w"
+      },
+      "canRate": true,
+      "viewerRating": "none",
+      "likeCount": 0,
+      "publishedAt": "2026-08-02T03:15:36Z",
+      "updatedAt": "2026-08-02T03:15:36Z"
+     }
+    },
+    "canReply": true,
+    "totalReplyCount": 2,
+    "isPublic": true
+   }
+  },
+  {
+   "kind": "youtube#commentThread",
+   "etag": "OfL3Qh086l6JFi8Ol2sVTVzu7BU",
+   "id": "Ugyhq69_mqJGvAFv_4t4AaABAg",
+   "snippet": {
+    "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+    "videoId": "zzjq7_ddb0U",
+    "topLevelComment": {
+     "kind": "youtube#comment",
+     "etag": "e1qqnVGrfcopgPJcgHi3GVfSsDc",
+     "id": "Ugyhq69_mqJGvAFv_4t4AaABAg",
+     "snippet": {
+      "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+      "videoId": "zzjq7_ddb0U",
+      "textDisplay": "Anker 10 k slime much much better this",
+      "textOriginal": "Anker 10 k slime much much better this",
+      "authorDisplayName": "@africaunite4489",
+      "authorProfileImageUrl": "https://yt3.ggpht.com/3-3YoRgM_dpSPVyYflUMy4NeL_K4-YccEWaci-vSsWHQDUvU_Gc6cA7rdINiaqY2n5wUXU_Mig=s48-c-k-c0x00ffffff-no-rj",
+      "authorChannelUrl": "http://www.youtube.com/@africaunite4489",
+      "authorChannelId": {
+       "value": "UCXWiiKZKu3NFdkXQBriw66A"
+      },
+      "canRate": true,
+      "viewerRating": "none",
+      "likeCount": 0,
+      "publishedAt": "2026-08-11T11:48:58Z",
+      "updatedAt": "2026-08-11T11:50:33Z"
+     }
+    },
+    "canReply": true,
+    "totalReplyCount": 1,
+    "isPublic": true
+   }
+  }
+ ]
+}

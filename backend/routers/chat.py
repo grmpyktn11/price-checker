@@ -12,6 +12,7 @@ from backend.db import get_db
 from backend.models import Item, Listing, PriceHistory
 from backend.routers.profile import get_or_create_profile
 from backend.services import criteria as criteria_service
+from backend.services import reviews_store
 from backend.services.narration import TOP_N, narrate, primary_review
 from backend.services.pipeline import run_pipeline
 from backend.services.ranking import RankedProduct
@@ -65,6 +66,7 @@ class ProductOut(BaseModel):
     price_score: float
     distance_score: float
     nice_to_have_score: float
+    specs_inherited_from: str | None   # retailer these specs were attributed from, if any
 
 
 class MessageOut(BaseModel):
@@ -107,6 +109,7 @@ def to_product_out(product_id: int, ranked: RankedProduct) -> ProductOut:
         price_score=ranked.price_score,
         distance_score=ranked.distance_score,
         nice_to_have_score=ranked.nice_to_have_score,
+        specs_inherited_from=ranked.specs_inherited_from,
     )
 
 
@@ -215,6 +218,9 @@ def watch_product(db: Session, item_criteria: dict, chosen: RankedProduct) -> It
     db.flush()
     if listing.price is not None:
         db.add(PriceHistory(listing_id=listing.id, price=listing.price))
+    # first writer for the reviews table: the chosen product's retailer row (first-party or
+    # inherited) plus the shared external rows, so a rescan can reuse them instead of quota
+    reviews_store.save_reviews(db, item.id, chosen.reviews)
     db.commit()
     db.refresh(item)
     return item

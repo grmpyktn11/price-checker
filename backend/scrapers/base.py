@@ -28,8 +28,12 @@ class ScraperBase:
         raise NotImplementedError
 
     async def get_reviews(self, product_url: str) -> dict:
-        """Returns {rating, review_count, verified_ratio (if available)}"""
+        """Returns {rating, review_count, verified_ratio (if available), rating_distribution}"""
         raise NotImplementedError
+
+    async def get_page_text(self, product_url: str) -> str:
+        """Raw visible product-page text for the LLM spec fallback. "" when unavailable."""
+        return ""
 
     async def find_nearby_stores(self, lat: float, lon: float, radius_mi: int) -> list[dict]:
         """Returns [{store_id, name, distance_miles}] within radius. Not implemented for Amazon."""

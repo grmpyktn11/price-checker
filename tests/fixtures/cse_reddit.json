@@ -1,0 +1,122 @@
+{
+ "kind": "customsearch#search",
+ "queries": {
+  "request": [
+   {
+    "title": "Google Custom Search - portable charger review (site:reddit.com/r/electronics OR site:reddit.com/r/gadgets OR site:reddit.com/r/UsbCHardware OR site:reddit.com/r/batteries)",
+    "totalResults": "1240",
+    "searchTerms": "portable charger review (site:reddit.com/r/electronics OR site:reddit.com/r/gadgets OR site:reddit.com/r/UsbCHardware OR site:reddit.com/r/batteries)",
+    "count": 10,
+    "startIndex": 1
+   }
+  ]
+ },
+ "searchInformation": {
+  "searchTime": 0.31,
+  "formattedSearchTime": "0.31",
+  "totalResults": "1240",
+  "formattedTotalResults": "1,240"
+ },
+ "items": [
+  {
+   "kind": "customsearch#result",
+   "title": "Best portable charger for travel? : r/UsbCHardware",
+   "htmlTitle": "Best portable charger for travel? : r/UsbCHardware",
+   "link": "https://www.reddit.com/r/UsbCHardware/comments/1a2b3c4/best_portable_charger_for_travel/",
+   "displayLink": "www.reddit.com",
+   "snippet": "I have been running an Anker 737 for about a year and it still holds full capacity. 140W out of the USB-C port charges a laptop at close to wall speed.",
+   "htmlSnippet": "I have been running an Anker 737 for about a year and it still holds full capacity. 140W out of the USB-C port charges a laptop at close to wall speed.",
+   "formattedUrl": "https://www.reddit.com/r/UsbCHardware/comments/1a2b3c4/best_portable_charger_for_travel/"
+  },
+  {
+   "kind": "customsearch#result",
+   "title": "Anker vs INIU power banks - is the price difference worth it? : r/gadgets",
+   "htmlTitle": "Anker vs INIU power banks - is the price difference worth it? : r/gadgets",
+   "link": "https://www.reddit.com/r/gadgets/comments/1b3c4d5/anker_vs_iniu_power_banks/",
+   "displayLink": "www.reddit.com",
+   "snippet": "INIU is the value pick and mine has survived two years of abuse. Anker feels better built and the passthrough charging actually works properly.",
+   "htmlSnippet": "INIU is the value pick and mine has survived two years of abuse. Anker feels better built and the passthrough charging actually works properly.",
+   "formattedUrl": "https://www.reddit.com/r/gadgets/comments/1b3c4d5/anker_vs_iniu_power_banks/"
+  },
+  {
+   "kind": "customsearch#result",
+   "title": "PSA: most 20000mAh banks do not actually deliver 20000mAh : r/batteries",
+   "htmlTitle": "PSA: most 20000mAh banks do not actually deliver 20000mAh : r/batteries",
+   "link": "https://www.reddit.com/r/batteries/comments/1c4d5e6/psa_most_20000mah_banks/",
+   "displayLink": "www.reddit.com",
+   "snippet": "Cell capacity is rated at 3.7V. After the boost to 5V you realistically see 60-70 percent of the printed number, which is normal and not a scam.",
+   "htmlSnippet": "Cell capacity is rated at 3.7V. After the boost to 5V you realistically see 60-70 percent of the printed number, which is normal and not a scam.",
+   "formattedUrl": "https://www.reddit.com/r/batteries/comments/1c4d5e6/psa_most_20000mah_banks/"
+  },
+  {
+   "kind": "customsearch#result",
+   "title": "Power bank with built-in cable recommendations : r/UsbCHardware",
+   "htmlTitle": "Power bank with built-in cable recommendations : r/UsbCHardware",
+   "link": "https://www.reddit.com/r/UsbCHardware/comments/1d5e6f7/power_bank_with_built_in_cable/",
+   "displayLink": "www.reddit.com",
+   "snippet": "Built-in cables are convenient but they are the first thing to fail. Two people in this thread had the captive cable die inside a year.",
+   "htmlSnippet": "Built-in cables are convenient but they are the first thing to fail. Two people in this thread had the captive cable die inside a year.",
+   "formattedUrl": "https://www.reddit.com/r/UsbCHardware/comments/1d5e6f7/power_bank_with_built_in_cable/"
+  },
+  {
+   "kind": "customsearch#result",
+   "title": "Charmast 20000mAh review after 6 months : r/electronics",
+   "htmlTitle": "Charmast 20000mAh review after 6 months : r/electronics",
+   "link": "https://www.reddit.com/r/electronics/comments/1e6f7g8/charmast_20000mah_review/",
+   "displayLink": "www.reddit.com",
+   "snippet": "Cheap, slim, and the four ports are genuinely useful. Charging it back up is slow, about 6 hours, which is the main complaint.",
+   "htmlSnippet": "Cheap, slim, and the four ports are genuinely useful. Charging it back up is slow, about 6 hours, which is the main complaint.",
+   "formattedUrl": "https://www.reddit.com/r/electronics/comments/1e6f7g8/charmast_20000mah_review/"
+  },
+  {
+   "kind": "customsearch#result",
+   "title": "Is 140W overkill for a portable charger? : r/gadgets",
+   "htmlTitle": "Is 140W overkill for a portable charger? : r/gadgets",
+   "link": "https://www.reddit.com/r/gadgets/comments/1f7g8h9/is_140w_overkill/",
+   "displayLink": "www.reddit.com",
+   "snippet": "If you carry a 16 inch laptop it is not overkill at all. For phones only you are paying for wattage you will never use.",
+   "htmlSnippet": "If you carry a 16 inch laptop it is not overkill at all. For phones only you are paying for wattage you will never use.",
+   "formattedUrl": "https://www.reddit.com/r/gadgets/comments/1f7g8h9/is_140w_overkill/"
+  },
+  {
+   "kind": "customsearch#result",
+   "title": "Airline rules on power banks are getting stricter : r/electronics",
+   "htmlTitle": "Airline rules on power banks are getting stricter : r/electronics",
+   "link": "https://www.reddit.com/r/electronics/comments/1g8h9i0/airline_rules_on_power_banks/",
+   "displayLink": "www.reddit.com",
+   "snippet": "Anything over 100Wh needs airline approval, which is roughly 27000mAh. A 20000mAh pack is 74Wh and is fine in carry-on.",
+   "htmlSnippet": "Anything over 100Wh needs airline approval, which is roughly 27000mAh. A 20000mAh pack is 74Wh and is fine in carry-on.",
+   "formattedUrl": "https://www.reddit.com/r/electronics/comments/1g8h9i0/airline_rules_on_power_banks/"
+  },
+  {
+   "kind": "customsearch#result",
+   "title": "My Anker 737 died after 14 months : r/UsbCHardware",
+   "htmlTitle": "My Anker 737 died after 14 months : r/UsbCHardware",
+   "link": "https://www.reddit.com/r/UsbCHardware/comments/1h9i0j1/my_anker_737_died/",
+   "displayLink": "www.reddit.com",
+   "snippet": "Support replaced it without much argument, but the display just stopped waking up. Second one has been fine for 8 months.",
+   "htmlSnippet": "Support replaced it without much argument, but the display just stopped waking up. Second one has been fine for 8 months.",
+   "formattedUrl": "https://www.reddit.com/r/UsbCHardware/comments/1h9i0j1/my_anker_737_died/"
+  },
+  {
+   "kind": "customsearch#result",
+   "title": "Best budget power bank under $30 : r/batteries",
+   "htmlTitle": "Best budget power bank under $30 : r/batteries",
+   "link": "https://www.reddit.com/r/batteries/comments/1i0j1k2/best_budget_power_bank_under_30/",
+   "displayLink": "www.reddit.com",
+   "snippet": "The usual answer is INIU or Charmast. Avoid the unbranded ones on marketplace listings, the capacity claims are fiction.",
+   "htmlSnippet": "The usual answer is INIU or Charmast. Avoid the unbranded ones on marketplace listings, the capacity claims are fiction.",
+   "formattedUrl": "https://www.reddit.com/r/batteries/comments/1i0j1k2/best_budget_power_bank_under_30/"
+  },
+  {
+   "kind": "customsearch#result",
+   "title": "Magnetic wireless power banks - any good? : r/gadgets",
+   "htmlTitle": "Magnetic wireless power banks - any good? : r/gadgets",
+   "link": "https://www.reddit.com/r/gadgets/comments/1j1k2l3/magnetic_wireless_power_banks/",
+   "displayLink": "www.reddit.com",
+   "snippet": "Convenient but slow and they run hot. You lose roughly a third of the capacity to heat compared to plugging in a cable.",
+   "htmlSnippet": "Convenient but slow and they run hot. You lose roughly a third of the capacity to heat compared to plugging in a cable.",
+   "formattedUrl": "https://www.reddit.com/r/gadgets/comments/1j1k2l3/magnetic_wireless_power_banks/"
+  }
+ ]
+}

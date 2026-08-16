@@ -1,0 +1,182 @@
+{
+ "kind": "youtube#searchListResponse",
+ "etag": "EbGoQE8B4sGfW50f-hv52S7Jjxg",
+ "nextPageToken": "CAUQAA",
+ "regionCode": "US",
+ "pageInfo": {
+  "totalResults": 1000000,
+  "resultsPerPage": 5
+ },
+ "items": [
+  {
+   "kind": "youtube#searchResult",
+   "etag": "AcczPppsuQHrgV8yjZ8kwKSBVG8",
+   "id": {
+    "kind": "youtube#video",
+    "videoId": "zzjq7_ddb0U"
+   },
+   "snippet": {
+    "publishedAt": "2026-07-16T10:30:23Z",
+    "channelId": "UCMV4yw-l2EhrS0UdXNfnDVg",
+    "title": "MKBHD&#39;s New Power Bank Is Brilliant But...",
+    "description": "Get yours here: https://eu.ridge.com/products/magnetic-power-bank-matte-olive ...",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/zzjq7_ddb0U/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/zzjq7_ddb0U/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/zzjq7_ddb0U/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Metin Senler",
+    "liveBroadcastContent": "none",
+    "publishTime": "2026-07-16T10:30:23Z"
+   }
+  },
+  {
+   "kind": "youtube#searchResult",
+   "etag": "Y0gqmgm9O_vDQTNUQ8FhNMd4R4s",
+   "id": {
+    "kind": "youtube#video",
+    "videoId": "HgpSMry1n9Y"
+   },
+   "snippet": {
+    "publishedAt": "2025-07-27T15:30:11Z",
+    "channelId": "UC1hiI8TEoA0db5HhU4gbsUg",
+    "title": "I Tested 12+ Of The Newest Battery Banks - Here Are My Top 5!",
+    "description": "I spent another $1000 buying all the battery banks that came out in the last 12 months. I put each product through the ringer and ...",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/HgpSMry1n9Y/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/HgpSMry1n9Y/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/HgpSMry1n9Y/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "MobileReviewsEh",
+    "liveBroadcastContent": "none",
+    "publishTime": "2025-07-27T15:30:11Z"
+   }
+  },
+  {
+   "kind": "youtube#searchResult",
+   "etag": "KJrgRYTOSGS8tr51exUIujHGz1w",
+   "id": {
+    "kind": "youtube#video",
+    "videoId": "G1sjqaRll2s"
+   },
+   "snippet": {
+    "publishedAt": "2024-01-28T17:50:03Z",
+    "channelId": "UC2rzsm1Qi6N1X-wuOg_p0Ng",
+    "title": "Best Power Bank (Portable Charger) Under $30? Let\u2019s find out!",
+    "description": "Power Banks: Anker, INIU, S22 Mini, Miady, LOVELEDI, IXNINE, KEOLL, CFIAI, iWalk, FEOB, Baseus, Durecopow, Erkrist, ...",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/G1sjqaRll2s/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/G1sjqaRll2s/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/G1sjqaRll2s/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "Project Farm",
+    "liveBroadcastContent": "none",
+    "publishTime": "2024-01-28T17:50:03Z"
+   }
+  },
+  {
+   "kind": "youtube#searchResult",
+   "etag": "-gTbJEPFNl21ZZ4VRqisrq_v-do",
+   "id": {
+    "kind": "youtube#video",
+    "videoId": "0X0B28e_vKo"
+   },
+   "snippet": {
+    "publishedAt": "2024-05-26T15:00:07Z",
+    "channelId": "UC1hiI8TEoA0db5HhU4gbsUg",
+    "title": "I Tested $1500 Worth Of Battery Banks - Here&#39;s My Top 5",
+    "description": "The best portable battery bank for your iPhone, iPad or MacBook isn't going to be the most popular Amazon product. I've tested ...",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/0X0B28e_vKo/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/0X0B28e_vKo/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/0X0B28e_vKo/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "MobileReviewsEh",
+    "liveBroadcastContent": "none",
+    "publishTime": "2024-05-26T15:00:07Z"
+   }
+  },
+  {
+   "kind": "youtube#searchResult",
+   "etag": "SAErMqaB7zxX-bakgkbpGRGOVpg",
+   "id": {
+    "kind": "youtube#video",
+    "videoId": "xYxm2gxTy1o"
+   },
+   "snippet": {
+    "publishedAt": "2026-01-29T16:00:00Z",
+    "channelId": "UC2TkneXjcZBLn5Jswp-qoeg",
+    "title": "The Best Portable Chargers and Power Banks for 2026",
+    "description": "Checkout list \u25bb Anker Laptop Power Bank - https://geni.us/l1nC4 \u25bb Anker Power Bank(PowerCore 10K) - https://geni.us/k4BIgla ...",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/xYxm2gxTy1o/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/xYxm2gxTy1o/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/xYxm2gxTy1o/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     }
+    },
+    "channelTitle": "TechNest Pro",
+    "liveBroadcastContent": "none",
+    "publishTime": "2026-01-29T16:00:00Z"
+   }
+  }
+ ]
+}

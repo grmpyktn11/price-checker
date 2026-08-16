@@ -101,9 +101,24 @@ def parse_reviews(payload: dict) -> dict:
     return {
         "rating": rating.get("average"),
         "review_count": rating.get("count", statistics.get("review_count")),
-        # Target publishes no verified-purchase ratio
+        # Target publishes no verified-purchase ratio and no star breakdown
         "verified_ratio": None,
+        "rating_distribution": None,
     }
+
+
+# the pdp description text, for the LLM spec fallback. no html to strip beyond the tags the
+# bullets carry, so this is the same source parse_specs reads, unparsed
+def parse_page_text(payload: dict) -> str:
+    product = (payload.get("data") or {}).get("product", {}) or {}
+    description = ((product.get("item") or {}).get("product_description") or {})
+    parts = [
+        description.get("title") or "",
+        description.get("downstream_description") or "",
+        *(description.get("bullet_descriptions") or []),
+        *((description.get("soft_bullets") or {}).get("bullets") or []),
+    ]
+    return " ".join(clean_text(part) for part in parts if part).strip()
 
 
 def parse_stores(payload: dict) -> list[dict]:
@@ -157,6 +172,12 @@ class TargetScraper(ScraperBase):
             return parse_reviews(load_fixture("target_pdp.json"))
         payload = await self.get_pdp(product_url)
         return parse_reviews(payload)
+
+    # one more ~200ms json call: redsky has no page html to reuse
+    async def get_page_text(self, product_url: str) -> str:
+        if not LIVE_SCRAPE:
+            return parse_page_text(load_fixture("target_pdp.json"))
+        return parse_page_text(await self.get_pdp(product_url))
 
     # both detail calls read the same endpoint; it is a ~200ms json call with no bot
     # challenge, so there is nothing to cache

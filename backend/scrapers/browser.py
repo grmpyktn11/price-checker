@@ -4,6 +4,7 @@ import os
 import random
 import time
 
+from bs4 import BeautifulSoup
 from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from playwright.async_api import async_playwright
@@ -67,6 +68,11 @@ async def fetch_product_html(url: str) -> str:
     html = await fetch_html(url)
     _LAST_PRODUCT_PAGE.update({"url": url, "html": html, "fetched_at": time.monotonic()})
     return html
+
+
+# visible text of a page, for the LLM spec fallback when the spec selectors found nothing
+def page_text(html: str) -> str:
+    return BeautifulSoup(html, "lxml").get_text(" ", strip=True)
 
 
 # a challenge page is either tiny or carries one of the retailer's block strings

@@ -54,6 +54,11 @@ def show(rank: int, result):
     print(f"   price_score:        {result.price_score:.3f}")
     print(f"   distance_score:     {result.distance_score:.3f}")
     print(f"   nice_to_have_score: {result.nice_to_have_score:.3f}")
+    # both attribution passes, visible without opening the DB
+    sources = [review["source"] for review in result.reviews]
+    print(f"   review sources:     {sources}")
+    print(f"   inherited review:   {any(s.endswith('_inherited') for s in sources)}")
+    print(f"   specs inherited:    {result.specs_inherited_from}")
 
 
 async def main():
