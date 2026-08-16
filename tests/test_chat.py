@@ -19,7 +19,8 @@ def db():
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
     Base.metadata.create_all(engine)
-    session = sessionmaker(bind=engine)()
+    # autoflush off, same as the app's SessionLocal, so a missing flush fails here too
+    session = sessionmaker(bind=engine, autoflush=False)()
     yield session
     session.close()
 

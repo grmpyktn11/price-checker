@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -16,10 +17,6 @@ type ChatEntry =
   | { kind: "results"; narration: string; products: Product[] }
   | { kind: "system"; text: string; url?: string }
   | { kind: "error"; text: string };
-
-// Phase 8's Settings.tsx replaces this banner with a real location input
-const LOCATION_CURL =
-  'curl.exe -X PATCH http://localhost:8000/api/profile/location -H "Content-Type: application/json" -d "{\\"lat\\":37.7749,\\"lon\\":-122.4194,\\"display_address\\":\\"San Francisco, CA\\"}"';
 
 export default function Chat() {
   const [entries, setEntries] = useState<ChatEntry[]>([]);
@@ -100,10 +97,11 @@ export default function Chat() {
     <Stack spacing={2}>
       {locationMissing && (
         <Alert severity="warning">
-          <Typography>No location set. Chat searches will fail until you set one. From a terminal:</Typography>
-          <Typography component="pre" sx={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
-            {LOCATION_CURL}
-          </Typography>
+          No location set. Chat searches will fail until you set one on{" "}
+          <Link component={RouterLink} to="/settings">
+            Settings
+          </Link>
+          .
         </Alert>
       )}
 

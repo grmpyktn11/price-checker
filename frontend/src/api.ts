@@ -16,6 +16,7 @@ export interface Product {
   price_score: number;
   distance_score: number;
   nice_to_have_score: number;
+  specs_inherited_from: string | null; // retailer these specs were attributed from, if any
 }
 
 // the backend serializes with exclude_unset, so followups carry no narration/products keys
@@ -59,6 +60,78 @@ export interface Profile {
 
 export type Decision = "buy_now" | "watch";
 
+// mirrors ItemOut in backend/routers/items.py
+export interface Item {
+  id: number;
+  name: string | null;
+  category: string | null;
+  criteria_json: string | null;
+  budget_max: number | null;
+  target_price: number | null;
+  fulfillment_preference: string | null;
+  radius_miles: number | null;
+  min_review_count: number | null;
+  status: string | null; // watching | archived
+}
+
+// manual add, skips chat. only name is required; the rest default server-side
+export interface NewItem {
+  name: string;
+  category?: string;
+  budget_max?: number;
+  target_price?: number;
+}
+
+// mirrors ListingOut
+export interface Listing {
+  id: number;
+  item_id: number;
+  retailer: string | null;
+  store_id: string | null; // null = online
+  store_name: string | null;
+  distance_miles: number | null;
+  url: string | null;
+  price: number | null;
+  in_stock: boolean | null;
+  shipping_days_est: number | null;
+  scraped_at: string | null;
+}
+
+// mirrors PricePointOut
+export interface PricePoint {
+  id: number;
+  listing_id: number;
+  price: number | null;
+  recorded_at: string | null;
+}
+
+// mirrors ReviewOut. sources ending in _inherited were attributed from another retailer
+export interface Review {
+  id: number;
+  source: string | null;
+  rating: number | null;
+  review_count: number | null;
+  verified_ratio: number | null;
+  rating_distribution_json: string | null;
+  authenticity_flag: string | null;
+  url: string | null;
+  summary_text: string | null;
+  fetched_at: string | null;
+}
+
+// mirrors AlertOut, which joins the item name and the listing's retailer/url/price
+export interface Alert {
+  id: number;
+  item_id: number | null;
+  item_name: string | null;
+  listing_id: number | null;
+  retailer: string | null;
+  url: string | null;
+  price: number | null;
+  reason: string | null; // price_drop | target_hit | new_alternative
+  sent_at: string | null;
+}
+
 // product urls come from retailer APIs/scrapes, so only http(s) is safe in an href
 export function safeUrl(url: string | null): string | null {
   return url !== null && /^https?:\/\//i.test(url) ? url : null;
@@ -85,11 +158,11 @@ function errorMessage(body: unknown, status: number): string {
 }
 
 // no timeout: a real search runs the pipeline plus two Claude calls and can take 30+ seconds
-async function request<T>(path: string, body?: unknown): Promise<T> {
+async function request<T>(path: string, method = "GET", body?: unknown): Promise<T> {
   let response: Response;
   try {
     response = await fetch(path, {
-      method: body === undefined ? "GET" : "POST",
+      method,
       headers: body === undefined ? undefined : { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
@@ -107,7 +180,7 @@ async function request<T>(path: string, body?: unknown): Promise<T> {
 }
 
 export function sendMessage(conversationId: string, message: string): Promise<MessageResponse> {
-  return request<MessageResponse>("/api/chat/message", {
+  return request<MessageResponse>("/api/chat/message", "POST", {
     conversation_id: conversationId,
     message,
   });
@@ -118,7 +191,7 @@ export function sendDecision(
   productId: number,
   decision: Decision
 ): Promise<DecisionResponse> {
-  return request<DecisionResponse>("/api/chat/decision", {
+  return request<DecisionResponse>("/api/chat/decision", "POST", {
     conversation_id: conversationId,
     product_id: productId,
     decision,
@@ -127,4 +200,53 @@ export function sendDecision(
 
 export function getProfile(): Promise<Profile> {
   return request<Profile>("/api/profile");
+}
+
+export function updateLocation(
+  lat: number,
+  lon: number,
+  displayAddress: string
+): Promise<Profile> {
+  return request<Profile>("/api/profile/location", "PATCH", {
+    lat,
+    lon,
+    display_address: displayAddress,
+  });
+}
+
+export function getItems(): Promise<Item[]> {
+  return request<Item[]>("/api/items");
+}
+
+export function getItem(itemId: number): Promise<Item> {
+  return request<Item>(`/api/items/${itemId}`);
+}
+
+export function createItem(item: NewItem): Promise<Item> {
+  return request<Item>("/api/items", "POST", item);
+}
+
+export function deleteItem(itemId: number): Promise<unknown> {
+  return request<unknown>(`/api/items/${itemId}`, "DELETE");
+}
+
+// runs a real scrape for one item, so it can take a while
+export function rescanItem(itemId: number): Promise<unknown> {
+  return request<unknown>(`/api/items/${itemId}/rescan`, "POST", {});
+}
+
+export function getListings(itemId: number): Promise<Listing[]> {
+  return request<Listing[]>(`/api/items/${itemId}/listings`);
+}
+
+export function getPriceHistory(itemId: number): Promise<PricePoint[]> {
+  return request<PricePoint[]>(`/api/items/${itemId}/price-history`);
+}
+
+export function getReviews(itemId: number): Promise<Review[]> {
+  return request<Review[]>(`/api/items/${itemId}/reviews`);
+}
+
+export function getAlerts(): Promise<Alert[]> {
+  return request<Alert[]>("/api/alerts");
 }

@@ -16,7 +16,8 @@ NOW = datetime.now(timezone.utc).replace(tzinfo=None)
 def db():
     engine = create_engine("sqlite://")
     Base.metadata.create_all(engine)
-    session = sessionmaker(bind=engine)()
+    # autoflush off, same as the app's SessionLocal, so a missing flush fails here too
+    session = sessionmaker(bind=engine, autoflush=False)()
     yield session
     session.close()
 

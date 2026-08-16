@@ -3,6 +3,7 @@ import pytest
 from backend.scrapers import amazon, bestbuy, target
 from backend.services import (
     criteria,
+    email,
     google_cse,
     narration,
     nice_to_have,
@@ -29,6 +30,9 @@ def canned_mode(monkeypatch):
     monkeypatch.setattr(reviews_youtube, "YOUTUBE_API_KEY", "")
     # belt and braces: even if a guard is ever missed, the shared CSE call refuses to run
     monkeypatch.setattr(google_cse, "GOOGLE_CSE_API_KEY", "")
+    # no test may send an email: the render path still runs, the send returns False
+    monkeypatch.setattr(email, "RESEND_API_KEY", "")
+    monkeypatch.setattr(email, "USER_EMAIL", "")
     monkeypatch.setattr(bestbuy, "LIVE_SCRAPE", "")
     monkeypatch.setattr(target, "LIVE_SCRAPE", "")
     monkeypatch.setattr(amazon, "LIVE_SCRAPE", "")

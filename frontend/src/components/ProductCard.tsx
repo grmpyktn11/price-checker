@@ -49,6 +49,10 @@ export default function ProductCard({ product, onDecision, busy, disabled }: Pro
         {product.distance_miles !== null && (
           <Typography>{product.distance_miles.toFixed(1)} mi</Typography>
         )}
+        {/* specs can be attributed from another retailer's listing by title match */}
+        {product.specs_inherited_from !== null && (
+          <Typography>specs from {product.specs_inherited_from}</Typography>
+        )}
         {/* sub-scores are shown because this is a harness for validating the ranking */}
         <Typography>
           score {product.final_score.toFixed(2)} | spec {product.spec_match.toFixed(2)} review{" "}

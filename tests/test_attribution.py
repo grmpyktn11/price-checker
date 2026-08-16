@@ -111,7 +111,8 @@ def test_inherited_rows_are_distinguishable_in_the_db():
     engine = create_engine("sqlite://", connect_args={"check_same_thread": False},
                            poolclass=StaticPool)
     Base.metadata.create_all(engine)
-    db = sessionmaker(bind=engine)()
+    # autoflush off, same as the app's SessionLocal, so a missing flush fails here too
+    db = sessionmaker(bind=engine, autoflush=False)()
     taker = make_candidate("bestbuy", BESTBUY_TITLE, {"Model Number": "C2046S"})
     attribute_reviews([taker, amazon_donor()])
     reviews_store.save_reviews(db, 1, taker.reviews)
