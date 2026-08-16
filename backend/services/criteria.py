@@ -9,6 +9,7 @@ MODEL = "claude-sonnet-4-5"
 MAX_TOKENS = 1000
 DEFAULT_RADIUS_MILES = 25
 DEFAULT_MIN_REVIEW_COUNT = 0   # only filter on reviews when the user actually asked for it
+LIST_FIELDS = ("keywords", "must_haves", "preferred_specs", "nice_to_haves")
 
 CANNED_QUESTION = "What is your budget, and do you need it shipped or available for pickup?"
 MALFORMED_QUESTION = "Sorry, I did not catch that. Can you rephrase what you are looking for?"
@@ -66,10 +67,18 @@ Rules:
 logger = logging.getLogger(__name__)
 
 
-# only fill what run_pipeline indexes directly; everything else passes through untouched
+# only fill what run_pipeline indexes directly; everything else passes through untouched.
+# the model emits explicit nulls, not missing keys, for fields it has no value for, so both
+# have to be replaced: run_pipeline compares min_review_count and iterates LIST_FIELDS,
+# and neither works on None
 def normalize(raw: dict) -> dict:
-    raw.setdefault("radius_miles", DEFAULT_RADIUS_MILES)
-    raw.setdefault("min_review_count", DEFAULT_MIN_REVIEW_COUNT)
+    if raw.get("radius_miles") is None:
+        raw["radius_miles"] = DEFAULT_RADIUS_MILES
+    if raw.get("min_review_count") is None:
+        raw["min_review_count"] = DEFAULT_MIN_REVIEW_COUNT
+    for field in LIST_FIELDS:
+        if raw.get(field) is None:
+            raw[field] = []
     return raw
 
 

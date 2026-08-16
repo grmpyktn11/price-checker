@@ -1,18 +1,18 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from statistics import mean
 
 from sqlalchemy.orm import Session
 
-from backend.models import Item, Listing, PriceHistory
+from backend.models import Item, Listing, PriceHistory, utcnow
 
 ROLLING_WINDOW_DAYS = 30
 HISTORY_WINDOW_DAYS = 90
 PRICE_DROP_RATIO = 0.9   # 10 percent under the rolling average counts as a drop
 
 
-# SQLite returns naive datetimes on read, so cutoffs must be naive too or comparison raises
+# same clock the timestamp columns are written with, so comparisons line up
 def utc_cutoff(days: int) -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
+    return utcnow() - timedelta(days=days)
 
 
 def get_price_history(db: Session, listing_id: int, days: int = HISTORY_WINDOW_DAYS) -> list[PriceHistory]:

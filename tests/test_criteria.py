@@ -45,6 +45,40 @@ def test_normalize_fills_defaults():
     assert filled["min_review_count"] == 0
 
 
+# the model returns explicit nulls, not missing keys, for fields it has no value for
+def test_normalize_replaces_nulls():
+    filled = normalize({"name": "x", "radius_miles": None, "min_review_count": None})
+    assert filled["radius_miles"] == 25
+    assert filled["min_review_count"] == 0
+
+
+# regression: a null min_review_count reached "review_count < min_review_count" and the
+# TypeError was swallowed by the per-retailer except, so the run returned nothing
+def test_null_min_review_count_still_ranks():
+    item_criteria = normalize({"name": "portable charger", "min_review_count": None})
+    ranked = asyncio.run(
+        run_pipeline(item_criteria, LAT, LON, item_criteria["radius_miles"])
+    )
+    assert ranked
+
+
+# same class: a null keywords crashed build_query and a null must_haves crashed the filter
+def test_normalize_replaces_null_lists():
+    filled = normalize({"name": "x", "keywords": None, "must_haves": None})
+    assert filled["keywords"] == []
+    assert filled["must_haves"] == []
+
+
+def test_null_lists_still_rank():
+    item_criteria = normalize(
+        {"name": "portable charger", "keywords": None, "must_haves": None}
+    )
+    ranked = asyncio.run(
+        run_pipeline(item_criteria, LAT, LON, item_criteria["radius_miles"])
+    )
+    assert ranked
+
+
 def test_parse_json_reply_fenced():
     assert parse_json_reply('```json\n{"type": "followup"}\n```') == {"type": "followup"}
 

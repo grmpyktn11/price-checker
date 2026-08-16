@@ -14,9 +14,10 @@ from sqlalchemy import (
 from backend.db import Base
 
 
-# stored as UTC; SQLite has no native timezone handling
+# UTC, but naive: SQLite stores no offset and always reads back naive, so writing an
+# aware value would make stored and read timestamps different types
 def utcnow():
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class Profile(Base):
