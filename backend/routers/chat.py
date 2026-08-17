@@ -94,6 +94,7 @@ class ProductOut(BaseModel):
     distance_score: float
     nice_to_have_score: float
     specs_inherited_from: str | None   # retailer these specs were attributed from, if any
+    video_url: str | None             # a review video, only for products research reached
 
 
 class MessageOut(BaseModel):
@@ -120,6 +121,15 @@ class DecisionOut(BaseModel):
     message: str
 
 
+# the youtube row is attached only to products the research stage reached, so most
+# products have no video and the client hides the control
+def video_url(ranked: RankedProduct) -> str | None:
+    for row in ranked.reviews:
+        if row.get("source") == "youtube" and row.get("url"):
+            return row["url"]
+    return None
+
+
 # specs and the full reviews list are not serialized: nothing displays them and they are large
 def to_product_out(product_id: int, ranked: RankedProduct) -> ProductOut:
     review = primary_review(ranked)
@@ -142,6 +152,7 @@ def to_product_out(product_id: int, ranked: RankedProduct) -> ProductOut:
         distance_score=ranked.distance_score,
         nice_to_have_score=ranked.nice_to_have_score,
         specs_inherited_from=ranked.specs_inherited_from,
+        video_url=video_url(ranked),
     )
 
 

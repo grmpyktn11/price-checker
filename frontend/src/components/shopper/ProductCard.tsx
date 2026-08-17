@@ -23,6 +23,9 @@ export function ProductCard({
   disabled: boolean;
 }) {
   const href = safeUrl(product.url);
+  const buyLink = href;
+  // scraped/model-supplied url, so it goes through the same guard as the listing
+  const videoLink = safeUrl(product.video_url ?? null);
   // the API has no per-product "was" price, so there is no strikethrough here: price history
   // only exists for watched listings and lives on the item detail page
   return (
@@ -94,20 +97,39 @@ export function ProductCard({
         </p>
       ) : null}
 
-      <div className="mt-4 flex gap-2">
-        <button
-          disabled={disabled}
-          onClick={() => onDecision(product.product_id, "buy_now")}
-          className="sticker flex-1 rounded-full bg-primary px-3 py-2 text-sm font-extrabold text-primary-foreground transition-transform hover:-translate-y-0.5 disabled:opacity-50"
-        >
-          {pending === "buy_now" ? "..." : "Buy now"}
-        </button>
+      {/* Buy is a plain link out; only Track writes anything. Video appears only for the
+          products the research stage actually reached, so most cards show two buttons */}
+      <div className="mt-4 flex flex-wrap gap-2">
+        {buyLink ? (
+          <a
+            href={buyLink}
+            target="_blank"
+            rel="noreferrer"
+            className="sticker flex-1 rounded-full bg-primary px-3 py-2 text-center text-sm font-extrabold text-primary-foreground transition-transform hover:-translate-y-0.5"
+          >
+            Buy now
+          </a>
+        ) : (
+          <span className="flex-1 rounded-full px-3 py-2 text-center text-sm font-bold text-muted-foreground">
+            no link
+          </span>
+        )}
+        {videoLink ? (
+          <a
+            href={videoLink}
+            target="_blank"
+            rel="noreferrer"
+            className="sticker flex-1 rounded-full bg-sky px-3 py-2 text-center text-sm font-extrabold transition-transform hover:-translate-y-0.5"
+          >
+            Video
+          </a>
+        ) : null}
         <button
           disabled={disabled}
           onClick={() => onDecision(product.product_id, "watch")}
           className="sticker flex-1 rounded-full bg-card px-3 py-2 text-sm font-extrabold transition-transform hover:-translate-y-0.5 disabled:opacity-50"
         >
-          {pending === "watch" ? "..." : "Watch"}
+          {pending === "watch" ? "..." : "Track"}
         </button>
       </div>
     </article>

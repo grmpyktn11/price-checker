@@ -17,7 +17,8 @@ export interface Product {
   price_score: number;
   distance_score: number;
   nice_to_have_score: number;
-  specs_inherited_from: string | null; // retailer these specs were attributed from, if any
+  specs_inherited_from: string | null;
+  video_url: string | null; // review video, only for products the research stage reached // retailer these specs were attributed from, if any
 }
 
 // the backend serializes with exclude_unset, so followups carry no narration/products keys
