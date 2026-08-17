@@ -11,7 +11,7 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 MODEL = "claude-sonnet-4-5"
 MAX_TOKENS = 1000
 DEFAULT_RADIUS_MILES = 25
-DEFAULT_MIN_REVIEW_COUNT = 0   # only filter on reviews when the user actually asked for it
+DEFAULT_MIN_REVIEW_COUNT = 5   # enough to drop listings with no feedback at all, nothing more
 LIST_FIELDS = ("keywords", "must_haves", "preferred_specs", "nice_to_haves")
 VALID_OPS = (">=", "<=", "==", "contains", "exists")
 COMPARISON_OPS = (">=", "<=", "==")
@@ -69,7 +69,7 @@ Otherwise return the criteria:
   "target_price": 99.0,
   "fulfillment_preference": "either",
   "radius_miles": 25,
-  "min_review_count": 100
+  "min_review_count": 5
 }}
 
 Rules:
@@ -77,7 +77,14 @@ Rules:
 - field is the spec name as a retailer prints it on a product page, e.g. "Battery Capacity".
 - value for >=, <=, == is a number in the unit the retailer prints; no unit conversion happens later.
 - must_haves are hard filters, preferred_specs are soft preferences, nice_to_haves are subjective phrases.
-- budget_max and target_price may be null. Ask at most one question per reply."""
+- budget_max and target_price may be null. Ask at most one question per reply.
+- min_review_count is 5 unless the user actually asks for a review threshold. Do not invent one.
+- a must_have drops every product whose spec table does not carry that field, and most
+  retailers publish only a handful of specs. So use must_haves ONLY for measurable specs a
+  retailer really prints, like capacity, wattage, size or weight. Attributes that live in the
+  product title instead - switch type, colour, model line, edition, "yellow switches",
+  "mechanical" - belong in keywords, and in nice_to_haves if they are subjective. Putting one
+  of those in must_haves returns nothing at all."""
 
 logger = logging.getLogger(__name__)
 

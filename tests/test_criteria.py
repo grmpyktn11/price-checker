@@ -55,14 +55,14 @@ def test_criteria_runs_through_the_pipeline():
 def test_normalize_fills_defaults():
     filled = normalize({"name": "x"})
     assert filled["radius_miles"] == 25
-    assert filled["min_review_count"] == 0
+    assert filled["min_review_count"] == 5
 
 
 # the model returns explicit nulls, not missing keys, for fields it has no value for
 def test_normalize_replaces_nulls():
     filled = normalize({"name": "x", "radius_miles": None, "min_review_count": None})
     assert filled["radius_miles"] == 25
-    assert filled["min_review_count"] == 0
+    assert filled["min_review_count"] == 5
 
 
 # regression: a null min_review_count reached "review_count < min_review_count" and the

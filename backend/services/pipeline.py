@@ -126,7 +126,10 @@ def filter_on_specs(candidates: list[RankedProduct], must_haves: list[dict],
     survivors = []
     for candidate in candidates:
         name = candidate.product["name"]
-        if not candidate.specs:
+        # only a spec-based must_have needs a spec table. with no must_haves there is nothing
+        # to verify, so dropping a retailer whose product page we cannot read (best buy) would
+        # discard a real match for no reason
+        if not candidate.specs and must_haves:
             logger.info("skip %s: no specs", name)
             continue
         if not passes_must_haves(candidate.specs, must_haves):
