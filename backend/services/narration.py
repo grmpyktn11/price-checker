@@ -4,12 +4,21 @@ import os
 
 import anthropic
 
+from backend.services import trace
 from backend.services.ranking import RankedProduct
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 MODEL = "claude-sonnet-4-5"
 MAX_TOKENS = 500
 TOP_N = 5   # products narrated and returned to the client
+# how each search outcome reads in a sentence to the user
+OUTCOME_TEXT = {
+    trace.BLOCKED: "blocked us",
+    trace.SELECTORS_RETURNED_NOTHING: "returned a page we could not read",
+    trace.ERROR: "did not respond",
+    trace.OK_BUT_EMPTY: "had no matching products",
+    trace.OK: "answered",
+}
 
 SYSTEM_PROMPT = """You are summarizing shopping search results for the person who asked.
 Write 2-4 plain sentences: what the best option is and why, then anything worth flagging
@@ -76,7 +85,28 @@ def canned_narration(criteria: dict, ranked: list[RankedProduct]) -> str:
     return "\n".join([header, *lines])
 
 
-async def narrate(criteria: dict, ranked: list[RankedProduct]) -> str:
+# did any retailer actually answer the question, whatever the answer was
+def any_retailer_answered(outcomes: dict[str, str]) -> bool:
+    return any(outcome in trace.ANSWERED for outcome in outcomes.values())
+
+
+# no retailer answered, so there is nothing to narrate and nothing was learned about the
+# market. saying "nothing matched your criteria" here would be a lie
+def retailers_down_narration(criteria: dict, outcomes: dict[str, str]) -> str:
+    detail = ", ".join(f"{retailer} {OUTCOME_TEXT.get(outcome, outcome.lower())}"
+                       for retailer, outcome in outcomes.items())
+    return (f"The search for {criteria.get('name')} did not run: {detail}. "
+            "That is a retailer failure, not a finding about what exists - "
+            "nothing here says the product is unavailable. Try again in a few minutes.")
+
+
+# retailer_outcomes is {retailer: trace outcome} for this run, or None when there is no trace
+async def narrate(criteria: dict, ranked: list[RankedProduct],
+                  retailer_outcomes: dict[str, str] | None = None) -> str:
+    # a failed search and an empty shelf are different answers, and only one of them is
+    # "nothing matched"
+    if not ranked and retailer_outcomes and not any_retailer_answered(retailer_outcomes):
+        return retailers_down_narration(criteria, retailer_outcomes)
     try:
         client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
         response = await client.messages.create(

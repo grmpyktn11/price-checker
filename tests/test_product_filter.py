@@ -31,7 +31,8 @@ AMAZON_ROW = {"source": "amazon", "rating": 4.2, "review_count": 226, "verified_
               "rating_distribution": None}
 AMAZON_REVIEW_DATA = {"rating": 4.2, "review_count": 226, "verified_ratio": None,
                       "rating_distribution": None}
-NEUTRAL = {"qualifies": True, "spec_fit": NEUTRAL_FIT, "nice_fit": NEUTRAL_FIT, "group": None}
+NEUTRAL = {"qualifies": True, "spec_fit": NEUTRAL_FIT, "nice_fit": NEUTRAL_FIT, "group": None,
+           "reason": ""}
 
 
 def make_candidate(retailer, name, specs=None, reviews=None, group=None):
@@ -80,10 +81,12 @@ def test_judgment_payload_is_the_listing_as_the_shopper_sees_it():
 def test_a_full_reply_is_read_field_by_field():
     assert parse_reply(reply_for([
         {"index": 0, "qualifies": True, "spec_fit": 0.8, "nice_fit": 0.4, "group": "g1"},
-        {"index": 1, "qualifies": False, "spec_fit": 0.1, "nice_fit": 0.2, "group": "g2"},
+        {"index": 1, "qualifies": False, "spec_fit": 0.1, "nice_fit": 0.2, "group": "g2",
+         "reason": "10,000mAh, not the 20,000 asked for"},
     ]), 2) == [
-        {"qualifies": True, "spec_fit": 0.8, "nice_fit": 0.4, "group": "g1"},
-        {"qualifies": False, "spec_fit": 0.1, "nice_fit": 0.2, "group": "g2"},
+        {"qualifies": True, "spec_fit": 0.8, "nice_fit": 0.4, "group": "g1", "reason": ""},
+        {"qualifies": False, "spec_fit": 0.1, "nice_fit": 0.2, "group": "g2",
+         "reason": "10,000mAh, not the 20,000 asked for"},
     ]
 
 

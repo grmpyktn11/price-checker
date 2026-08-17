@@ -3,6 +3,7 @@ import pytest
 from backend.scrapers import amazon, bestbuy, target
 from backend.scrapers.base import load_fixture, load_fixture_text
 from backend.scrapers.browser import looks_blocked, page_text
+from backend.services import trace
 
 SEARCH_KEYS = {"name", "url", "price", "in_stock", "store_id", "distance_miles"}
 BIDI_MARKS = ("‎", "‏")
@@ -126,6 +127,32 @@ def test_looks_blocked():
     assert looks_blocked("x" * 5000 + "Sorry! Something went wrong!", amazon.BLOCK_MARKERS)
     assert not looks_blocked(BESTBUY_SEARCH, bestbuy.BLOCK_MARKERS)
     assert not looks_blocked(AMAZON_SEARCH, amazon.BLOCK_MARKERS)
+
+
+# the three failure kinds, on the saved captures and on literal pages. this is the tell the
+# "no products" reply used to hide: a challenge page and a real page that would not parse are
+# different problems with different fixes
+SEARCH_OUTCOME_CASES = {
+    "bestbuy capture": (bestbuy, BESTBUY_SEARCH, SEARCH_RESULTS["bestbuy"], trace.OK),
+    "amazon capture": (amazon, AMAZON_SEARCH, SEARCH_RESULTS["amazon"], trace.OK),
+    # PerimeterX/Akamai interstitials: short, or carrying the retailer's block wording
+    "bestbuy challenge page": (bestbuy, "too short to be a real page", [], trace.BLOCKED),
+    "amazon throttle page": (amazon, "x" * 5000 + "Sorry! Something went wrong!", [],
+                             trace.BLOCKED),
+    # a full page that parsed to nothing: the virtualized grid never hydrated, or the selectors
+    # broke. either way it is not an empty shelf
+    "bestbuy unhydrated grid": (bestbuy, "x" * 500000, [], trace.SELECTORS_RETURNED_NOTHING),
+    # the retailer's own no-results wording, which is a real answer
+    "bestbuy no results": (bestbuy, "x" * 5000 + "0 items", [], trace.OK_BUT_EMPTY),
+    "amazon no results": (amazon, "x" * 5000 + "No results for gaming mouse", [],
+                          trace.OK_BUT_EMPTY),
+}
+
+
+@pytest.mark.parametrize("case", SEARCH_OUTCOME_CASES)
+def test_search_outcomes(case):
+    module, html, rows, expected = SEARCH_OUTCOME_CASES[case]
+    assert module.search_outcome(html, rows) == expected
 
 
 def test_tcin_from_url():

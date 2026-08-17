@@ -10,6 +10,7 @@ export interface Product {
   distance_miles: number | null;
   rating: number | null;
   review_count: number | null;
+  rating_source: string | null; // "amazon" is first-party, "*_inherited" came from another listing
   final_score: number;
   spec_match: number;
   review_score: number;
@@ -30,9 +31,14 @@ export interface ResultsResponse {
   type: "results";
   narration: string;
   products: Product[];
+  debug?: DebugTrace; // per-stage trace, present only while the backend emits one
 }
 
 export type MessageResponse = FollowupResponse | ResultsResponse;
+
+// the debug trace is owned by another agent and still settling, so it is read structurally
+// rather than typed field by field: unknown values, narrowed at the point of display
+export type DebugTrace = Record<string, unknown>;
 
 // buy_now carries no item_id key
 export interface BuyNowResponse {
@@ -51,14 +57,34 @@ export interface WatchResponse {
 
 export type DecisionResponse = BuyNowResponse | WatchResponse;
 
+export type Decision = "buy_now" | "watch";
+
+// mirrors ConversationSummary. conversations are persisted now, so past ones can be reopened
+export interface ConversationSummary {
+  id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConversationTurn {
+  role: string; // user | assistant
+  content: string;
+}
+
+export interface ConversationDetail {
+  id: string;
+  history: ConversationTurn[];
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Profile {
   id: number;
   lat: number | null;
   lon: number | null;
   display_address: string | null;
 }
-
-export type Decision = "buy_now" | "watch";
 
 // mirrors ItemOut in backend/routers/items.py
 export interface Item {
@@ -132,6 +158,13 @@ export interface Alert {
   sent_at: string | null;
 }
 
+export interface RescanResult {
+  item_id: number;
+  listings_seen: number;
+  alerts: string[];
+  emails_sent: number;
+}
+
 // product urls come from retailer APIs/scrapes, so only http(s) is safe in an href
 export function safeUrl(url: string | null): string | null {
   return url !== null && /^https?:\/\//i.test(url) ? url : null;
@@ -198,6 +231,19 @@ export function sendDecision(
   });
 }
 
+export function getConversations(): Promise<ConversationSummary[]> {
+  return request<ConversationSummary[]>("/api/conversations");
+}
+
+export function getConversation(conversationId: string): Promise<ConversationDetail> {
+  return request<ConversationDetail>(`/api/conversations/${conversationId}`);
+}
+
+// the trace of the most recent search, for the debug panel. 404s until a search has run
+export function getLastDebug(): Promise<DebugTrace> {
+  return request<DebugTrace>("/api/debug/last");
+}
+
 export function getProfile(): Promise<Profile> {
   return request<Profile>("/api/profile");
 }
@@ -226,13 +272,13 @@ export function createItem(item: NewItem): Promise<Item> {
   return request<Item>("/api/items", "POST", item);
 }
 
-export function deleteItem(itemId: number): Promise<unknown> {
-  return request<unknown>(`/api/items/${itemId}`, "DELETE");
+export function deleteItem(itemId: number): Promise<{ deleted: number }> {
+  return request<{ deleted: number }>(`/api/items/${itemId}`, "DELETE");
 }
 
 // runs a real scrape for one item, so it can take a while
-export function rescanItem(itemId: number): Promise<unknown> {
-  return request<unknown>(`/api/items/${itemId}/rescan`, "POST", {});
+export function rescanItem(itemId: number): Promise<RescanResult> {
+  return request<RescanResult>(`/api/items/${itemId}/rescan`, "POST", {});
 }
 
 export function getListings(itemId: number): Promise<Listing[]> {

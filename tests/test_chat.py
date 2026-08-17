@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from backend.db import Base, get_db
 from backend.main import app
 from backend.models import Item, Listing, PriceHistory, Profile, Review
+from backend.services import trace
 
 
 @pytest.fixture
@@ -109,6 +110,23 @@ def test_specs_inherited_from_is_serialized(client, db):
     set_location(db)
     first = search(client)["products"][0]
     assert "specs_inherited_from" in first
+
+
+# the trace a debug panel renders. a run where every retailer failed is a valid trace and
+# must still come back fully formed, so nothing here asserts the search succeeded
+@pytest.mark.live
+def test_results_carry_the_debug_trace(client, db):
+    set_location(db)
+    body = search(client)
+    debug = body["debug"]
+    assert isinstance(body["retailers_answered"], bool)
+    assert {row["retailer"] for row in debug["retailers"]} == {"bestbuy", "target", "amazon"}
+    for row in debug["retailers"]:
+        assert row["outcome"] in trace.OUTCOME_DETAIL
+        assert row["detail"]
+    assert debug["stages_ms"]["collect_candidates"] > 0
+    # the same trace, without re-running a 60 second search
+    assert client.get("/api/debug/last").json()["trace_id"] == debug["trace_id"]
 
 
 # the reviews table gets its first rows here: the chosen product's row plus the shared

@@ -5,7 +5,14 @@ from urllib.parse import parse_qs, quote_plus, urljoin, urlparse
 from bs4 import BeautifulSoup
 
 from backend.scrapers.base import ScraperBase
-from backend.scrapers.browser import fetch_html, fetch_product_html, looks_blocked, page_text
+from backend.scrapers.browser import (
+    fetch_html,
+    fetch_product_html,
+    looks_blocked,
+    looks_empty,
+    page_text,
+)
+from backend.services import trace
 
 RETAILER = "bestbuy"
 BASE = "https://www.bestbuy.com"
@@ -13,7 +20,12 @@ SEARCH_URL = "https://www.bestbuy.com/site/searchpage.jsp?st={query}"
 # Best Buy API access was applied for and denied. Do not reintroduce BESTBUY_API_KEY.
 BLOCK_MARKERS = ("access denied", "reference #18", "_sec/cp_challenge",
                  "are you a robot", "pardon our interruption")
-SEARCH_WAIT_SELECTOR = "li.product-list-item"
+# what the zero-results page says. a page with none of these that still parsed to no rows is
+# a broken parser, not an empty shelf
+NO_RESULTS_MARKERS = ("no results found", "0 items", "did not match any")
+# wait for a tile that has hydrated, not just for the shell: the grid renders empty
+# li.product-list-item elements first, and parsing those returns nothing at all
+SEARCH_WAIT_SELECTOR = "li.product-list-item h3.product-title"
 
 logger = logging.getLogger(__name__)
 
@@ -113,21 +125,25 @@ def parse_reviews(html: str) -> dict:
     }
 
 
+# pure: which of the trace outcomes this search page ended in
+def search_outcome(html: str, rows: list[dict]) -> str:
+    return trace.search_outcome(looks_blocked(html, BLOCK_MARKERS),
+                                looks_empty(html, NO_RESULTS_MARKERS), len(rows))
+
+
 class BestBuyScraper(ScraperBase):
     # store_ids is unused: the search page is national inventory, and the Stores API needed
     # the denied key
     async def search(self, query: str, store_ids: list[str] | None = None) -> list[dict]:
-        html = await fetch_html(SEARCH_URL.format(query=quote_plus(query)), SEARCH_WAIT_SELECTOR)
-        if looks_blocked(html, BLOCK_MARKERS):
-            logger.warning("%s blocked on search", RETAILER)
-            return []
-        rows = parse_search(html)
-        if not rows:
-            # LLM call #5's search-page fallback is deferred to Phase 7 or later: an
-            # invented url would become part of the listings unique key and corrupt
-            # watchlist identity permanently
-            logger.warning("%s search selectors returned nothing (page %d chars) - selectors may "
-                           "have broken", RETAILER, len(html))
+        url = SEARCH_URL.format(query=quote_plus(query))
+        html = await fetch_html(url, SEARCH_WAIT_SELECTOR)
+        # LLM call #5's search-page fallback is deferred to Phase 7 or later: an invented url
+        # would become part of the listings unique key and corrupt watchlist identity
+        rows = [] if looks_blocked(html, BLOCK_MARKERS) else parse_search(html)
+        outcome = search_outcome(html, rows)
+        trace.record_search(RETAILER, url, outcome, len(rows), page_chars=len(html))
+        if outcome != trace.OK:
+            logger.warning("%s search: %s (page %d chars)", RETAILER, outcome, len(html))
         return rows
 
     async def get_specs(self, product_url: str) -> dict:

@@ -1,0 +1,115 @@
+import type { Product } from "@/api";
+import { safeUrl } from "@/api";
+import { isInherited, money, retailerLabel } from "@/lib/format";
+
+// the ranking weights, so the breakdown reads as "this is why it scored what it scored"
+const breakdown = [
+  { key: "spec_match", label: "specs" },
+  { key: "review_score", label: "reviews" },
+  { key: "price_score", label: "price" },
+  { key: "distance_score", label: "distance" },
+  { key: "nice_to_have_score", label: "extras" },
+] as const;
+
+export function ProductCard({
+  product,
+  onDecision,
+  pending,
+  disabled,
+}: {
+  product: Product;
+  onDecision: (productId: number, decision: "buy_now" | "watch") => void;
+  pending: "buy_now" | "watch" | null;
+  disabled: boolean;
+}) {
+  const href = safeUrl(product.url);
+  // the API has no per-product "was" price, so there is no strikethrough here: price history
+  // only exists for watched listings and lives on the item detail page
+  return (
+    <article className="sticker relative rounded-3xl bg-card p-4">
+      <span className="sticker absolute -right-2 -top-3 rotate-3 rounded-full bg-butter px-3 py-1 text-xs font-extrabold">
+        match {Math.round(product.final_score * 100)}%
+      </span>
+
+      <div className="flex items-start gap-3">
+        <div className="sticker grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-sky text-2xl">
+          🛍️
+        </div>
+        <div className="min-w-0">
+          <h3 className="font-display text-lg font-bold leading-tight break-words">
+            {product.name ?? "Unnamed listing"}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {retailerLabel(product.retailer)}
+            {" · "}
+            {product.in_stock === null ? "stock unknown" : product.in_stock ? "in stock" : "out of stock"}
+            {product.distance_miles !== null ? ` · ${product.distance_miles.toFixed(1)} mi` : ""}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-baseline gap-2">
+        <span className="font-display text-3xl font-extrabold">{money(product.price)}</span>
+        {href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-sm font-bold underline"
+          >
+            open listing
+          </a>
+        ) : (
+          <span className="text-sm font-semibold text-muted-foreground">no link</span>
+        )}
+      </div>
+
+      <ul className="mt-3 flex flex-wrap gap-1.5">
+        {breakdown.map((part) => (
+          <li
+            key={part.key}
+            className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold"
+          >
+            {part.label} {Math.round(product[part.key] * 100)}%
+          </li>
+        ))}
+      </ul>
+
+      <p className="mt-3 text-sm font-semibold">
+        {product.rating === null
+          ? "no rating found"
+          : `★ ${product.rating} · ${(product.review_count ?? 0).toLocaleString()} reviews`}
+      </p>
+
+      {/* a rating or spec set attributed from another retailer's listing is not this
+          retailer's own data, so it is labelled rather than shown bare */}
+      {isInherited(product.rating_source) ? (
+        <p className="mt-1 text-xs font-bold text-muted-foreground">
+          rating borrowed from {retailerLabel(product.rating_source)}
+        </p>
+      ) : null}
+      {product.specs_inherited_from ? (
+        <p className="text-xs font-bold text-muted-foreground">
+          specs borrowed from {retailerLabel(product.specs_inherited_from)}
+        </p>
+      ) : null}
+
+      <div className="mt-4 flex gap-2">
+        <button
+          disabled={disabled}
+          onClick={() => onDecision(product.product_id, "buy_now")}
+          className="sticker flex-1 rounded-full bg-primary px-3 py-2 text-sm font-extrabold text-primary-foreground transition-transform hover:-translate-y-0.5 disabled:opacity-50"
+        >
+          {pending === "buy_now" ? "..." : "Buy now"}
+        </button>
+        <button
+          disabled={disabled}
+          onClick={() => onDecision(product.product_id, "watch")}
+          className="sticker flex-1 rounded-full bg-card px-3 py-2 text-sm font-extrabold transition-transform hover:-translate-y-0.5 disabled:opacity-50"
+        >
+          {pending === "watch" ? "..." : "Watch"}
+        </button>
+      </div>
+    </article>
+  );
+}

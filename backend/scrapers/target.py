@@ -1,10 +1,12 @@
 import html as html_module
+import json
 import logging
 import re
 
 import httpx
 
 from backend.scrapers.base import ScraperBase
+from backend.services import trace
 
 # 2026-08-16: redsky 403'd this host earlier in the day on every endpoint, and answered 200
 # again later the same day on search, pdp and nearby_stores. the block was transient, so
@@ -28,6 +30,8 @@ HEADERS = {
     "sec-ch-ua-mobile": "?0",
     "sec-ch-ua-platform": '"Windows"',
 }
+# redsky serves the PerimeterX wall behind these, so they are a block rather than an outage
+BLOCK_STATUSES = (403, 429)
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +124,31 @@ def parse_page_text(payload: dict) -> str:
     return " ".join(clean_text(part) for part in parts if part).strip()
 
 
+# a 200 carrying the search block and no products is an empty shelf; a 200 without the block
+# at all means redsky changed the response shape and the parser is reading nothing
+def has_search_block(payload: dict) -> bool:
+    return isinstance((payload.get("data") or {}).get("search"), dict)
+
+
+# redsky answers json, so the equivalent of a page size is the size of that json
+def record_search_outcome(url: str, payload: dict, rows: int) -> None:
+    outcome = trace.search_outcome(False, has_search_block(payload), rows)
+    trace.record_search(RETAILER, url, outcome, rows, http_status=200,
+                        page_chars=len(json.dumps(payload)))
+
+
+# a raised request never reached the parser: a 403/429 is the PerimeterX wall, anything else
+# is an outage or a code failure
+def record_search_failure(url: str, error: httpx.HTTPError) -> None:
+    status = getattr(getattr(error, "response", None), "status_code", None)
+    outcome = trace.BLOCKED if status in BLOCK_STATUSES else trace.ERROR
+    # the error text carries the full request url and the key rides in its query string, so
+    # only the type and the status are reported
+    trace.record_search(RETAILER, url, outcome, 0, http_status=status,
+                        detail=f"redsky answered {type(error).__name__}"
+                               + (f" {status}" if status else ""))
+
+
 def parse_stores(payload: dict) -> list[dict]:
     stores = (payload.get("data") or {}).get("nearby_stores", {}).get("stores", []) or []
     return [
@@ -136,6 +165,9 @@ def parse_stores(payload: dict) -> list[dict]:
 class TargetScraper(ScraperBase):
     async def search(self, query: str, store_ids: list[str] | None = None) -> list[dict]:
         store_id = store_ids[0] if store_ids else DEFAULT_STORE_ID
+        # the traced url: the real request carries the key, which must not reach a log or a
+        # debug panel
+        url = f"{BASE_URL}/plp_search_v2?keyword={query}"
         try:
             payload = await get_json("plp_search_v2", {
                 "key": API_KEY,
@@ -153,9 +185,12 @@ class TargetScraper(ScraperBase):
                 "visitor_id": VISITOR_ID,
             })
         except httpx.HTTPError as error:
+            record_search_failure(url, error)
             logger.warning("target search failed: %s", error)
             return []
-        return parse_search(payload)
+        rows = parse_search(payload)
+        record_search_outcome(url, payload, len(rows))
+        return rows
 
     async def get_specs(self, product_url: str) -> dict:
         payload = await self.get_pdp(product_url)

@@ -1,4 +1,14 @@
-from backend.services.narration import canned_narration
+import asyncio
+
+import pytest
+
+from backend.services import trace
+from backend.services.narration import (
+    any_retailer_answered,
+    canned_narration,
+    narrate,
+    retailers_down_narration,
+)
 from backend.services.ranking import RankedProduct
 
 CRITERIA = {"name": "portable charger"}
@@ -37,3 +47,42 @@ def test_canned_narration_empty():
 def test_canned_narration_missing_price():
     line = canned_narration(CRITERIA, [build("Anker 737", None, 0.5)])
     assert "price unavailable" in line
+
+
+# --- a failed search is not an empty shelf ---
+
+# every retailer failed, so nothing was learned about the market. the old reply here was
+# "No products matched your criteria", which is a claim the run never earned
+def test_retailers_down_narration_names_what_failed():
+    text = retailers_down_narration(CRITERIA, {
+        "bestbuy": trace.SELECTORS_RETURNED_NOTHING,
+        "target": trace.BLOCKED,
+        "amazon": trace.BLOCKED,
+    })
+    assert text == (
+        "The search for portable charger did not run: bestbuy returned a page we could not "
+        "read, target blocked us, amazon blocked us. That is a retailer failure, not a finding "
+        "about what exists - nothing here says the product is unavailable. Try again in a few "
+        "minutes."
+    )
+
+
+@pytest.mark.parametrize(
+    "outcomes,expected",
+    [
+        ({"bestbuy": trace.BLOCKED, "target": trace.ERROR}, False),
+        # an empty result set is an answer: the shelf really is empty for this query
+        ({"bestbuy": trace.BLOCKED, "target": trace.OK_BUT_EMPTY}, True),
+        ({"bestbuy": trace.OK}, True),
+        ({}, False),
+    ],
+)
+def test_any_retailer_answered(outcomes, expected):
+    assert any_retailer_answered(outcomes) == expected
+
+
+# the short circuit: no model call, no "nothing matched"
+def test_narrate_reports_the_failure_instead_of_calling_the_model():
+    text = asyncio.run(narrate(CRITERIA, [], {"target": trace.BLOCKED, "amazon": trace.BLOCKED}))
+    assert text == retailers_down_narration(CRITERIA, {"target": trace.BLOCKED,
+                                                       "amazon": trace.BLOCKED})

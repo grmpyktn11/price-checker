@@ -12,7 +12,7 @@ from backend.db import get_db
 from backend.models import Conversation, Item, Listing, PriceHistory, utcnow
 from backend.routers.profile import get_or_create_profile
 from backend.services import criteria as criteria_service
-from backend.services import reviews_store
+from backend.services import reviews_store, trace
 from backend.services.narration import TOP_N, narrate, primary_review
 from backend.services.pipeline import run_pipeline
 from backend.services.ranking import RankedProduct
@@ -101,6 +101,10 @@ class MessageOut(BaseModel):
     question: str | None = None      # followup only
     narration: str | None = None     # results only
     products: list[ProductOut] | None = None   # results only
+    # results only. false means no retailer answered, so an empty products list is a search
+    # failure rather than a statement that nothing matched
+    retailers_answered: bool | None = None
+    debug: dict | None = None        # results only, the full pipeline trace
 
 
 class DecisionIn(BaseModel):
@@ -173,8 +177,11 @@ async def post_message(body: MessageIn, db: Session = Depends(get_db)) -> Messag
     ranked = await run_pipeline(
         item_criteria, profile.lat, profile.lon, item_criteria["radius_miles"]
     )
+    # the trace this run just recorded, on this task's context var
+    current_trace = trace.current()
+    debug = current_trace.data if current_trace else None
     top = ranked[:TOP_N]
-    narration = await narrate(item_criteria, top)
+    narration = await narrate(item_criteria, top, trace.retailer_outcomes(debug))
     history.append({"role": "assistant", "content": narration})
     save_conversation(db, conversation, history, item_criteria,
                       [decision_record(r) for r in top])
@@ -182,6 +189,9 @@ async def post_message(body: MessageIn, db: Session = Depends(get_db)) -> Messag
         type="results",
         narration=narration,
         products=[to_product_out(index, r) for index, r in enumerate(top)],
+        # no trace means nothing recorded the searches, not that they failed
+        retailers_answered=debug["retailers_answered"] if debug else True,
+        debug=debug,
     )
 
 

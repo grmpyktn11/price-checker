@@ -1,11 +1,11 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import Alert from "@mui/material/Alert";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import { ApiError, getProfile, updateLocation } from "../api";
-import type { Profile } from "../api";
+
+import type { Profile } from "@/api";
+import { ApiError, getProfile, updateLocation } from "@/api";
+import { AppShell } from "@/components/shopper/AppShell";
+
+export const Route = createFileRoute("/settings")({ component: SettingsPage });
 
 // the key has to reach the browser for the Places JS API, so it is a VITE_ var.
 // restricting it by HTTP referrer in the Google console is the user's job.
@@ -78,7 +78,18 @@ async function placesLibrary(): Promise<PlacesLibrary> {
   throw new Error("google.maps.importLibrary never appeared");
 }
 
-export default function Settings() {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </span>
+      <div className="mt-1.5">{children}</div>
+    </label>
+  );
+}
+
+function SettingsPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -113,7 +124,9 @@ export default function Settings() {
         element.addEventListener("gmp-select", handleSelect as EventListener);
         element.addEventListener("gmp-placeselect", handleSelect as EventListener);
       })
-      .catch(() => setError("Google Places failed to load. Check the key and its API restrictions."));
+      .catch(() =>
+        setError("Google Places failed to load. Check the key and its API restrictions.")
+      );
     return () => {
       cancelled = true;
     };
@@ -186,32 +199,53 @@ export default function Settings() {
     );
   }
 
+  const located = profile !== null && profile.lat !== null && profile.lon !== null;
+
   return (
-    <Stack spacing={2}>
-      <Typography variant="h6">Settings</Typography>
+    <AppShell title="Settings" subtitle="Just you, one location.">
+      <div className="grid gap-4 md:grid-cols-2">
+        <section className="sticker space-y-4 rounded-3xl bg-card p-4">
+          <h2 className="font-display text-xl font-extrabold">Location</h2>
+          <Field label="Search an address">
+            <div ref={containerRef} />
+          </Field>
+          {!PLACES_API_KEY ? (
+            <p className="rounded-2xl bg-butter p-3 text-sm font-semibold">
+              VITE_GOOGLE_PLACES_API_KEY is not set, so address autocomplete is off. The button
+              below still works and saves raw coordinates.
+            </p>
+          ) : null}
+          <button
+            disabled={saving}
+            onClick={useCurrentLocation}
+            className="sticker rounded-full bg-sky px-4 py-2 text-sm font-extrabold transition-transform hover:-translate-y-0.5 disabled:opacity-50"
+          >
+            Use current location
+          </button>
+        </section>
 
-      {error && <Alert severity="error">{error}</Alert>}
-      {status && <Alert severity="info">{status}</Alert>}
-      {!PLACES_API_KEY && (
-        <Alert severity="warning">
-          VITE_GOOGLE_PLACES_API_KEY is not set, so address autocomplete is off. The current
-          location button still works and saves raw coordinates.
-        </Alert>
-      )}
-
-      <Typography>
-        Current location:{" "}
-        {profile && profile.lat !== null && profile.lon !== null
-          ? `${profile.display_address ?? "unnamed"} (${profile.lat}, ${profile.lon})`
-          : "not set"}
-      </Typography>
-
-      <Typography variant="body2">Search an address</Typography>
-      <Box ref={containerRef} />
-
-      <Button variant="contained" disabled={saving} onClick={useCurrentLocation}>
-        Use current location
-      </Button>
-    </Stack>
+        <section className="sticker space-y-3 rounded-3xl bg-card p-4">
+          <h2 className="font-display text-xl font-extrabold">Saved</h2>
+          <p className="text-sm font-semibold">
+            {located
+              ? `${profile.display_address ?? "unnamed"} (${profile.lat}, ${profile.lon})`
+              : "No location set. Chat searches fail until one is saved."}
+          </p>
+          {/* radius is per watched item, not a profile setting, so there is no control for it here */}
+          <p className="text-sm text-muted-foreground">
+            Search radius is set per watched item, not here. The location is what Google Places
+            uses to find the nearest Target and Best Buy.
+          </p>
+          {error ? (
+            <p className="rounded-2xl bg-strawberry p-3 text-sm font-semibold text-accent-foreground">
+              {error}
+            </p>
+          ) : null}
+          {status ? (
+            <p className="rounded-2xl bg-secondary p-3 text-sm font-semibold">{status}</p>
+          ) : null}
+        </section>
+      </div>
+    </AppShell>
   );
 }

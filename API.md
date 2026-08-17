@@ -41,6 +41,8 @@ Results:
 {
   "type": "results",
   "narration": "The best option that meets your 20,000 mAh requirement is...",
+  "retailers_answered": true,
+  "debug": { "trace_id": "d14ce1be", "...": "see Debug trace below" },
   "products": [
     {
       "product_id": 0,
@@ -68,6 +70,17 @@ Results:
 
 Up to 5 products. `product_id` is an index into this conversation's last results — it is **not** a
 database id and is only valid for the next `/chat/decision` call on the same conversation.
+
+`retailers_answered` is the one you must not ignore. `products: []` means two completely different
+things:
+
+- `retailers_answered: true` — the retailers answered and nothing matched. "No products" is a real
+  answer about the market.
+- `retailers_answered: false` — **no retailer answered at all**: blocked, unparseable or failed.
+  Nothing was learned. Do not tell the user nothing matched; the backend's own `narration` says the
+  search did not run, and `debug.retailers` says which failed and how.
+
+`debug` is the full trace of the run (below). It can be tens of kilobytes.
 
 Fields worth understanding:
 
@@ -111,6 +124,124 @@ chosen product only. `item_id` is absent on `buy_now`.
 
 `404 "conversation not found or expired"` happens routinely — the backend restarted. Offer a reset
 that clears the transcript and generates a new `conversation_id`.
+
+---
+
+## Debug trace
+
+A live search fails for several unrelated reasons at once, and `products: []` hides all of them.
+Every run records a trace of what actually happened, returned inline on the results response under
+`debug` and readable again afterwards from this endpoint.
+
+### `GET /api/debug/last` → the most recent trace
+
+`404` with `detail: "no search has run since the backend started"` until a search has run. The last
+5 traces are held **in memory only** — no table, cleared on restart. Refreshing this does not re-run
+anything, so a panel can poll it freely.
+
+The shape, with every field explained:
+
+```json
+{
+  "trace_id": "d14ce1be",
+  "started_at": "2026-08-17T05:01:35+00:00",
+  "query": "gaming mouse wireless",
+  "criteria": { "name": "gaming mouse", "min_review_count": 5, "...": "the full criteria object" },
+
+  "retailers": [
+    {
+      "retailer": "bestbuy",
+      "search_url": "https://www.bestbuy.com/site/searchpage.jsp?st=gaming+mouse",
+      "outcome": "OK",
+      "http_status": null,
+      "page_chars": 1806433,
+      "raw_rows": 24,
+      "detail": "the search answered and product rows were parsed out of it",
+      "ms": 37875,
+      "candidates_kept": 3,
+      "error": null
+    }
+  ],
+
+  "review_lookup": { "searches": [], "tiles_kept": 3, "searches_left": 0 },
+  "stores": { "source": "google places text search",
+              "distance_miles": { "target": 1.07, "bestbuy": 0.57 },
+              "not_found": [], "ms": 937 },
+  "product_filter": { "products_in": 6, "candidates_in": 3, "review_tiles_in": 3,
+                      "qualified": 3, "rejected": 0, "ms": 4985 },
+  "candidates": [
+    { "name": "...", "retailer": "bestbuy", "price": 27.99, "spec_fields": 0,
+      "specs_inherited_from": null, "rating": 4.6, "rating_source": "amazon_inherited",
+      "evidence_count": 1843, "same_product_group": "g1" }
+  ],
+  "research": [
+    { "rank": 1, "name": "...", "retailer": "bestbuy", "reddit_posts": 10,
+      "reddit_retried": false, "youtube": true, "youtube_videos": 5 }
+  ],
+  "youtube": { "triggered": true, "too_close_positions": [1, 2],
+               "reason": "the discussion could not separate the top of the ranking" },
+  "drops": [
+    { "stage": "review_floor", "name": "...", "retailer": "bestbuy",
+      "reason": "0 reviews or mentions found, below the 5 the criteria ask for" }
+  ],
+  "stages_ms": { "collect_candidates": 37875, "product_filter": 4985, "research_top": 26203 },
+  "total_ms": 89265,
+  "retailers_answered": true,
+  "products_returned": 2
+}
+```
+
+**`retailers`** — one row per retailer, in the order they were searched. `outcome` is the field that
+matters, and the three failures are deliberately three values because they need three different
+fixes:
+
+| `outcome` | Means |
+|---|---|
+| `OK` | the search answered and rows were parsed out of it |
+| `OK_BUT_EMPTY` | it answered and said it has no matching products — a real answer |
+| `BLOCKED` | a bot wall answered instead: captcha, 403, or a challenge page |
+| `SELECTORS_RETURNED_NOTHING` | a real page loaded and the parser found no product rows in it |
+| `ERROR` | the request raised before anything could be parsed |
+
+`detail` is a plain-English sentence for the same thing, safe to render as-is. `page_chars` is the
+size of what came back (null for the JSON retailer's failures): ~2,000 is a challenge page,
+~1,800,000 is a real page that failed to parse — that difference is what separates `BLOCKED` from
+`SELECTORS_RETURNED_NOTHING` at a glance. `raw_rows` is what the parser found, `candidates_kept` is
+what survived the per-retailer cap into the pipeline, `ms` is that retailer's whole leg. `error` is
+non-null only when the scraper raised.
+
+**`review_lookup`** — extra Amazon searches spent finding ratings for retailers that publish none.
+`searches` rows have the same shape and `outcome` values as a retailer row.
+
+**`stores`** — the Google Places lookup. `distance_miles` is per retailer, `not_found` lists
+retailers that have stores but were not returned (no store nearby, or a failed lookup — both score a
+neutral distance).
+
+**`product_filter`** — the single qualification model call. `products_in` counts candidates plus
+review tiles. Each rejection appears in `drops` with `stage: "product_filter"` and the model's own
+stated reason.
+
+**`candidates`** — what reached ranking. `spec_fields: 0` means no retailer published specs for it;
+that is not a drop, specs are inherited within a `same_product_group`. `rating_source` ending
+`_inherited` means the rating came from another listing judged to be the same product.
+
+**`research`** — the per-product research, in ranked order. `reddit_retried: true` means the first
+search came back empty (usually a 429) and was retried once. `youtube` is present per product;
+`youtube.triggered` says whether any quota was spent at all, and `too_close_positions` is the
+sentiment call's own verdict on which ranked positions it could not separate. Only the top 2 are
+searched, so a position can be listed as too close and still show `youtube: false`.
+
+**`drops`** — every candidate removed, with `stage` (`product_filter` or `review_floor`), the
+product, the retailer, and a human-readable `reason`. This is the answer to "why is this list
+short".
+
+**`stages_ms` / `total_ms`** — milliseconds per stage, for attributing a slow search. Stage names
+are `collect_candidates`, `amazon_review_tiles`, `product_filter`, `lookup_missing_reviews`,
+`research_top`, `research_reddit`, `research_youtube`. Nesting is real: `research_reddit` and
+`research_youtube` are inside `research_top`.
+
+**`retailers_answered`** — false when no row in `retailers` has an `OK` or `OK_BUT_EMPTY` outcome.
+Same value as the key on the chat response.
 
 ---
 
@@ -261,7 +392,7 @@ const message = Array.isArray(detail)
 | Code | Means |
 |---|---|
 | 400 | location not set, or product has no url |
-| 404 | unknown item, unknown/expired conversation, bad product_id |
+| 404 | unknown item, unknown/expired conversation, bad product_id, no trace recorded yet |
 | 422 | validation failure — `detail` is an array |
 | 502 | model call failed upstream |
 

@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 
 from backend.scrapers.amazon import AmazonScraper
 from backend.scrapers.bestbuy import BestBuyScraper
@@ -12,6 +13,7 @@ from backend.services import (
     sentiment,
     spec_extraction,
     stores,
+    trace,
 )
 from backend.services.ranking import (
     INHERITED_SUFFIX,
@@ -156,6 +158,13 @@ async def amazon_review_tiles(candidates: list[RankedProduct], scraper) -> list[
             logger.exception("amazon review search failed for %s", candidate.product["name"])
             continue
         tiles.extend(found[:AMAZON_REVIEW_TILES_PER_SEARCH])
+    # these are extra Amazon searches, so they get their own section rather than overwriting
+    # the main amazon search row
+    trace.note("review_lookup", {
+        "searches": trace.unclaimed_searches(),
+        "tiles_kept": len(tiles),
+        "searches_left": searches_left,
+    })
     return tiles
 
 
@@ -168,6 +177,7 @@ async def judge_candidates(item_criteria: dict, candidates: list[RankedProduct],
                            tiles: list[dict]) -> tuple[list[RankedProduct], dict[str, dict]]:
     products = [judgment_payload(c.retailer, c.product, c.specs) for c in candidates]
     products += [judgment_payload("amazon", tile, {}) for tile in tiles]
+    started = time.monotonic()
     assessments = await product_filter.assess(item_criteria, products)
 
     survivors = []
@@ -177,8 +187,20 @@ async def judge_candidates(item_criteria: dict, candidates: list[RankedProduct],
         candidate.nice_to_have_score = assessment["nice_fit"]
         if not assessment["qualifies"]:
             logger.info("skip %s: does not meet the requirements", candidate.product["name"])
+            # the model's own words when it gave any, so the drop is explainable
+            trace.drop("product_filter", candidate.product.get("name"), candidate.retailer,
+                       assessment.get("reason")
+                       or "the model judged it does not meet the requirements")
             continue
         survivors.append(candidate)
+    trace.note("product_filter", {
+        "products_in": len(products),
+        "candidates_in": len(candidates),
+        "review_tiles_in": len(tiles),
+        "qualified": len(survivors),
+        "rejected": len(candidates) - len(survivors),
+        "ms": trace.elapsed_ms(started),
+    })
 
     tiles_by_group: dict[str, dict] = {}
     for tile, assessment in zip(tiles, assessments[len(candidates):]):
@@ -224,11 +246,23 @@ async def collect_candidates(item_criteria: dict, lat: float, lon: float,
     query = build_query(item_criteria)
     wanted_fields = wanted_spec_fields(item_criteria)
     # one Places lookup per location for the whole run, not per product
+    started = time.monotonic()
     store_distances = await stores.nearest_stores(lat, lon)
+    trace.note("stores", {
+        "source": "google places text search",
+        "distance_miles": store_distances,
+        # a retailer with stores that Places did not return: no store nearby, or a failed
+        # lookup. either way its candidates score a neutral distance
+        "not_found": [r for r in stores.STORE_QUERIES if r not in store_distances],
+        "ms": trace.elapsed_ms(started),
+    })
 
     candidates = []
     spec_extractions = 0
     for retailer, scraper in SCRAPERS:
+        started = time.monotonic()
+        found_before = len(candidates)
+        error = None
         # one broken retailer must not kill the run
         try:
             store_ids = await nearby_store_ids(scraper, lat, lon, radius_mi)
@@ -258,10 +292,13 @@ async def collect_candidates(item_criteria: dict, lat: float, lon: float,
                         ),
                     )
                 )
-        except Exception:
+        except Exception as failure:
             # keep the broad catch so one dead retailer does not kill a multi-retailer run,
             # but log the traceback: a code bug must not read like a retailer outage
             logger.exception("%s failed", retailer)
+            error = f"{type(failure).__name__}: {failure}"
+        trace.retailer(retailer, ms=trace.elapsed_ms(started),
+                       candidates=len(candidates) - found_before, error=error)
     return candidates
 
 
@@ -291,18 +328,32 @@ async def research_reddit(candidates: list[RankedProduct], category: str | None)
         name = candidate.product["name"]
         review = await reviews_reddit.gather(name, category)
         # nothing back is usually a 429 rather than an unknown product, so try once more
-        if review is None:
+        retried = review is None
+        if retried:
             await asyncio.sleep(REDDIT_RETRY_PAUSE_SECONDS)
             review = await reviews_reddit.gather(name, category)
         if review:
             candidate.reviews.append(review)
+        trace.append("research", {
+            "rank": position + 1,
+            "name": name,
+            "retailer": candidate.retailer,
+            "reddit_posts": (review or {}).get("mention_count", 0),
+            "reddit_retried": retried,
+            "youtube": False,
+        })
 
 
+# candidates are the top few in ranked order, so the index is also the research row's index
 async def research_youtube(candidates: list[RankedProduct]) -> None:
-    for candidate in candidates:
+    for index, candidate in enumerate(candidates):
         review = await reviews_youtube.gather(candidate.product["name"])
         if review:
             candidate.reviews.append(review)
+        trace.update_research(index, {
+            "youtube": True,
+            "youtube_videos": (review or {}).get("mention_count", 0),
+        })
 
 
 # everything found about this one product, in the shape sentiment.assess reads
@@ -330,12 +381,23 @@ def apply_assessment(candidates: list[RankedProduct], assessments: list[dict]) -
 # one item-level lookup. one sentiment call in the common case, two when it says the top is
 # too close to call - and only then is any YouTube quota spent
 async def research_top(candidates: list[RankedProduct], category: str | None) -> None:
-    await research_reddit(candidates, category)
+    with trace.stage("research_reddit"):
+        await research_reddit(candidates, category)
     assessment = await sentiment.assess(research_payload(candidates))
-    if assessment["too_close"]:
-        logger.info("top of the ranking is too close to call: %s", assessment["too_close"])
-        await research_youtube(candidates[:YOUTUBE_TOP_N])
+    too_close = assessment["too_close"]
+    if too_close:
+        logger.info("top of the ranking is too close to call: %s", too_close)
+        with trace.stage("research_youtube"):
+            await research_youtube(candidates[:YOUTUBE_TOP_N])
         assessment = await sentiment.assess(research_payload(candidates))
+    trace.note("youtube", {
+        "triggered": bool(too_close),
+        # the sentiment call's own verdict: which ranked positions its discussion could not
+        # separate. empty means the reddit research was decisive and no quota was spent
+        "too_close_positions": [index + 1 for index in too_close],
+        "reason": ("the discussion could not separate the top of the ranking" if too_close
+                   else "the discussion separated the ranking, so no youtube quota was spent"),
+    })
     apply_assessment(candidates, assessment["products"])
 
 
@@ -348,6 +410,24 @@ def evidence_count(candidate: RankedProduct) -> int:
     return max([0, *counts, *mentions])
 
 
+# one line per candidate that reached ranking: the evidence it carries, and whether its specs
+# and rating are its own or were attributed from another retailer. "spec_fields: 0" is how a
+# candidate nobody published specs for shows up - it is not dropped for it, specs are inherited
+def candidate_row(candidate: RankedProduct) -> dict:
+    rating_row = next((r for r in candidate.reviews if r.get("rating") is not None), {})
+    return {
+        "name": candidate.product.get("name"),
+        "retailer": candidate.retailer,
+        "price": candidate.product.get("price"),
+        "spec_fields": len(candidate.specs),
+        "specs_inherited_from": candidate.specs_inherited_from,
+        "rating": rating_row.get("rating"),
+        "rating_source": rating_row.get("source"),
+        "evidence_count": evidence_count(candidate),
+        "same_product_group": candidate.group,
+    }
+
+
 def filter_on_reviews(candidates: list[RankedProduct],
                       min_review_count: int) -> list[RankedProduct]:
     survivors = []
@@ -355,6 +435,9 @@ def filter_on_reviews(candidates: list[RankedProduct],
         count = evidence_count(candidate)
         if count < min_review_count:
             logger.info("skip %s: %s reviews or mentions", candidate.product["name"], count)
+            trace.drop("review_floor", candidate.product.get("name"), candidate.retailer,
+                       f"{count} reviews or mentions found, "
+                       f"below the {min_review_count} the criteria ask for")
             continue
         survivors.append(candidate)
     return survivors
@@ -370,26 +453,34 @@ def research_rows(candidate: RankedProduct) -> list[dict]:
 # the winner's research is persisted; without either, nothing is written
 async def run_pipeline(item_criteria: dict, lat: float, lon: float, radius_mi: int,
                        db=None, item_id: int | None = None) -> list[RankedProduct]:
+    trace.start(build_query(item_criteria), item_criteria)
     budget_max = item_criteria.get("budget_max")
-    candidates = await collect_candidates(item_criteria, lat, lon, radius_mi)
+    with trace.stage("collect_candidates"):
+        candidates = await collect_candidates(item_criteria, lat, lon, radius_mi)
 
     # no drops happen before this: qualification and both inheritance passes are judged over
     # the whole candidate set at once, so filtering has to wait until it is complete.
     # the tiles are gathered first so they ride along in the single judgment call
-    tiles = await amazon_review_tiles(candidates, AMAZON)
-    candidates, tiles_by_group = await judge_candidates(item_criteria, candidates, tiles)
+    with trace.stage("amazon_review_tiles"):
+        tiles = await amazon_review_tiles(candidates, AMAZON)
+    with trace.stage("product_filter"):
+        candidates, tiles_by_group = await judge_candidates(item_criteria, candidates, tiles)
     inherit_specs(candidates)
     inherit_reviews(candidates)
     # last resort, and the only step that can help when Amazon returned nothing for this query:
     # read the Amazon page for candidates still without any rating
-    await lookup_missing_reviews(candidates, tiles_by_group, AMAZON)
+    with trace.stage("lookup_missing_reviews"):
+        await lookup_missing_reviews(candidates, tiles_by_group, AMAZON)
+    trace.note("candidates", [candidate_row(c) for c in candidates])
 
     # cheap pass first, so the research is spent on the products that are actually in contention
     ranked = rank(candidates, budget_max)
-    await research_top(ranked[:RESEARCH_TOP_N], item_criteria.get("category"))
+    with trace.stage("research_top"):
+        await research_top(ranked[:RESEARCH_TOP_N], item_criteria.get("category"))
     # re-rank: the research moved review_score through the per-product authenticity flags
     ranked = filter_on_reviews(rank(ranked, budget_max), item_criteria["min_review_count"])
 
     if db is not None and item_id and ranked:
         reviews_store.save_reviews(db, item_id, research_rows(ranked[0]))
+    trace.finish(len(ranked))
     return ranked

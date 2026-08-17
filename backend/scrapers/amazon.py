@@ -5,7 +5,14 @@ from urllib.parse import quote_plus
 from bs4 import BeautifulSoup
 
 from backend.scrapers.base import ScraperBase
-from backend.scrapers.browser import fetch_html, fetch_product_html, looks_blocked, page_text
+from backend.scrapers.browser import (
+    fetch_html,
+    fetch_product_html,
+    looks_blocked,
+    looks_empty,
+    page_text,
+)
+from backend.services import trace
 
 RETAILER = "amazon"
 BASE = "https://www.amazon.com"
@@ -15,6 +22,10 @@ BLOCK_MARKERS = ("enter the characters you see below", "/errors/validatecaptcha"
                  "not a robot", "robot check", "automated access",
                  "sorry! something went wrong", "dogs of amazon")
 SEARCH_WAIT_SELECTOR = ".s-result-item"
+# what the zero-results page says. a page with none of these that still parsed to no rows is
+# a broken parser, not an empty shelf
+NO_RESULTS_MARKERS = ("no results for", "did not match any products",
+                      "try checking your spelling")
 # spec tables, most specific layout first; all are th/td or td/td row pairs
 SPEC_SELECTORS = (
     "#productOverview_feature_div tr",
@@ -118,20 +129,24 @@ def parse_reviews(html: str) -> dict:
     }
 
 
+# pure: which of the trace outcomes this search page ended in
+def search_outcome(html: str, rows: list[dict]) -> str:
+    return trace.search_outcome(looks_blocked(html, BLOCK_MARKERS),
+                                looks_empty(html, NO_RESULTS_MARKERS), len(rows))
+
+
 class AmazonScraper(ScraperBase):
     # store_ids is accepted and unused: Amazon has no stores
     async def search(self, query: str, store_ids: list[str] | None = None) -> list[dict]:
-        html = await fetch_html(SEARCH_URL.format(query=quote_plus(query)), SEARCH_WAIT_SELECTOR)
-        if looks_blocked(html, BLOCK_MARKERS):
-            logger.warning("%s blocked on search", RETAILER)
-            return []
-        rows = parse_search(html)
-        if not rows:
-            # LLM call #5's search-page fallback is deferred to Phase 7 or later: an
-            # invented url would become part of the listings unique key and corrupt
-            # watchlist identity permanently
-            logger.warning("%s search selectors returned nothing (page %d chars) - selectors may "
-                           "have broken", RETAILER, len(html))
+        url = SEARCH_URL.format(query=quote_plus(query))
+        html = await fetch_html(url, SEARCH_WAIT_SELECTOR)
+        # LLM call #5's search-page fallback is deferred to Phase 7 or later: an invented url
+        # would become part of the listings unique key and corrupt watchlist identity
+        rows = [] if looks_blocked(html, BLOCK_MARKERS) else parse_search(html)
+        outcome = search_outcome(html, rows)
+        trace.record_search(RETAILER, url, outcome, len(rows), page_chars=len(html))
+        if outcome != trace.OK:
+            logger.warning("%s search: %s (page %d chars)", RETAILER, outcome, len(html))
         return rows
 
     async def get_specs(self, product_url: str) -> dict:

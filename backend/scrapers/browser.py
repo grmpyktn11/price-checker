@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 import random
+import sys
 import time
 
 from bs4 import BeautifulSoup
@@ -21,7 +22,15 @@ MAX_DELAY_SECONDS = 3.0
 NAV_TIMEOUT_MS = 20000
 SELECTOR_TIMEOUT_MS = 10000
 MIN_REAL_PAGE_CHARS = 2000   # a challenge/interstitial page is tiny compared to a real one
+MIN_HYDRATED_TILES = 4       # enough of a virtualized grid to be worth parsing
+HYDRATION_POLL_MS = 400      # two polls the same means the grid stopped filling in
+# short on purpose: whatever hydrated by now is what we parse, and a slow grid must not
+# add the full selector timeout to every search
+HYDRATION_TIMEOUT_MS = 4000
 CACHE_SECONDS = 60
+# a tall viewport over a 2MB retailer page is enough layout to crash the renderer
+# ("Target crashed"). the shared-memory and gpu flags are the usual cure
+LAUNCH_ARGS = ["--disable-dev-shm-usage", "--disable-gpu", "--no-sandbox"]
 
 # get_specs and get_reviews load the same product page seconds apart: fetching it twice
 # doubles the cost and is itself a bot signal. size one, no eviction policy.
@@ -30,10 +39,34 @@ _LAST_PRODUCT_PAGE = {"url": None, "html": None, "fetched_at": 0.0}
 logger = logging.getLogger(__name__)
 
 
-# one browser instance per call, closed immediately after, per the spec
+# uvicorn --reload runs on a Windows selector loop, which cannot spawn subprocesses, and
+# playwright launches chromium as one. without this every scrape raises NotImplementedError
+# in the real app while working fine from a script
+def needs_own_loop() -> bool:
+    if sys.platform != "win32":
+        return False
+    return not isinstance(asyncio.get_event_loop(), asyncio.ProactorEventLoop)
+
+
+# a private proactor loop in a worker thread, so the caller's loop is untouched
+def fetch_in_worker(url: str, wait_for: str | None) -> str:
+    loop = asyncio.ProactorEventLoop()
+    try:
+        return loop.run_until_complete(open_page(url, wait_for))
+    finally:
+        loop.close()
+
+
 async def fetch_html(url: str, wait_for: str | None = None) -> str:
+    if needs_own_loop():
+        return await asyncio.to_thread(fetch_in_worker, url, wait_for)
+    return await open_page(url, wait_for)
+
+
+# one browser instance per call, closed immediately after, per the spec
+async def open_page(url: str, wait_for: str | None = None) -> str:
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(headless=HEADLESS)
+        browser = await playwright.chromium.launch(headless=HEADLESS, args=LAUNCH_ARGS)
         try:
             context = await browser.new_context(
                 user_agent=USER_AGENT, viewport=VIEWPORT, locale="en-US"
@@ -48,10 +81,24 @@ async def fetch_html(url: str, wait_for: str | None = None) -> str:
                 return ""
             if wait_for:
                 try:
+                    # a virtualized grid renders empty tiles first and hydrates them one by
+                    # one, so waiting for the first match returns a nearly empty page. wait
+                    # for the count to stop growing instead, and settle for whatever it got
                     await page.wait_for_selector(wait_for, timeout=SELECTOR_TIMEOUT_MS)
+                    await page.wait_for_function(
+                        """([selector, settled]) => {
+                            const n = document.querySelectorAll(selector).length;
+                            const stable = window.__lastCount === n;
+                            window.__lastCount = n;
+                            return stable && n >= settled;
+                        }""",
+                        arg=[wait_for, MIN_HYDRATED_TILES],
+                        polling=HYDRATION_POLL_MS,
+                        timeout=HYDRATION_TIMEOUT_MS,
+                    )
                 except PlaywrightTimeoutError:
                     # not fatal: the caller still needs the html to tell a block from a
-                    # broken selector
+                    # broken selector, and a short page is better than none
                     logger.warning("%s did not appear on %s", wait_for, url)
             # after navigation so lazy content settles and the request pattern is not machine-regular
             await asyncio.sleep(random.uniform(MIN_DELAY_SECONDS, MAX_DELAY_SECONDS))
@@ -73,6 +120,13 @@ async def fetch_product_html(url: str) -> str:
 # visible text of a page, for the LLM spec fallback when the spec selectors found nothing
 def page_text(html: str) -> str:
     return BeautifulSoup(html, "lxml").get_text(" ", strip=True)
+
+
+# the retailer's own "no results" wording. this is what tells a genuinely empty result set
+# apart from selectors that broke on a real page full of products
+def looks_empty(html: str, markers: tuple[str, ...]) -> bool:
+    lowered = html.lower()
+    return any(marker in lowered for marker in markers)
 
 
 # a challenge page is either tiny or carries one of the retailer's block strings
