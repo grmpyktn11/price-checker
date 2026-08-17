@@ -15,7 +15,6 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 from backend.db import Base, engine  # noqa: E402
 from backend import models  # noqa: E402,F401  imported so create_all sees every table
 from backend.routers import alerts, chat, items, listings, profile  # noqa: E402
-from backend.scrapers import amazon  # noqa: E402  for the live/fixture status flag
 from backend.scheduler import start_scheduler  # noqa: E402
 
 
@@ -35,13 +34,6 @@ app = FastAPI(title="Deal Tracker", lifespan=lifespan)
 
 # single user, single process, no migrations
 Base.metadata.create_all(bind=engine)
-
-# read off the scraper constant, not the env var, so it reports what the scrapers will
-# actually do rather than what .env says right now
-@app.get("/api/status")
-def get_status() -> dict:
-    return {"live_scrape": bool(amazon.LIVE_SCRAPE)}
-
 
 app.include_router(profile.router)
 app.include_router(chat.router)

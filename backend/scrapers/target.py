@@ -1,11 +1,10 @@
 import html as html_module
 import logging
-import os
 import re
 
 import httpx
 
-from backend.scrapers.base import ScraperBase, load_fixture
+from backend.scrapers.base import ScraperBase
 
 # 2026-08-16: redsky 403'd this host earlier in the day on every endpoint, and answered 200
 # again later the same day on search, pdp and nearby_stores. the block was transient, so
@@ -17,7 +16,6 @@ BASE_URL = "https://redsky.target.com/redsky_aggregations/v1/web"
 API_KEY = "9f36aeafbe60771e321a7cc95a78140772ab3e96"
 DEFAULT_STORE_ID = "3991"   # redsky requires some store for pricing; MVP does not vary it
 VISITOR_ID = "0192F0D2B1C40201B0B0C0D0E0F00001"   # redsky only wants the param present
-LIVE_SCRAPE = os.getenv("LIVE_SCRAPE", "")
 # redsky answers a plain client with a PerimeterX captcha, and 403s an outdated user agent.
 # these are the headers target.com's own page sends; keep the Chrome version current.
 HEADERS = {
@@ -137,9 +135,6 @@ def parse_stores(payload: dict) -> list[dict]:
 
 class TargetScraper(ScraperBase):
     async def search(self, query: str, store_ids: list[str] | None = None) -> list[dict]:
-        # not opted in to live scraping: parse the saved fixture instead of hitting redsky
-        if not LIVE_SCRAPE:
-            return parse_search(load_fixture("target_search.json"))
         store_id = store_ids[0] if store_ids else DEFAULT_STORE_ID
         try:
             payload = await get_json("plp_search_v2", {
@@ -163,21 +158,15 @@ class TargetScraper(ScraperBase):
         return parse_search(payload)
 
     async def get_specs(self, product_url: str) -> dict:
-        if not LIVE_SCRAPE:
-            return parse_specs(load_fixture("target_pdp.json"))
         payload = await self.get_pdp(product_url)
         return parse_specs(payload)
 
     async def get_reviews(self, product_url: str) -> dict:
-        if not LIVE_SCRAPE:
-            return parse_reviews(load_fixture("target_pdp.json"))
         payload = await self.get_pdp(product_url)
         return parse_reviews(payload)
 
     # one more ~200ms json call: redsky has no page html to reuse
     async def get_page_text(self, product_url: str) -> str:
-        if not LIVE_SCRAPE:
-            return parse_page_text(load_fixture("target_pdp.json"))
         return parse_page_text(await self.get_pdp(product_url))
 
     # both detail calls read the same endpoint; it is a ~200ms json call with no bot
@@ -203,8 +192,6 @@ class TargetScraper(ScraperBase):
 
     # the only working find_nearby_stores in the app: Best Buy lost its with the denied key
     async def find_nearby_stores(self, lat: float, lon: float, radius_mi: int) -> list[dict]:
-        if not LIVE_SCRAPE:
-            return parse_stores(load_fixture("target_stores.json"))
         try:
             payload = await get_json("nearby_stores_v1", {
                 "key": API_KEY,

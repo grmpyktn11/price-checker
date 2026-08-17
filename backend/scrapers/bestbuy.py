@@ -1,17 +1,15 @@
 import logging
-import os
 import re
 from urllib.parse import parse_qs, quote_plus, urljoin, urlparse
 
 from bs4 import BeautifulSoup
 
-from backend.scrapers.base import ScraperBase, load_fixture_text
+from backend.scrapers.base import ScraperBase
 from backend.scrapers.browser import fetch_html, fetch_product_html, looks_blocked, page_text
 
 RETAILER = "bestbuy"
 BASE = "https://www.bestbuy.com"
 SEARCH_URL = "https://www.bestbuy.com/site/searchpage.jsp?st={query}"
-LIVE_SCRAPE = os.getenv("LIVE_SCRAPE", "")
 # Best Buy API access was applied for and denied. Do not reintroduce BESTBUY_API_KEY.
 BLOCK_MARKERS = ("access denied", "reference #18", "_sec/cp_challenge",
                  "are you a robot", "pardon our interruption")
@@ -119,9 +117,6 @@ class BestBuyScraper(ScraperBase):
     # store_ids is unused: the search page is national inventory, and the Stores API needed
     # the denied key
     async def search(self, query: str, store_ids: list[str] | None = None) -> list[dict]:
-        # not opted in to live scraping: parse the saved fixture instead of hitting the site
-        if not LIVE_SCRAPE:
-            return parse_search(load_fixture_text("bestbuy_search.html"))
         html = await fetch_html(SEARCH_URL.format(query=quote_plus(query)), SEARCH_WAIT_SELECTOR)
         if looks_blocked(html, BLOCK_MARKERS):
             logger.warning("%s blocked on search", RETAILER)
@@ -136,8 +131,6 @@ class BestBuyScraper(ScraperBase):
         return rows
 
     async def get_specs(self, product_url: str) -> dict:
-        if not LIVE_SCRAPE:
-            return parse_specs(load_fixture_text("bestbuy_product.html"))
         html = await fetch_product_html(product_url)
         if looks_blocked(html, BLOCK_MARKERS):
             logger.warning("%s blocked on %s", RETAILER, product_url)
@@ -145,8 +138,6 @@ class BestBuyScraper(ScraperBase):
         return parse_specs(html)
 
     async def get_reviews(self, product_url: str) -> dict:
-        if not LIVE_SCRAPE:
-            return parse_reviews(load_fixture_text("bestbuy_product.html"))
         html = await fetch_product_html(product_url)
         if looks_blocked(html, BLOCK_MARKERS):
             logger.warning("%s blocked on %s", RETAILER, product_url)
@@ -156,8 +147,6 @@ class BestBuyScraper(ScraperBase):
     # same cached html get_specs just fetched, so no extra page load. "" when blocked, which
     # is the normal live outcome here and is what keeps a challenge page out of the LLM
     async def get_page_text(self, product_url: str) -> str:
-        if not LIVE_SCRAPE:
-            return page_text(load_fixture_text("bestbuy_product.html"))
         html = await fetch_product_html(product_url)
         if looks_blocked(html, BLOCK_MARKERS):
             return ""

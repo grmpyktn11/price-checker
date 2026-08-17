@@ -10,14 +10,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 load_dotenv()
 
-from backend.scrapers.target import LIVE_SCRAPE, TargetScraper  # noqa: E402
+from backend.scrapers.target import TargetScraper  # noqa: E402
 
 QUERY = "portable charger"
 LAT = 37.7749
 LON = -122.4194
 RADIUS_MI = 25
-FIXTURE_NOTE = ("FIXTURE MODE: get_specs and get_reviews return the same saved product page "
-                "for every url.")
 
 
 def show(label, data):
@@ -26,9 +24,6 @@ def show(label, data):
 
 
 async def main():
-    print("MODE:", "LIVE" if LIVE_SCRAPE else "FIXTURE")
-    if not LIVE_SCRAPE:
-        print(FIXTURE_NOTE)
     scraper = TargetScraper()
 
     results = await scraper.search(QUERY, None)

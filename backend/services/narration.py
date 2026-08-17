@@ -49,6 +49,9 @@ def summarize(ranked: list[RankedProduct]) -> list[dict]:
                 "review_count": review.get("review_count"),
                 # so the model can mention that these specs came from another retailer
                 "specs_inherited_from": result.specs_inherited_from,
+                # what the per-product research found; null below the researched top few
+                "discussion_sentiment": result.sentiment,
+                "discussion_summary": result.sentiment_summary,
             }
         )
     return rows
@@ -74,8 +77,6 @@ def canned_narration(criteria: dict, ranked: list[RankedProduct]) -> str:
 
 
 async def narrate(criteria: dict, ranked: list[RankedProduct]) -> str:
-    if not ANTHROPIC_API_KEY:
-        return canned_narration(criteria, ranked)
     try:
         client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
         response = await client.messages.create(

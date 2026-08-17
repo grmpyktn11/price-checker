@@ -5,7 +5,8 @@ from pathlib import Path
 FIXTURES_DIR = Path(__file__).resolve().parents[2] / "tests" / "fixtures"
 
 
-# scrapers call this when their API key is missing, so the app runs with an empty .env
+# test-only: the app always scrapes live. one real capture per retailer is kept in
+# tests/fixtures so the parsers can be tested for free, offline, forever
 def load_fixture(filename: str) -> dict:
     with open(FIXTURES_DIR / filename, encoding="utf-8") as f:
         return json.load(f)

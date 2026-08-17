@@ -1,4 +1,3 @@
-import copy
 import json
 import logging
 import os
@@ -25,29 +24,7 @@ RULE_QUESTIONS = {
 FALLBACK_RULE_QUESTION = 'What should "{field}" be? Describe the requirement in one line.'
 UNUSABLE_FIELD_QUESTION = ("One of your requirements did not come through clearly. "
                            "Can you restate what it needs to have?")
-
-CANNED_QUESTION = "What is your budget, and do you need it shipped or available for pickup?"
 MALFORMED_QUESTION = "Sorry, I did not catch that. Can you rephrase what you are looking for?"
-
-# fixture in Python form, used when no key is configured. same shape pipeline.py documents
-CANNED_CRITERIA = {
-    "name": "portable charger",
-    "category": "electronics",
-    "keywords": ["usb-c", "140w"],
-    "must_haves": [
-        {"field": "Battery Capacity", "op": ">=", "value": 20000},
-    ],
-    "preferred_specs": [
-        {"field": "Number of USB Ports", "op": ">=", "value": 3},
-        {"field": "Product Weight", "op": "<=", "value": 1.0},
-    ],
-    "nice_to_haves": ["compact", "looks sleek"],
-    "budget_max": 150.0,
-    "target_price": 99.0,
-    "fulfillment_preference": "either",
-    "radius_miles": 25,
-    "min_review_count": 100,
-}
 
 SYSTEM_PROMPT = """You extract shopping criteria from a conversation.
 
@@ -178,14 +155,6 @@ def criteria_or_followup(criteria_dict: dict) -> dict:
 
 
 async def extract(history: list[dict], message: str) -> dict:
-    # no key configured: ask once, then return the saved criteria. counts turns, reads nothing
-    if not ANTHROPIC_API_KEY:
-        if not history:
-            return {"type": "followup", "question": CANNED_QUESTION}
-        # deep copy: normalize and the rule validator both edit in place, and the
-        # validator reaches into the nested rule dicts a shallow copy still shares
-        return criteria_or_followup(normalize(copy.deepcopy(CANNED_CRITERIA)))
-
     client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
     response = await client.messages.create(
         model=MODEL,

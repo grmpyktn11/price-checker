@@ -13,18 +13,13 @@ load_dotenv()
 
 from backend.services import reviews_reddit, reviews_youtube, sentiment  # noqa: E402
 
-QUERY = "portable charger usb-c 140w"
+# two competing products, the way the pipeline researches them: one reddit search each
+PRODUCTS = ["Anker 737 Power Bank", "INIU Portable Charger 20000mAh"]
 CATEGORY = "electronics"
-FIXTURE_NOTE = ("FIXTURE MODE: the source returns the saved capture, taken for 'portable "
-                "charger', regardless of the query above.")
 
 logging.basicConfig(level=logging.INFO)
 # httpx logs full urls at INFO and our keys ride in query strings
 logging.getLogger("httpx").setLevel(logging.WARNING)
-
-
-def mode(live: bool) -> str:
-    return "LIVE" if live else "FIXTURE"
 
 
 def show(review: dict | None) -> None:
@@ -37,22 +32,19 @@ def show(review: dict | None) -> None:
 
 
 async def main():
-    print("reddit  MODE:", mode(bool(reviews_reddit.LIVE_SCRAPE)))
-    print("youtube MODE:", mode(bool(reviews_youtube.YOUTUBE_API_KEY)))
-    if not reviews_reddit.LIVE_SCRAPE or not reviews_youtube.YOUTUBE_API_KEY:
-        print(FIXTURE_NOTE)
+    payload = []
+    for name in PRODUCTS:
+        print(f"\n{name}:")
+        found = [await reviews_reddit.gather(name, CATEGORY), await reviews_youtube.gather(name)]
+        for review in found:
+            show(review)
+        payload.append({
+            "name": name,
+            "rating": None,
+            "discussion": "\n\n".join(r["summary_text"] for r in found if r),
+        })
 
-    reviews = []
-    for label, review in (
-        ("reddit", await reviews_reddit.gather(QUERY, CATEGORY)),
-        ("youtube", await reviews_youtube.gather(QUERY)),
-    ):
-        print(f"\n{label}:")
-        show(review)
-        if review:
-            reviews.append(review)
-
-    print("\nsentiment:", json.dumps(await sentiment.classify(reviews)))
+    print("\nassessment:", json.dumps(await sentiment.assess(payload), indent=2))
 
 
 asyncio.run(main())

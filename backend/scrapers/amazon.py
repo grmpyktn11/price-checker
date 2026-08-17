@@ -1,17 +1,15 @@
 import logging
-import os
 import re
 from urllib.parse import quote_plus
 
 from bs4 import BeautifulSoup
 
-from backend.scrapers.base import ScraperBase, load_fixture_text
+from backend.scrapers.base import ScraperBase
 from backend.scrapers.browser import fetch_html, fetch_product_html, looks_blocked, page_text
 
 RETAILER = "amazon"
 BASE = "https://www.amazon.com"
 SEARCH_URL = "https://www.amazon.com/s?k={query}"
-LIVE_SCRAPE = os.getenv("LIVE_SCRAPE", "")
 # the last two are the 503 "Dogs of Amazon" throttle page, seen live during this build
 BLOCK_MARKERS = ("enter the characters you see below", "/errors/validatecaptcha",
                  "not a robot", "robot check", "automated access",
@@ -123,9 +121,6 @@ def parse_reviews(html: str) -> dict:
 class AmazonScraper(ScraperBase):
     # store_ids is accepted and unused: Amazon has no stores
     async def search(self, query: str, store_ids: list[str] | None = None) -> list[dict]:
-        # not opted in to live scraping: parse the saved fixture instead of hitting the site
-        if not LIVE_SCRAPE:
-            return parse_search(load_fixture_text("amazon_search.html"))
         html = await fetch_html(SEARCH_URL.format(query=quote_plus(query)), SEARCH_WAIT_SELECTOR)
         if looks_blocked(html, BLOCK_MARKERS):
             logger.warning("%s blocked on search", RETAILER)
@@ -140,8 +135,6 @@ class AmazonScraper(ScraperBase):
         return rows
 
     async def get_specs(self, product_url: str) -> dict:
-        if not LIVE_SCRAPE:
-            return parse_specs(load_fixture_text("amazon_product.html"))
         html = await fetch_product_html(product_url)
         if looks_blocked(html, BLOCK_MARKERS):
             logger.warning("%s blocked on %s", RETAILER, product_url)
@@ -149,8 +142,6 @@ class AmazonScraper(ScraperBase):
         return parse_specs(html)
 
     async def get_reviews(self, product_url: str) -> dict:
-        if not LIVE_SCRAPE:
-            return parse_reviews(load_fixture_text("amazon_product.html"))
         html = await fetch_product_html(product_url)
         if looks_blocked(html, BLOCK_MARKERS):
             logger.warning("%s blocked on %s", RETAILER, product_url)
@@ -160,8 +151,6 @@ class AmazonScraper(ScraperBase):
     # no extra page load: the 60s cache still holds the page get_specs just fetched.
     # "" on a blocked page, so a captcha is never sent to the LLM spec fallback
     async def get_page_text(self, product_url: str) -> str:
-        if not LIVE_SCRAPE:
-            return page_text(load_fixture_text("amazon_product.html"))
         html = await fetch_product_html(product_url)
         if looks_blocked(html, BLOCK_MARKERS):
             return ""

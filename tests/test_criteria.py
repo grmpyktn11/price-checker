@@ -2,9 +2,7 @@ import asyncio
 
 import pytest
 
-from backend.services import criteria as criteria_module
 from backend.services.criteria import (
-    CANNED_CRITERIA,
     bad_rule_question,
     extract,
     normalize,
@@ -14,28 +12,33 @@ from backend.services.pipeline import run_pipeline
 from backend.services.ranking import RankedProduct
 from backend.services.spec_extraction import extract as extract_specs
 from backend.services.spec_extraction import parse_specs_reply
+from sample_criteria import SAMPLE_CRITERIA
 
 LAT = 37.7749
 LON = -122.4194
-HISTORY = [{"role": "user", "content": "x"}, {"role": "assistant", "content": "y"}]
+# a real conversation, one answer short of complete: the model only emits criteria when it
+# has enough to search on
+HISTORY = [{"role": "user", "content": "i need a portable charger"},
+           {"role": "assistant", "content": "What is your budget?"}]
+ANSWER = "under $150, at least 20000mAh, shipping is fine, any brand"
 
 
 @pytest.mark.live
 def test_first_turn_is_a_followup():
-    result = asyncio.run(extract([], "anything"))
+    result = asyncio.run(extract([], "i want to buy something"))
     assert result["type"] == "followup"
     assert result["question"]
 
 
 @pytest.mark.live
 def test_later_turn_returns_criteria():
-    result = asyncio.run(extract(HISTORY, "anything"))
+    result = asyncio.run(extract(HISTORY, ANSWER))
     assert result["type"] == "criteria"
 
 
 @pytest.mark.live
 def test_criteria_shape():
-    item_criteria = asyncio.run(extract(HISTORY, "anything"))["criteria"]
+    item_criteria = asyncio.run(extract(HISTORY, ANSWER))["criteria"]
     assert item_criteria["name"]
     assert item_criteria["radius_miles"] is not None
     assert item_criteria["min_review_count"] is not None
@@ -46,7 +49,7 @@ def test_criteria_shape():
 # catches drift between criteria.py and pipeline.py
 @pytest.mark.live
 def test_criteria_runs_through_the_pipeline():
-    item_criteria = asyncio.run(extract(HISTORY, "anything"))["criteria"]
+    item_criteria = asyncio.run(extract(HISTORY, ANSWER))["criteria"]
     ranked = asyncio.run(
         run_pipeline(item_criteria, LAT, LON, item_criteria["radius_miles"])
     )
@@ -139,20 +142,9 @@ def test_numeric_string_is_coerced():
     assert rule["value"] == 20000.0
 
 
-def test_canned_criteria_has_no_bad_rules():
-    assert bad_rule_question(CANNED_CRITERIA) is None
-
-
-# a rule with no value is a conversation problem: ask for the number rather than send a rule
-# the model cannot judge
-@pytest.mark.live
-def test_null_valued_rule_returns_a_followup(monkeypatch):
-    broken = {**CANNED_CRITERIA,
-              "must_haves": [{"field": "Battery Capacity", "op": ">=", "value": None}]}
-    monkeypatch.setattr(criteria_module, "CANNED_CRITERIA", broken)
-    result = asyncio.run(extract(HISTORY, "anything"))
-    assert result["type"] == "followup"
-    assert "Battery Capacity" in result["question"]
+# the criteria shape the tests rank on must itself be rankable
+def test_sample_criteria_has_no_bad_rules():
+    assert bad_rule_question(SAMPLE_CRITERIA) is None
 
 
 # LLM call #2 reuses parse_json_reply above, so its parser is tested here against a literal

@@ -10,7 +10,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 load_dotenv()
 
-from backend.scrapers.bestbuy import LIVE_SCRAPE  # noqa: E402
 from backend.services.pipeline import run_pipeline  # noqa: E402
 
 CRITERIA = {
@@ -36,8 +35,6 @@ CRITERIA = {
 LAT = 37.7749
 LON = -122.4194
 RADIUS_MI = 25
-FIXTURE_NOTE = ("FIXTURE MODE: get_specs and get_reviews return the same saved product page "
-                "for every url.")
 
 # INFO so the pipeline's per-product skip lines show up inline
 logging.basicConfig(level=logging.INFO)
@@ -64,9 +61,6 @@ def show(rank: int, result):
 
 
 async def main():
-    print("MODE:", "LIVE" if LIVE_SCRAPE else "FIXTURE")
-    if not LIVE_SCRAPE:
-        print(FIXTURE_NOTE)
     results = await run_pipeline(CRITERIA, LAT, LON, RADIUS_MI)
     if not results:
         print("no products passed the filters")

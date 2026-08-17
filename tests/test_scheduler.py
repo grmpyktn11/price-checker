@@ -10,8 +10,8 @@ from backend import scheduler
 from backend.db import Base
 from backend.models import Alert, Item, Listing, PriceHistory, Profile, utcnow
 from backend.services import email
-from backend.services.criteria import CANNED_CRITERIA
 from backend.services.ranking import RankedProduct
+from sample_criteria import SAMPLE_CRITERIA
 
 
 @pytest.fixture
@@ -55,7 +55,7 @@ def sent(monkeypatch):
 def make_item(db, target_price=None, criteria=None):
     item = Item(
         name="portable charger",
-        criteria_json=json.dumps(criteria or copy.deepcopy(CANNED_CRITERIA)),
+        criteria_json=json.dumps(criteria or copy.deepcopy(SAMPLE_CRITERIA)),
         target_price=target_price,
         radius_miles=25,
         status="watching",
@@ -194,6 +194,7 @@ def test_scrape_job_without_location_writes_nothing(job_db):
     assert job_db.query(Listing).count() == 0
 
 
+@pytest.mark.live
 def test_review_check_flags_unseen_products(db, seeded_profile):
     item = make_item(db)
     alerts = asyncio.run(scheduler.check_new_alternatives(db, item))
@@ -202,6 +203,7 @@ def test_review_check_flags_unseen_products(db, seeded_profile):
 
 
 # a url already stored for the item is not a new alternative
+@pytest.mark.live
 def test_review_check_ignores_known_urls(db, seeded_profile):
     item = make_item(db)
     asyncio.run(scheduler.check_new_alternatives(db, item))

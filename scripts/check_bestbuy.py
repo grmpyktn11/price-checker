@@ -10,11 +10,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 load_dotenv()
 
-from backend.scrapers.bestbuy import LIVE_SCRAPE, BestBuyScraper  # noqa: E402
+from backend.scrapers.bestbuy import BestBuyScraper  # noqa: E402
 
 QUERY = "portable charger"
-FIXTURE_NOTE = ("FIXTURE MODE: get_specs and get_reviews return the same saved product page "
-                "for every url.")
 INSTALL_HINT = "run: playwright install chromium"
 
 
@@ -24,9 +22,6 @@ def show(label, data):
 
 
 async def main():
-    print("MODE:", "LIVE" if LIVE_SCRAPE else "FIXTURE")
-    if not LIVE_SCRAPE:
-        print(FIXTURE_NOTE)
     # find_nearby_stores is not implemented: the Stores API needed the denied key
     scraper = BestBuyScraper()
 

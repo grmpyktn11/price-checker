@@ -9,7 +9,6 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 MODEL = "claude-sonnet-4-5"
 MAX_TOKENS = 1000
 MAX_PAGE_CHARS = 12000   # roughly 3k tokens; product pages run far longer than this
-CANNED_SPECS = {}        # no key: no fallback, the product keeps its empty spec dict
 
 SYSTEM_PROMPT = """Extract product specifications from this page text. Return a single JSON
 object mapping spec name to value as a string, verbatim including units. Use these names when
@@ -35,8 +34,6 @@ def parse_specs_reply(text: str) -> dict:
 async def extract(page_text: str, wanted_fields: list[str]) -> dict:
     if not page_text:
         return {}
-    if not ANTHROPIC_API_KEY:
-        return dict(CANNED_SPECS)
     client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
     try:
         response = await client.messages.create(

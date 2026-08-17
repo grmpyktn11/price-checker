@@ -58,7 +58,7 @@ Results:
       "spec_match": 1.0,
       "review_score": 0.94,
       "price_score": 1.0,
-      "distance_score": 0.5,
+      "distance_score": 0.98,
       "nice_to_have_score": 0.5,
       "specs_inherited_from": "amazon"
     }
@@ -76,9 +76,17 @@ Fields worth understanding:
 - `specs_inherited_from` — retailer the specs came from, or null. Same idea.
 - the five sub-scores are the ranking breakdown and always sum to `final_score` at
   `0.35 / 0.25 / 0.20 / 0.10 / 0.10`. Useful to show; not required.
-- `distance_score` is currently a constant `0.5` — no retailer supplies per-product distance.
+- `distance_score` is per-**retailer**, not per-product: it scores how far the nearest Target or
+  Best Buy is from the profile location (Google Places), falling linearly from 1.0 at the door to
+  0.0 at `radius_miles`. Amazon, a retailer with no store nearby, and a failed Places lookup all
+  score a neutral `0.5`. No retailer publishes per-product store stock.
 
-A live search takes **~30 seconds**. Show a pending state and disable the input; do not let a second
+The top 5 ranked products are then researched individually — one Reddit search each — and one
+model call reads that discussion per product. If it reports the top of the ranking too close to
+call, YouTube is searched for the top 2 and the call is repeated; a decisive search spends zero
+YouTube quota. `narration` reflects the post-research order.
+
+A live search takes **~30-60 seconds**. Show a pending state and disable the input; do not let a second
 message start while one is in flight.
 
 **Errors:** `400` location not set (see profile), `404` unknown conversation, `502` model call failed.
@@ -146,7 +154,7 @@ Returns `200` with a body, **not 204**. Removes the item's listings, price histo
 
 ### `POST /api/items/{id}/rescan`
 
-Runs the full pipeline for one item synchronously. **Slow — same ~30s as a chat search.**
+Runs the full pipeline for one item synchronously. **Slow — same ~30-60s as a chat search.**
 
 ```json
 { "item_id": 1, "listings_seen": 8, "alerts": ["target_hit"], "emails_sent": 0 }
@@ -192,7 +200,8 @@ the same product. Surface that — it is not this retailer's own rating.
 discussion contradicts the star rating. `rating_distribution_json` is a JSON string of star → share.
 
 Reddit and YouTube rows have `rating: null` and `review_count: null` — they are discussion, not
-ratings. Do not render them as a score.
+ratings. Do not render them as a score. They are the winning product's own research, not
+item-level chatter, and a YouTube row is only present when the search was a close call.
 
 **All three 404 on an unknown item id.**
 
@@ -237,15 +246,6 @@ fallback is acceptable when the key is missing.
 
 ---
 
-## Status
-
-### `GET /api/status` → `{"live_scrape": true}`
-
-Whether searches hit real retailers or replay saved captures. Worth showing, because in fixture mode
-the query is ignored entirely and results will not match what was asked for.
-
----
-
 ## Errors
 
 Standard FastAPI. **`detail` is a string on our raised errors but an ARRAY OF OBJECTS on `422`
@@ -271,7 +271,7 @@ const message = Array.isArray(detail)
 
 - **Never render a scraped url into an `href` unguarded.** They come from scraped pages. Allow only
   `https?://` and render anything else as plain text.
-- **Searches and rescans take ~30s.** Both need a visible pending state.
+- **Searches and rescans take ~30-60s.** Both need a visible pending state.
 - **Conversations do not survive a backend restart.** Handle the 404 with a reset affordance.
 - Money is a plain float in USD. Timestamps are naive ISO strings in UTC.
 - Pages the current reference frontend implements: Chat, Watchlist, Item detail (chart + listings

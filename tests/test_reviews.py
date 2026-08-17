@@ -1,5 +1,4 @@
 import asyncio
-from datetime import timedelta
 
 import pytest
 from sqlalchemy import create_engine
@@ -7,15 +6,16 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from backend.db import Base
-from backend.models import Review, utcnow
+from backend.models import Review
 from backend.scrapers.base import load_fixture, load_fixture_text
 from backend.services import reviews_reddit, reviews_store, reviews_youtube
-from backend.services.criteria import CANNED_CRITERIA
 from backend.services.pipeline import run_pipeline
+from sample_criteria import SAMPLE_CRITERIA
 
 LAT = 37.7749
 LON = -122.4194
 EXTERNAL_SOURCES = ("reddit", "youtube")
+REDDIT_FIXTURE = "reddit_search.xml"
 
 
 @pytest.fixture
@@ -39,7 +39,7 @@ def external_review(source, **overrides):
 # the reddit fixture is a real capture of the public search feed, so this asserts the shape
 # the live endpoint actually returns
 def test_parse_posts():
-    posts = reviews_reddit.parse_posts(load_fixture_text(reviews_reddit.FIXTURE))
+    posts = reviews_reddit.parse_posts(load_fixture_text(REDDIT_FIXTURE))
     assert posts
     for post in posts:
         assert post["title"]
@@ -54,17 +54,22 @@ def test_parse_selftext_without_a_body():
     assert reviews_reddit.parse_selftext("<a href='x'>[link]</a>") == ""
 
 
+# both sources are built from a saved capture here: gather() itself is a network call, and
+# the shape is what the pipeline depends on
 @pytest.mark.parametrize(
-    "gather,source,max_chars",
+    "review,source,max_chars",
     [
-        (lambda: reviews_reddit.gather("portable charger", "electronics"), "reddit",
-         reviews_reddit.MAX_SUMMARY_CHARS),
-        (lambda: reviews_youtube.gather("portable charger"), "youtube",
-         reviews_youtube.MAX_SUMMARY_CHARS),
+        (reviews_reddit.build_review(
+            reviews_reddit.parse_posts(load_fixture_text(REDDIT_FIXTURE))),
+         "reddit", reviews_reddit.MAX_SUMMARY_CHARS),
+        (reviews_youtube.build_review(
+            reviews_youtube.parse_videos(load_fixture("youtube_search.json"),
+                                         load_fixture("youtube_videos.json")),
+            reviews_youtube.parse_comments(load_fixture("youtube_comments.json"))),
+         "youtube", reviews_youtube.MAX_SUMMARY_CHARS),
     ],
 )
-def test_external_review_shape(gather, source, max_chars):
-    review = asyncio.run(gather())
+def test_external_review_shape(review, source, max_chars):
     assert review["source"] == source
     # no external source publishes a star rating, and a thread count is not a review count
     assert review["rating"] is None
@@ -95,7 +100,7 @@ def test_subreddits_are_bare_names():
 
 # the summary is what LLM call #4 reads, so it must carry the post bodies, not just titles
 def test_summary_carries_post_bodies():
-    posts = reviews_reddit.parse_posts(load_fixture_text(reviews_reddit.FIXTURE))
+    posts = reviews_reddit.parse_posts(load_fixture_text(REDDIT_FIXTURE))
     summary = reviews_reddit.build_summary(posts)
     assert posts[0]["selftext"][:100] in summary
     assert f"[r/{posts[0]['subreddit']}]" in summary
@@ -124,14 +129,14 @@ def test_parse_comments():
     assert comments and all(isinstance(comment, str) for comment in comments)
 
 
-# every candidate from every retailer carries the three item-level dicts
+# the researched top of the ranking carries discussion of its own product. youtube is only
+# fetched when the sentiment call says the top is too close to call, so it is not required
 @pytest.mark.live
-def test_item_level_reviews_reach_every_candidate():
-    ranked = asyncio.run(run_pipeline(CANNED_CRITERIA, LAT, LON, 25))
+def test_top_candidates_carry_their_own_research():
+    ranked = asyncio.run(run_pipeline(SAMPLE_CRITERIA, LAT, LON, 25))
     assert ranked
-    for candidate in ranked:
-        sources = {review["source"] for review in candidate.reviews}
-        assert set(EXTERNAL_SOURCES) <= sources
+    assert "reddit" in {review["source"] for review in ranked[0].reviews}
+    assert ranked[0].sentiment
 
 
 # a count of reddit threads is not a count of reviews: mention_count must not reach the filter
@@ -140,21 +145,13 @@ def test_external_sources_do_not_satisfy_min_review_count():
     assert max((r["review_count"] or 0) for r in reviews) == 0
 
 
-# fixture mode is the offline switch: no LIVE_SCRAPE means no socket, ever
-def test_fixture_mode_makes_no_request(monkeypatch):
-    def explode(*args, **kwargs):
-        raise AssertionError("reddit tried to make a request in fixture mode")
-
-    monkeypatch.setattr(reviews_reddit.httpx, "AsyncClient", explode)
-    assert asyncio.run(reviews_reddit.gather("anything", "electronics"))["source"] == "reddit"
-
-
-def test_save_and_load_round_trip(db):
+def test_save_writes_one_row_per_source(db):
     reviews = [external_review(source) for source in EXTERNAL_SOURCES]
     reviews_store.save_reviews(db, 1, reviews)
-    loaded = reviews_store.load_fresh_external(db, 1)
-    assert {row["source"] for row in loaded} == set(EXTERNAL_SOURCES)
-    assert all(row["rating"] is None for row in loaded)
+    rows = db.query(Review).all()
+    assert {row.source for row in rows} == set(EXTERNAL_SOURCES)
+    # discussion is not a star rating
+    assert all(row.rating is None for row in rows)
 
 
 def test_saving_twice_leaves_one_row_per_source(db):
@@ -164,18 +161,10 @@ def test_saving_twice_leaves_one_row_per_source(db):
     assert db.query(Review).count() == len(EXTERNAL_SOURCES)
 
 
-def test_stale_rows_are_not_returned(db):
-    reviews_store.save_reviews(db, 1, [external_review("reddit")])
-    row = db.query(Review).one()
-    row.fetched_at = utcnow() - timedelta(days=8)
-    db.commit()
-    assert reviews_store.load_fresh_external(db, 1) == []
-
-
-def test_inherited_rows_are_not_external(db):
+def test_inherited_rows_keep_their_source(db):
     reviews_store.save_reviews(db, 1, [
         {"source": "amazon_inherited", "rating": 4.2, "review_count": 226,
          "authenticity_flag": "ok"},
         external_review("reddit"),
     ])
-    assert [row["source"] for row in reviews_store.load_fresh_external(db, 1)] == ["reddit"]
+    assert {row.source for row in db.query(Review)} == {"amazon_inherited", "reddit"}

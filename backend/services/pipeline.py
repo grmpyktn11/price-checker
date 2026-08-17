@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from backend.scrapers.amazon import AmazonScraper
@@ -10,6 +11,7 @@ from backend.services import (
     reviews_youtube,
     sentiment,
     spec_extraction,
+    stores,
 )
 from backend.services.ranking import (
     INHERITED_SUFFIX,
@@ -52,13 +54,10 @@ SCRAPERS = [
     ("amazon", AMAZON),
 ]
 
-# live, each search returns ~24 products and each detail page is a browser launch, so both
-# numbers are hard caps. per Playwright retailer that is 1 search page + 3 product pages
-# (get_specs, get_reviews and get_page_text share one load through the 60s cache) = 4 loads.
-# the two numbers match on purpose: a candidate past the detail cutoff is dropped outright
-# whenever min_review_count is set, so a lower lookup cap bought nothing.
+# each search returns ~24 products and each detail page is a browser launch, so this is a hard
+# cap. per Playwright retailer that is 1 search page + 3 product pages (get_specs, get_reviews
+# and get_page_text share one load through the 60s cache) = 4 loads
 MAX_PRODUCTS_PER_RETAILER = 3
-DETAIL_LOOKUPS_PER_RETAILER = 3
 # capped: a retailer whose selectors broke must not send one 12k-char page per product on
 # every rescan forever
 SPEC_EXTRACTION_PER_RUN = 3
@@ -70,6 +69,17 @@ SPEC_EXTRACTION_PER_RUN = 3
 AMAZON_REVIEW_SEARCHES_PER_RUN = 2
 AMAZON_REVIEW_TILES_PER_SEARCH = 3
 AMAZON_REVIEW_LOOKUPS_PER_RUN = 2
+# how many of the ranked products get researched individually. reddit is keyless and free but
+# rate-limits, so the searches are capped and paced
+RESEARCH_TOP_N = 5
+REDDIT_PAUSE_SECONDS = 2.0
+# measured 2026-08-17: reddit 429s this host on most searches and answers the same query
+# seconds later, so one retry after a longer wait roughly doubles the yield. one, not a
+# backoff loop: five products must not turn into twenty requests
+REDDIT_RETRY_PAUSE_SECONDS = 4.0
+# a YouTube search costs 100 of ~10000 daily quota units, so it is only spent when the
+# sentiment call says the top of the ranking is too close to call, and only on the top two
+YOUTUBE_TOP_N = 2
 
 logger = logging.getLogger(__name__)
 
@@ -77,10 +87,10 @@ logger = logging.getLogger(__name__)
 # ScraperBase defines find_nearby_stores for everyone, so hasattr cannot detect Amazon's opt-out
 async def nearby_store_ids(scraper, lat: float, lon: float, radius_mi: int) -> list[str] | None:
     try:
-        stores = await scraper.find_nearby_stores(lat, lon, radius_mi)
+        stores_found = await scraper.find_nearby_stores(lat, lon, radius_mi)
     except NotImplementedError:
         return None
-    return [store["store_id"] for store in stores]
+    return [store["store_id"] for store in stores_found]
 
 
 # cheap pre-spec signal from the search tile: buyable products are worth a detail page load
@@ -98,35 +108,11 @@ def wanted_spec_fields(item_criteria: dict) -> list[str]:
     return list(dict.fromkeys([*fields, "Model Number"]))
 
 
-# reddit and youtube are fetched once per run and keyed on the item query, not per product:
-# per-product would be 9 reddit requests and 900 YouTube units per run. the honest cost is
-# that the external signal is item-level, not product-level
-async def gather_external_reviews(item_criteria: dict, db=None, item_id: int | None = None
-                                  ) -> list[dict]:
-    # a watched item with rows under a week old costs zero quota. a first chat search has no
-    # item row yet, so it always fetches
-    if db is not None and item_id:
-        cached = reviews_store.load_fresh_external(db, item_id)
-        if cached:
-            logger.info("external reviews served from cache for item %s", item_id)
-            return cached
-    query = build_query(item_criteria)
-    category = item_criteria.get("category")
-    gathered = [
-        await reviews_reddit.gather(query, category),
-        await reviews_youtube.gather(query),
-    ]
-    return [review for review in gathered if review]
-
-
-# the retailer row first, then the same three item-level dicts every candidate gets. the
-# external dicts are shared objects across candidates - only retailer rows are mutated - but
-# each candidate gets its own list, because review inheritance inserts into it
-async def gather_reviews(retailer: str, scraper, product: dict, external: list[dict]) -> list[dict]:
+# the retailer's own rating row, or nothing. external discussion is not gathered here: it is
+# per product and only the top of the ranking earns it, further down
+async def gather_reviews(retailer: str, scraper, product: dict) -> list[dict]:
     data = await scraper.get_reviews(product["url"])
-    if not data:
-        return [*external]
-    return [{"source": retailer, **data}, *external]
+    return [{"source": retailer, **data}] if data else []
 
 
 # any row with a rating counts: first-party, or one inherit_reviews just attributed
@@ -173,9 +159,9 @@ async def amazon_review_tiles(candidates: list[RankedProduct], scraper) -> list[
     return tiles
 
 
-# the one model call per run. it answers three questions at once - does this product meet the
-# requirements, how well does it fit them, and which listings are the same product - and it
-# answers them for the Amazon review tiles in the same breath.
+# the one product-filter call per run. it answers three questions at once - does this product
+# meet the requirements, how well does it fit them, and which listings are the same product -
+# and it answers them for the Amazon review tiles in the same breath.
 # returns the survivors plus the tiles keyed by group, which is how the review lookup finds
 # the Amazon listing for a candidate's product
 async def judge_candidates(item_criteria: dict, candidates: list[RankedProduct],
@@ -232,38 +218,14 @@ async def lookup_missing_reviews(candidates: list[RankedProduct],
                     data["rating"])
 
 
-# runs after inherit_reviews, so a candidate that inherited a rating is judged on that
-# review count rather than on zero
-async def filter_on_reviews(candidates: list[RankedProduct], min_review_count: int,
-                            external_sentiment: str | None) -> list[RankedProduct]:
-    survivors = []
-    for candidate in candidates:
-        counts = [(r.get("review_count") or 0) for r in candidate.reviews]
-        review_count = max(counts) if counts else 0
-        if review_count < min_review_count:
-            logger.info("skip %s: %s reviews", candidate.product["name"], review_count)
-            continue
-        apply_authenticity_flags(candidate.reviews, external_sentiment)
-        candidate.review_score = compute_review_score(candidate.reviews)
-        survivors.append(candidate)
-    return survivors
-
-
-# db and item_id are optional: a first chat search has neither and must still work. with both,
-# the staleness cache and review persistence are active; without either, external sources are
-# fetched fresh and nothing is written
-async def run_pipeline(item_criteria: dict, lat: float, lon: float, radius_mi: int,
-                       db=None, item_id: int | None = None) -> list[RankedProduct]:
+# every retailer, capped, with specs and the retailer's own rating for each candidate
+async def collect_candidates(item_criteria: dict, lat: float, lon: float,
+                             radius_mi: int) -> list[RankedProduct]:
     query = build_query(item_criteria)
-    min_review_count = item_criteria["min_review_count"]
     wanted_fields = wanted_spec_fields(item_criteria)
+    # one Places lookup per location for the whole run, not per product
+    store_distances = await stores.nearest_stores(lat, lon)
 
-    external = await gather_external_reviews(item_criteria, db, item_id)
-    external_sentiment = (await sentiment.classify(external))["sentiment"]
-
-    # no drops happen inside the loop beyond the detail cutoff: qualification and both
-    # inheritance passes are judged over the whole candidate set at once, so filtering has to
-    # wait until it is complete
     candidates = []
     spec_extractions = 0
     for retailer, scraper in SCRAPERS:
@@ -271,37 +233,28 @@ async def run_pipeline(item_criteria: dict, lat: float, lon: float, radius_mi: i
         try:
             store_ids = await nearby_store_ids(scraper, lat, lon, radius_mi)
             # relevance order decides which products survive the cap; the cheap tile signal
-            # only decides which of those are worth a detail page load
+            # only decides which are looked up first
             found = (await scraper.search(query, store_ids))[:MAX_PRODUCTS_PER_RETAILER]
-            for position, product in enumerate(sorted(found, key=tile_rank)):
-                # below the top few: no detail page load, so specs and reviews stay unknown
-                if position >= DETAIL_LOOKUPS_PER_RETAILER:
-                    if min_review_count:
-                        logger.info("skip %s: no detail lookup, review count unverifiable",
-                                    product["name"])
-                        continue
-                    specs, reviews = {}, [*external]
-                else:
-                    specs = await scraper.get_specs(product["url"])
-                    # first-party recovery: a page we did reach but could not parse. runs
-                    # before inheritance, and what it returns counts as first-party
-                    if not specs and spec_extractions < SPEC_EXTRACTION_PER_RUN:
-                        page_text = await scraper.get_page_text(product["url"])
-                        if page_text:
-                            spec_extractions += 1
-                            specs = await spec_extraction.extract(page_text, wanted_fields)
-                    reviews = await gather_reviews(retailer, scraper, product, external)
+            for product in sorted(found, key=tile_rank):
+                specs = await scraper.get_specs(product["url"])
+                # first-party recovery: a page we did reach but could not parse. runs before
+                # inheritance, and what it returns counts as first-party
+                if not specs and spec_extractions < SPEC_EXTRACTION_PER_RUN:
+                    page_text = await scraper.get_page_text(product["url"])
+                    if page_text:
+                        spec_extractions += 1
+                        specs = await spec_extraction.extract(page_text, wanted_fields)
                 candidates.append(
                     RankedProduct(
                         product=product,
                         retailer=retailer,
                         specs=specs,
-                        reviews=reviews,
+                        reviews=await gather_reviews(retailer, scraper, product),
                         spec_match=0.0,
                         review_score=0.0,
                         nice_to_have_score=0.0,
                         distance_score=compute_distance_score(
-                            product["distance_miles"], radius_mi
+                            store_distances.get(retailer), radius_mi
                         ),
                     )
                 )
@@ -309,7 +262,119 @@ async def run_pipeline(item_criteria: dict, lat: float, lon: float, radius_mi: i
             # keep the broad catch so one dead retailer does not kill a multi-retailer run,
             # but log the traceback: a code bug must not read like a retailer outage
             logger.exception("%s failed", retailer)
+    return candidates
 
+
+# reddit and youtube rows carry no rating, so they only reach the score through the
+# authenticity flag; the rating rows are what compute_review_score actually reads
+def score_candidate(candidate: RankedProduct) -> None:
+    apply_authenticity_flags(candidate.reviews, candidate.sentiment)
+    candidate.review_score = compute_review_score(candidate.reviews)
+
+
+# price is scored across the whole set, so it can only be done once everything is gathered
+def rank(candidates: list[RankedProduct], budget_max: float | None) -> list[RankedProduct]:
+    assign_price_scores(candidates, budget_max)
+    for candidate in candidates:
+        score_candidate(candidate)
+        candidate.final_score = compute_final_score(candidate)
+    return sorted(candidates, key=lambda c: c.final_score, reverse=True)
+
+
+# one reddit search per product, on that product's own name, paced: reddit rate-limits and
+# this is the only place the app searches it more than once. a product reddit has nothing on
+# simply gets no discussion row
+async def research_reddit(candidates: list[RankedProduct], category: str | None) -> None:
+    for position, candidate in enumerate(candidates):
+        if position:
+            await asyncio.sleep(REDDIT_PAUSE_SECONDS)
+        name = candidate.product["name"]
+        review = await reviews_reddit.gather(name, category)
+        # nothing back is usually a 429 rather than an unknown product, so try once more
+        if review is None:
+            await asyncio.sleep(REDDIT_RETRY_PAUSE_SECONDS)
+            review = await reviews_reddit.gather(name, category)
+        if review:
+            candidate.reviews.append(review)
+
+
+async def research_youtube(candidates: list[RankedProduct]) -> None:
+    for candidate in candidates:
+        review = await reviews_youtube.gather(candidate.product["name"])
+        if review:
+            candidate.reviews.append(review)
+
+
+# everything found about this one product, in the shape sentiment.assess reads
+def research_payload(candidates: list[RankedProduct]) -> list[dict]:
+    payload = []
+    for candidate in candidates:
+        rated = [r.get("rating") for r in candidate.reviews if r.get("rating") is not None]
+        discussion = "\n\n".join(f"[{r['source']}] {r['summary_text']}"
+                                 for r in candidate.reviews if r.get("summary_text"))
+        payload.append({
+            "name": candidate.product.get("name"),
+            "rating": rated[0] if rated else None,
+            "discussion": discussion,
+        })
+    return payload
+
+
+def apply_assessment(candidates: list[RankedProduct], assessments: list[dict]) -> None:
+    for candidate, assessment in zip(candidates, assessments):
+        candidate.sentiment = assessment["sentiment"]
+        candidate.sentiment_summary = assessment["summary"]
+
+
+# the point of the app: the top few products are researched one by one rather than sharing
+# one item-level lookup. one sentiment call in the common case, two when it says the top is
+# too close to call - and only then is any YouTube quota spent
+async def research_top(candidates: list[RankedProduct], category: str | None) -> None:
+    await research_reddit(candidates, category)
+    assessment = await sentiment.assess(research_payload(candidates))
+    if assessment["too_close"]:
+        logger.info("top of the ranking is too close to call: %s", assessment["too_close"])
+        await research_youtube(candidates[:YOUTUBE_TOP_N])
+        assessment = await sentiment.assess(research_payload(candidates))
+    apply_assessment(candidates, assessment["products"])
+
+
+# star ratings and discussion both count: Best Buy product pages are blocked and publish no
+# review count at all, so a product with real reddit/youtube threads about it clears the floor
+# on those instead. a candidate with neither is the one that gets dropped
+def evidence_count(candidate: RankedProduct) -> int:
+    counts = [(row.get("review_count") or 0) for row in candidate.reviews]
+    mentions = [(row.get("mention_count") or 0) for row in candidate.reviews]
+    return max([0, *counts, *mentions])
+
+
+def filter_on_reviews(candidates: list[RankedProduct],
+                      min_review_count: int) -> list[RankedProduct]:
+    survivors = []
+    for candidate in candidates:
+        count = evidence_count(candidate)
+        if count < min_review_count:
+            logger.info("skip %s: %s reviews or mentions", candidate.product["name"], count)
+            continue
+        survivors.append(candidate)
+    return survivors
+
+
+# the reddit/youtube rows for one product, which is what the reviews table stores as the
+# item's discussion. rating rows are the retailer's and are saved by the caller instead
+def research_rows(candidate: RankedProduct) -> list[dict]:
+    return [row for row in candidate.reviews if row.get("mention_count") is not None]
+
+
+# db and item_id are optional: a first chat search has neither and must still work. with both,
+# the winner's research is persisted; without either, nothing is written
+async def run_pipeline(item_criteria: dict, lat: float, lon: float, radius_mi: int,
+                       db=None, item_id: int | None = None) -> list[RankedProduct]:
+    budget_max = item_criteria.get("budget_max")
+    candidates = await collect_candidates(item_criteria, lat, lon, radius_mi)
+
+    # no drops happen before this: qualification and both inheritance passes are judged over
+    # the whole candidate set at once, so filtering has to wait until it is complete.
     # the tiles are gathered first so they ride along in the single judgment call
     tiles = await amazon_review_tiles(candidates, AMAZON)
     candidates, tiles_by_group = await judge_candidates(item_criteria, candidates, tiles)
@@ -318,12 +383,13 @@ async def run_pipeline(item_criteria: dict, lat: float, lon: float, radius_mi: i
     # last resort, and the only step that can help when Amazon returned nothing for this query:
     # read the Amazon page for candidates still without any rating
     await lookup_missing_reviews(candidates, tiles_by_group, AMAZON)
-    candidates = await filter_on_reviews(candidates, min_review_count, external_sentiment)
 
-    # price is scored across the whole set, so it can only be done once everything is gathered
-    assign_price_scores(candidates, item_criteria.get("budget_max"))
-    for candidate in candidates:
-        candidate.final_score = compute_final_score(candidate)
-    if db is not None and item_id:
-        reviews_store.save_reviews(db, item_id, external)
-    return sorted(candidates, key=lambda c: c.final_score, reverse=True)
+    # cheap pass first, so the research is spent on the products that are actually in contention
+    ranked = rank(candidates, budget_max)
+    await research_top(ranked[:RESEARCH_TOP_N], item_criteria.get("category"))
+    # re-rank: the research moved review_score through the per-product authenticity flags
+    ranked = filter_on_reviews(rank(ranked, budget_max), item_criteria["min_review_count"])
+
+    if db is not None and item_id and ranked:
+        reviews_store.save_reviews(db, item_id, research_rows(ranked[0]))
+    return ranked

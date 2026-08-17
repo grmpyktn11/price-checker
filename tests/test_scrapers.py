@@ -1,10 +1,8 @@
-import asyncio
-
 import pytest
 
 from backend.scrapers import amazon, bestbuy, target
 from backend.scrapers.base import load_fixture, load_fixture_text
-from backend.scrapers.browser import looks_blocked
+from backend.scrapers.browser import looks_blocked, page_text
 
 SEARCH_KEYS = {"name", "url", "price", "in_stock", "store_id", "distance_miles"}
 BIDI_MARKS = ("‎", "‏")
@@ -108,8 +106,9 @@ def test_bestbuy_tiles_carry_no_model_number():
         assert "model" not in " ".join(str(value) for value in row.values()).lower()
 
 
+# what the LLM spec fallback is handed: the product page with the markup stripped
 def test_page_text_is_plain_text():
-    text = asyncio.run(amazon.AmazonScraper().get_page_text("https://www.amazon.com/dp/X"))
+    text = page_text(AMAZON_PRODUCT)
     assert text and "<" not in text
 
 

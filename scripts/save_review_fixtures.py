@@ -15,6 +15,7 @@ from backend.scrapers.base import FIXTURES_DIR  # noqa: E402
 from backend.services import reviews_reddit, reviews_youtube  # noqa: E402
 
 QUERY = "portable charger"
+REDDIT_FIXTURE = "reddit_search.xml"
 CATEGORY = "electronics"
 # reddit is keyless but rate-limits hard, so this is one request. youtube costs 102 units.
 # run it once, not in a loop
@@ -30,10 +31,10 @@ def write(filename: str, payload: dict) -> None:
 async def save_reddit() -> None:
     xml_text = await reviews_reddit.search(QUERY, CATEGORY)
     if not xml_text:
-        print(f"{reviews_reddit.FIXTURE} skipped: search returned nothing")
+        print(f"{REDDIT_FIXTURE} skipped: search returned nothing")
         return
-    (FIXTURES_DIR / reviews_reddit.FIXTURE).write_text(xml_text, encoding="utf-8")
-    print(f"{reviews_reddit.FIXTURE}: {len(xml_text)} chars")
+    (FIXTURES_DIR / REDDIT_FIXTURE).write_text(xml_text, encoding="utf-8")
+    print(f"{REDDIT_FIXTURE}: {len(xml_text)} chars")
 
 
 async def save_youtube() -> None:

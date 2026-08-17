@@ -1,24 +1,19 @@
 import logging
-import os
 import re
 
 import httpx
 from bs4 import BeautifulSoup
 
-from backend.scrapers.base import load_fixture_text
-
 SOURCE = "reddit"
-# reddit's public search feed needs no key and no oauth, so LIVE_SCRAPE is the switch, the
-# same one the scrapers use. the Reddit API was applied for and denied; nothing here uses it.
+# reddit's public search feed needs no key and no oauth. the Reddit API was applied for and
+# denied; nothing here uses it.
 # 2026-08-16: the .json endpoints answer this host with "blocked by network security" 403s,
 # in a real browser as well as from httpx, so the equivalent .rss feed is used instead. it is
 # the same public search, keyless, and it carries the full post body
-LIVE_SCRAPE = os.getenv("LIVE_SCRAPE", "")
 SEARCH_URL = "https://www.reddit.com/r/{subreddits}/search.rss"
 # reddit blocks generic/default agents outright. one realistic descriptive agent, never rotated
 USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
               "Chrome/151.0.0.0 Safari/537.36")
-FIXTURE = "reddit_search.xml"
 # subreddits are joined into one multireddit path, so a category still costs one request
 MAX_SUBREDDITS = 4
 POSTS_PER_QUERY = 10
@@ -128,9 +123,7 @@ async def search(query: str, category: str | None) -> str:
         return ""
 
 
-# None when there are no results: nothing to persist and nothing to score
+# None when there are no results: nothing to persist and nothing to score. the query is one
+# product's name, so what comes back is discussion of that product, not of the category
 async def gather(query: str, category: str | None) -> dict | None:
-    # not opted in to live scraping: parse the saved capture instead of hitting reddit
-    if not LIVE_SCRAPE:
-        return build_review(parse_posts(load_fixture_text(FIXTURE)))
     return build_review(parse_posts(await search(query, category)))

@@ -95,9 +95,6 @@ async def save_amazon() -> None:
 
 
 async def main():
-    if not target.LIVE_SCRAPE:
-        print("set LIVE_SCRAPE=1 in .env: this tool only writes fixtures from live responses")
-        return
     await save_target()
     await save_bestbuy()
     await save_amazon()

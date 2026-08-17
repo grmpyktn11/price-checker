@@ -155,6 +155,7 @@ def test_delete_unknown_item_is_404(client, db):
     assert client.delete("/api/items/999").status_code == 404
 
 
+@pytest.mark.live
 def test_rescan_writes_listings(client, db):
     set_location(db)
     item_id = create(client).json()["id"]
@@ -166,6 +167,7 @@ def test_rescan_writes_listings(client, db):
 
 
 # no email is configured in the suite, so nothing is sent even when a target is hit
+@pytest.mark.live
 def test_rescan_sends_no_email_without_a_key(client, db):
     set_location(db)
     item_id = create(client, target_price=100000.0).json()["id"]
@@ -176,6 +178,7 @@ def test_rescan_unknown_item_is_404(client, db):
     assert client.post("/api/items/999/rescan").status_code == 404
 
 
+@pytest.mark.live
 def test_listings_price_history_and_reviews(client, db):
     set_location(db)
     item_id = create(client).json()["id"]

@@ -39,6 +39,10 @@ class RankedProduct:
     # the model's group id: listings sharing one are the same product at different retailers.
     # run-local and never serialized
     group: str | None = None
+    # what LLM call #4 made of this product's own reddit/youtube discussion. only the
+    # researched top few carry it; everything below stays None
+    sentiment: str | None = None
+    sentiment_summary: str | None = None
 
 
 # name plus keywords, lowercased, whitespace collapsed. must_haves are filters, not search terms
@@ -117,10 +121,10 @@ def distribution_is_skewed(distribution: dict | None) -> bool:
 
 
 # mutates authenticity_flag in place. precedence: skewed_distribution wins over mixed_signal,
-# because it is measured data about this exact product while the sentiment signal is
-# item-level and weaker. nothing ever writes suspicious_velocity: no source supplies a
-# listing age, so the velocity heuristic has no input
-def apply_authenticity_flags(reviews: list[dict], external_sentiment: str | None) -> None:
+# because it is the star breakdown of this exact listing while the sentiment signal is a
+# reading of prose about the product. nothing ever writes suspicious_velocity: no source
+# supplies a listing age, so the velocity heuristic has no input
+def apply_authenticity_flags(reviews: list[dict], product_sentiment: str | None) -> None:
     # imported here, not at module level: sentiment -> criteria -> ranking is an import cycle
     from backend.services.sentiment import contradicts
 
@@ -130,7 +134,7 @@ def apply_authenticity_flags(reviews: list[dict], external_sentiment: str | None
             row["authenticity_flag"] = "ok"
         elif distribution_is_skewed(row.get("rating_distribution")):
             row["authenticity_flag"] = "skewed_distribution"
-        elif contradicts(external_sentiment, rating):
+        elif contradicts(product_sentiment, rating):
             row["authenticity_flag"] = "mixed_signal"
         else:
             row["authenticity_flag"] = "ok"
@@ -165,7 +169,10 @@ def compute_review_score(reviews: list[dict]) -> float:
     return max(0.0, min(1.0, score))
 
 
-# online-only listings have no distance: neither near nor far, so neutral rather than worst
+# distance_miles is how far the retailer's NEAREST store is (services/stores.py), not where
+# this product is: no retailer publishes per-product store stock. linear falloff - a store on
+# top of you scores 1.0, one at the edge of the radius 0.0. a retailer with no store nearby,
+# and a failed Places lookup, both pass None and score neutral, so an outage cannot reorder
 def compute_distance_score(distance_miles: float | None, radius_miles: int) -> float:
     if distance_miles is None or not radius_miles:
         return NEUTRAL_SCORE

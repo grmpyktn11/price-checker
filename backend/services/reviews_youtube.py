@@ -4,8 +4,6 @@ import os
 
 import httpx
 
-from backend.scrapers.base import load_fixture
-
 SOURCE = "youtube"
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
 SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
@@ -31,7 +29,10 @@ async def get_json(client: httpx.AsyncClient, url: str, params: dict) -> dict:
         return response.json()
     # ValueError covers a 200 whose body is not json, which must degrade like an outage
     except (httpx.HTTPError, ValueError) as error:
-        logger.warning("youtube request failed (%s): %s", url, error)
+        # the error text carries the full request url, and the api key rides in the query
+        # string, so log the endpoint, the error type and the status code instead
+        status = getattr(getattr(error, "response", None), "status_code", "")
+        logger.warning("youtube request failed (%s): %s %s", url, type(error).__name__, status)
         return {}
 
 
@@ -101,13 +102,9 @@ def build_review(videos: list[dict], comments: list[str]) -> dict | None:
     }
 
 
+# the query is one product's name: this is only called for the top two products, and only
+# when the sentiment call says they are too close to separate on reddit alone
 async def gather(query: str) -> dict | None:
-    # no key configured: parse the saved fixtures instead of spending quota
-    if not YOUTUBE_API_KEY:
-        videos = parse_videos(load_fixture("youtube_search.json"),
-                              load_fixture("youtube_videos.json"))
-        return build_review(videos, parse_comments(load_fixture("youtube_comments.json")))
-
     async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
         search_payload = await get_json(client, SEARCH_URL, {
             "part": "snippet", "type": "video", "order": "relevance",
