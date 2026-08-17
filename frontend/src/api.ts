@@ -250,3 +250,11 @@ export function getReviews(itemId: number): Promise<Review[]> {
 export function getAlerts(): Promise<Alert[]> {
   return request<Alert[]>("/api/alerts");
 }
+
+export interface Status {
+  live_scrape: boolean;
+}
+
+export function getStatus(): Promise<Status> {
+  return request<Status>("/api/status");
+}
