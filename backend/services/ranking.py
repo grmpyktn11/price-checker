@@ -7,18 +7,14 @@ logger = logging.getLogger(__name__)
 
 FULL_CONFIDENCE_REVIEW_COUNT = 1000   # review count where rating is trusted at face value
 NEUTRAL_SCORE = 0.5                   # used wherever a signal is missing entirely
-MODEL_KEY_MIN_LENGTH = 3
-MODEL_KEY_BLOCKLIST = ("na", "n/a", "none", "unknown", "doesnotapply", "notapplicable")
-# an inherited review row keeps the donor's retailer in its source plus a suffix recording
-# which identity rule matched: "<origin>_inherited" for exact model-number equality, and
-# "<origin>_title_inherited" for the weaker title match that spec inheritance used. both end
-# in _inherited, so "is this row first-party" stays one endswith check
+# an inherited row keeps the donor's retailer in its source plus this suffix. one suffix, not
+# two: there is one identity mechanism now - the model's grouping - so there is nothing for a
+# second marker to distinguish
 INHERITED_SUFFIX = "_inherited"
-TITLE_INHERITED_SUFFIX = "_title_inherited"
-SPEC_MATCH_INHERITED_PENALTY = 0.9    # title identity is weaker evidence than a model number
-# a title-matched rating gets the same 0.9 haircut as a title-matched spec_match, for the same
-# reason: same evidence, so it must not be trusted more than the specs it arrived with
-TITLE_INHERITED_RATING_PENALTY = 0.9
+# the model groups listings by reading titles, which is weaker evidence than a manufacturer
+# part number, so anything inherited on a group takes the same mild haircut
+SPEC_MATCH_INHERITED_PENALTY = 0.9
+INHERITED_RATING_PENALTY = 0.9
 FIVE_STAR_DOMINANCE = 0.80            # share of 5-star reviews above which the curve is suspicious
 HOLLOW_MIDDLE_MAX = 0.10              # combined 2-4 star share below which the curve is bimodal
 # both penalties are judgement calls: the signals are weak, and a heavy penalty on a weak
@@ -40,9 +36,9 @@ class RankedProduct:
     price_score: float = 0.0   # set after the full candidate set is known
     final_score: float = 0.0   # set just before sorting
     specs_inherited_from: str | None = None   # retailer these specs were attributed from
-    # the donor object itself, run-local and never serialized: attribute_reviews needs it to
-    # inherit the same donor's rating on the same title evidence
-    specs_donor: "RankedProduct | None" = None
+    # the model's group id: listings sharing one are the same product at different retailers.
+    # run-local and never serialized
+    group: str | None = None
 
 
 # name plus keywords, lowercased, whitespace collapsed. must_haves are filters, not search terms
@@ -51,96 +47,12 @@ def build_query(criteria: dict) -> str:
     return re.sub(r"\s+", " ", " ".join(parts)).strip().lower()
 
 
-# lowercase, punctuation to spaces, split. "Dimensions (Overall)" -> ("dimensions", "overall")
-def normalize_spec_name(name: str) -> tuple[str, ...]:
-    return tuple(re.sub(r"[^a-z0-9]+", " ", name.lower()).split())
-
-
-# retailers print the same spec under different names: Best Buy's "Capacity" is Amazon's
-# "Battery Capacity". exact normalized match first, then any key whose tokens are a subset
-# or superset of the field's, fewest tokens winning and insertion order breaking ties
-# (scrapers build specs in page order, so real spec tables come before marketing bullets).
-# limits, accepted:
-# - no stemming: "Port" will not match "Ports"
-# - a vague one-word field ("Battery") has several plausible answers and picks one
-# - specs that merely share a token can still match wrongly; fail-closed only guards misses
-def find_spec_value(specs: dict, field: str) -> str | None:
-    wanted = normalize_spec_name(field)
-    # a field with no usable tokens would be a subset of every key
-    if not wanted:
-        return None
-    keys = {key: tokens for key in specs if (tokens := normalize_spec_name(key))}
-    for key, tokens in keys.items():
-        if tokens == wanted:
-            return str(specs[key])
-    pool = [key for key, tokens in keys.items()
-            if set(tokens) <= set(wanted) or set(tokens) >= set(wanted)]
-    if not pool:
-        return None
-    chosen = min(pool, key=lambda key: len(keys[key]))
-    if len(pool) > 1:
-        logger.debug("spec field %r matched %s, chose %r", field, pool, chosen)
-    return str(specs[chosen])
-
-
 # first number in the string, commas stripped. "24,000 milliamp hours" -> 24000.0
 def first_number(raw: str) -> float | None:
     match = re.search(r"[-+]?\d[\d,]*(?:\.\d+)?", raw)
     if not match:
         return None
     return float(match.group(0).replace(",", ""))
-
-
-# limits, by design and not worked around:
-# - no unit conversion; the criteria value must use the unit the retailer prints
-# - only the first number in the string is read ("5.1 x 2.1 inches" -> 5.1)
-# - cross-retailer spec names are matched on tokens by find_spec_value, not on meaning
-def spec_passes(specs: dict, rule: dict) -> bool:
-    raw = find_spec_value(specs, rule["field"])
-    # fail closed: a missing spec is never satisfied
-    if not raw:
-        return False
-    op = rule["op"]
-    if op == "exists":
-        return True
-    if op == "contains":
-        return str(rule["value"]).lower() in raw.lower()
-    number = first_number(raw)
-    if number is None:
-        return False
-    target = float(rule["value"])
-    if op == ">=":
-        return number >= target
-    if op == "<=":
-        return number <= target
-    if op == "==":
-        return number == target
-    return False
-
-
-# hard filter: every rule must pass, empty list passes
-def passes_must_haves(specs: dict, must_haves: list[dict]) -> bool:
-    return all(spec_passes(specs, rule) for rule in must_haves)
-
-
-# soft criteria: fraction of preferred specs satisfied. nothing preferred -> no penalty
-def compute_spec_match(specs: dict, preferred_specs: list[dict]) -> float:
-    if not preferred_specs:
-        return 1.0
-    satisfied = sum(1 for rule in preferred_specs if spec_passes(specs, rule))
-    return satisfied / len(preferred_specs)
-
-
-# uppercase, drop whitespace and hyphens, nothing else: no trailing-letter stripping, no
-# prefix matching, no edit distance. "a1383h11-1" -> "A1383H111", and A1383H11-2 stays different
-def model_key(specs: dict) -> str | None:
-    raw = find_spec_value(specs, "Model Number")
-    if not raw:
-        return None
-    key = re.sub(r"[\s-]+", "", raw).upper()
-    if len(key) < MODEL_KEY_MIN_LENGTH or raw.strip().lower() in MODEL_KEY_BLOCKLIST:
-        return None
-    return key
 
 
 # the candidate's own retailer row, which is the only row that can carry a first-party rating
@@ -156,42 +68,42 @@ def inherited_row(row: dict, suffix: str) -> dict:
     return {**row, "source": f"{row['source']}{suffix}", "inherited_from_retailer": row["source"]}
 
 
+# retailers publish specs unevenly, so a candidate whose own product page gave nothing takes
+# the specs of another listing the model put in its group. fills empty dicts only: a candidate
+# with even one first-party spec is never touched, and an inheritor never donates onward
+def inherit_specs(candidates: list[RankedProduct]) -> None:
+    # reversed, so the first candidate in the group wins rather than the last
+    donors = {c.group: c for c in reversed(candidates) if c.group and c.specs}
+    for candidate in candidates:
+        donor = donors.get(candidate.group) if candidate.group else None
+        if candidate.specs or donor is None:
+            continue
+        candidate.specs = dict(donor.specs)
+        candidate.specs_inherited_from = donor.retailer
+        # the identity is the model reading two titles, so the soft score says so
+        candidate.spec_match *= SPEC_MATCH_INHERITED_PENALTY
+        logger.info("specs inherited: %r <- %r [%s]", candidate.product.get("name"),
+                    donor.product.get("name"), donor.retailer)
+
+
 # star ratings are product-level, not listing-level, so a candidate with no first-party rating
-# may take another candidate's when both describe the same product. two identity strengths:
-# exact model number (the strict rule), and the same title match that supplied its specs
-def attribute_reviews(candidates: list[RankedProduct]) -> None:
+# takes the best-supported rating in its group
+def inherit_reviews(candidates: list[RankedProduct]) -> None:
     donors: dict[str, dict] = {}
     for candidate in candidates:
-        # inherited specs carry the donor's model number: reading it here would launder a
-        # title match into the exact-model-number rule, so inheritors never donate this way
-        if candidate.specs_inherited_from:
+        row = first_party_rating_row(candidate)
+        if not candidate.group or not row:
             continue
-        key, row = model_key(candidate.specs), first_party_rating_row(candidate)
-        if not key or not row:
-            continue
-        best = donors.get(key)
-        # whichever source has the most reviews wins a key collision
+        best = donors.get(candidate.group)
+        # whichever source has the most reviews wins the group
         if best is None or (row.get("review_count") or 0) > (best.get("review_count") or 0):
-            donors[key] = row
+            donors[candidate.group] = row
     for candidate in candidates:
-        if first_party_rating_row(candidate):
+        if first_party_rating_row(candidate) or not candidate.group:
             continue
-        if candidate.specs_inherited_from:
-            inherit_from_spec_donor(candidate)
-            continue
-        key = model_key(candidate.specs)
-        row = donors.get(key) if key else None
+        row = donors.get(candidate.group)
         if row:
             candidate.reviews.insert(0, inherited_row(row, INHERITED_SUFFIX))
-
-
-# same identity claim as the specs it already inherited, and marked distinctly so the weaker
-# evidence is visible in stored data
-def inherit_from_spec_donor(candidate: RankedProduct) -> None:
-    donor = candidate.specs_donor
-    row = first_party_rating_row(donor) if donor else None
-    if row:
-        candidate.reviews.insert(0, inherited_row(row, TITLE_INHERITED_SUFFIX))
 
 
 # a high 5-star share alone is normal for a good product; the hollow middle is the actual
@@ -246,10 +158,10 @@ def compute_review_score(reviews: list[dict]) -> float:
         score *= SKEWED_DISTRIBUTION_PENALTY
     elif flag == "mixed_signal":
         score *= MIXED_SIGNAL_PENALTY
-    # a model-number-inherited rating is not discounted (same physical product), a
-    # title-inherited one is: the evidence is a marketing title, not a manufacturer identifier
-    if str(primary.get("source", "")).endswith(TITLE_INHERITED_SUFFIX):
-        score *= TITLE_INHERITED_RATING_PENALTY
+    # an inherited rating rests on the model calling two listings the same product, which is
+    # weaker than the retailer's own feed, so it is discounted like an inherited spec_match
+    if str(primary.get("source", "")).endswith(INHERITED_SUFFIX):
+        score *= INHERITED_RATING_PENALTY
     return max(0.0, min(1.0, score))
 
 

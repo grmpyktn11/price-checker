@@ -71,10 +71,9 @@ class Review(Base):
     __tablename__ = "reviews"
     id = Column(Integer, primary_key=True)
     item_id = Column(Integer, ForeignKey("items.id"))
-    # amazon | bestbuy | target | reddit | youtube | <retailer>_inherited
-    # | <retailer>_title_inherited. the two inherited values are ratings attributed from
-    # another candidate in the same run: _inherited on exact model number, _title_inherited
-    # on the weaker search-title match
+    # amazon | bestbuy | target | reddit | youtube | <retailer>_inherited.
+    # _inherited is a rating attributed from another listing the model judged to be the same
+    # product, either one in the same run or one found by searching Amazon for this title
     source = Column(String)
     rating = Column(Float)
     review_count = Column(Integer)

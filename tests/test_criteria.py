@@ -10,8 +10,6 @@ from backend.services.criteria import (
     normalize,
     parse_json_reply,
 )
-from backend.services.nice_to_have import CANNED_SCORE, NO_PREFERENCES_SCORE, parse_score_reply
-from backend.services.nice_to_have import score as nice_to_have_score
 from backend.services.pipeline import run_pipeline
 from backend.services.ranking import RankedProduct
 from backend.services.spec_extraction import extract as extract_specs
@@ -139,8 +137,8 @@ def test_canned_criteria_has_no_bad_rules():
     assert bad_rule_question(CANNED_CRITERIA) is None
 
 
-# regression: a null value reached ranking.spec_passes and its TypeError was swallowed,
-# silently dropping a whole retailer
+# a rule with no value is a conversation problem: ask for the number rather than send a rule
+# the model cannot judge
 def test_null_valued_rule_returns_a_followup(monkeypatch):
     broken = {**CANNED_CRITERIA,
               "must_haves": [{"field": "Battery Capacity", "op": ">=", "value": None}]}
@@ -150,8 +148,8 @@ def test_null_valued_rule_returns_a_followup(monkeypatch):
     assert "Battery Capacity" in result["question"]
 
 
-# LLM calls #2 and #3 reuse parse_json_reply above, so their parsers are tested here against
-# literal replies: an LLM reply is not a captured API response worth committing as a fixture
+# LLM call #2 reuses parse_json_reply above, so its parser is tested here against a literal
+# reply: an LLM reply is not a captured API response worth committing as a fixture
 def test_parse_specs_reply():
     reply = '```json\n{"Battery Capacity": "24000 mAh", "Model Number": "C2046S"}\n```'
     assert parse_specs_reply(reply) == {"Battery Capacity": "24000 mAh",
@@ -174,17 +172,3 @@ def test_no_spec_fallback_without_page_text():
     assert asyncio.run(extract_specs("", ["Battery Capacity"])) == {}
 
 
-def test_parse_score_reply_averages_requested_preferences():
-    reply = '{"scores": {"compact": 0.8, "looks sleek": 0.4, "ignored": 1.0}}'
-    assert parse_score_reply(reply, ["compact", "looks sleek"]) == pytest.approx(0.6)
-
-
-def test_parse_score_reply_clamps_and_falls_back():
-    assert parse_score_reply('{"scores": {"compact": 5}}', ["compact"]) == 1.0
-    assert parse_score_reply("garbage", ["compact"]) == CANNED_SCORE
-    assert parse_score_reply('{"scores": {"other": 1}}', ["compact"]) == CANNED_SCORE
-
-
-# nothing asked for cannot be missed, matching compute_spec_match's empty-list answer
-def test_no_preferences_scores_one():
-    assert asyncio.run(nice_to_have_score({"name": "x"}, [])) == NO_PREFERENCES_SCORE

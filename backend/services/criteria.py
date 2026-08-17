@@ -79,12 +79,10 @@ Rules:
 - must_haves are hard filters, preferred_specs are soft preferences, nice_to_haves are subjective phrases.
 - budget_max and target_price may be null. Ask at most one question per reply.
 - min_review_count is 5 unless the user actually asks for a review threshold. Do not invent one.
-- a must_have drops every product whose spec table does not carry that field, and most
-  retailers publish only a handful of specs. So use must_haves ONLY for measurable specs a
-  retailer really prints, like capacity, wattage, size or weight. Attributes that live in the
-  product title instead - switch type, colour, model line, edition, "yellow switches",
-  "mechanical" - belong in keywords, and in nice_to_haves if they are subjective. Putting one
-  of those in must_haves returns nothing at all."""
+- put measurable specs the user stated - capacity, wattage, size, weight - in must_haves, and
+  attributes that live in the product title - switch type, colour, model line, "yellow
+  switches" - in keywords, plus nice_to_haves when subjective. Both are enforced downstream:
+  a stated quantity is strict wherever it appears, so nothing is lost by choosing wrong."""
 
 logger = logging.getLogger(__name__)
 

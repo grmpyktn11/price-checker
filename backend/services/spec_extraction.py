@@ -19,8 +19,8 @@ not infer, convert units, or guess. No other text."""
 logger = logging.getLogger(__name__)
 
 
-# the same flat str -> str shape parse_specs returns, so find_spec_value works on it unchanged.
-# values are never coerced to numbers here; first_number already does that downstream
+# the same flat str -> str shape parse_specs returns, so a recovered spec dict is
+# indistinguishable from a parsed one downstream. values are never coerced to numbers
 def parse_specs_reply(text: str) -> dict:
     parsed = parse_json_reply(text)
     if not isinstance(parsed, dict):

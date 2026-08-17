@@ -60,6 +60,9 @@ class ProductOut(BaseModel):
     distance_miles: float | None
     rating: float | None
     review_count: int | None
+    # source of the quoted rating: "amazon" is first-party, "amazon_inherited" was attributed
+    # from another listing the model judged to be the same product
+    rating_source: str | None
     final_score: float
     spec_match: float
     review_score: float
@@ -103,6 +106,7 @@ def to_product_out(product_id: int, ranked: RankedProduct) -> ProductOut:
         distance_miles=ranked.product.get("distance_miles"),
         rating=review.get("rating"),
         review_count=review.get("review_count"),
+        rating_source=review.get("source"),
         final_score=ranked.final_score,
         spec_match=ranked.spec_match,
         review_score=ranked.review_score,

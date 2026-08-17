@@ -5,7 +5,6 @@ import pytest
 from backend.scrapers import amazon, bestbuy, target
 from backend.scrapers.base import load_fixture, load_fixture_text
 from backend.scrapers.browser import looks_blocked
-from backend.services.ranking import find_spec_value
 
 SEARCH_KEYS = {"name", "url", "price", "in_stock", "store_id", "distance_miles"}
 BIDI_MARKS = ("‎", "‏")
@@ -91,16 +90,17 @@ def test_no_distribution_from_the_others(retailer):
     assert REVIEWS[retailer]["rating_distribution"] is None
 
 
-# both product pages already carry a model number, so review attribution needs no new parser
+# both product pages already carry a model number, which is the strongest identity hint the
+# judgment call gets
 def test_model_numbers_come_from_the_existing_spec_parsers():
-    assert find_spec_value(SPECS["bestbuy"], "Model Number") == "A1383H11-1"
-    assert find_spec_value(SPECS["amazon"], "Model Number") == "C2046S"
+    assert SPECS["bestbuy"]["Model Number"] == "A1383H11-1"
+    assert SPECS["amazon"]["Model Number"] == "C2046S"
 
 
 # documented gaps: Target publishes no model number, and Best Buy's tiles carry none either,
-# which is what forces title-based spec identity
+# so cross-retailer identity has to come off the titles
 def test_target_publishes_no_model_number():
-    assert find_spec_value(SPECS["target"], "Model Number") is None
+    assert "Model Number" not in SPECS["target"]
 
 
 def test_bestbuy_tiles_carry_no_model_number():

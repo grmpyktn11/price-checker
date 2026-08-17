@@ -53,7 +53,7 @@ Results:
       "distance_miles": null,
       "rating": 4.7,
       "review_count": 1843,
-      "rating_source": "amazon_title_inherited",
+      "rating_source": "amazon_inherited",
       "final_score": 0.71,
       "spec_match": 1.0,
       "review_score": 0.94,
@@ -185,8 +185,8 @@ so series are sparse and unevenly spaced — plot against time, not index.
 ```
 
 `source` is `amazon` | `target` | `bestbuy` | `reddit` | `youtube`, and any of the retailer values may
-carry an `_inherited` or `_title_inherited` suffix meaning the rating was attributed from the same
-product elsewhere. Surface that — it is not this retailer's own rating.
+carry an `_inherited` suffix meaning the rating was attributed from another listing judged to be
+the same product. Surface that — it is not this retailer's own rating.
 
 `authenticity_flag` is `ok` | `mixed_signal` | `skewed_distribution`. `mixed_signal` means outside
 discussion contradicts the star rating. `rating_distribution_json` is a JSON string of star → share.

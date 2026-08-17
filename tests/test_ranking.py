@@ -1,11 +1,10 @@
 import pytest
 
-from backend.services.pipeline import filter_on_specs
 from backend.services.ranking import (
+    INHERITED_RATING_PENALTY,
     MIXED_SIGNAL_PENALTY,
     NEUTRAL_SCORE,
     SKEWED_DISTRIBUTION_PENALTY,
-    SPEC_MATCH_INHERITED_PENALTY,
     RankedProduct,
     apply_authenticity_flags,
     assign_price_scores,
@@ -13,12 +12,9 @@ from backend.services.ranking import (
     compute_distance_score,
     compute_final_score,
     compute_review_score,
-    compute_spec_match,
     distribution_is_skewed,
-    find_spec_value,
     first_number,
     over_budget_penalty,
-    passes_must_haves,
 )
 
 # the real Amazon fixture curve: a strong product, not a suspicious one
@@ -31,49 +27,6 @@ EXTERNAL_ROWS = [
      "summary_text": "text", "mention_count": 9, "authenticity_flag": "ok"}
     for source in ("reddit", "youtube")
 ]
-
-# retailer spec strings, inline: these tests are about ranking math, not about any scraper
-SPECS = {
-    "Battery Capacity": "24,000 milliamp hours",
-    "Product Weight": "1.4 pounds",
-    "Number of USB Ports": "3",
-    "Pass-Through Charging": "Yes",
-    "Display Type": "Smart digital display",
-}
-PREFERRED_SPECS = [
-    {"field": "Number of USB Ports", "op": ">=", "value": 3},
-    {"field": "Product Weight", "op": "<=", "value": 1.0},
-]
-
-# real keys taken from the fixtures, in the order the scrapers emit them. Best Buy's set is
-# complete at 6; Target and Amazon are trimmed from 18 and 33 to the keys these cases
-# probe, relative order kept. copied, not imported, so these tests stay off the scrapers
-BESTBUY_SPECS = {
-    "Brand": "Anker",
-    "Model Number": "A1383H11-1",
-    "Product Name": "Power Bank (20K, 87W, Built-In USB-C Cable)",
-    "Color": "Black",
-    "Capacity": "20000 milliampere hours",
-    "Battery Chemistry": "Lithium-ion",
-}
-TARGET_SPECS = {
-    "Dimensions (Overall)": "2.36 Inches (H) x 4.92 Inches (W) x 6.89 Inches (D)",
-    "Weight": "1.95 Pounds",
-    "Battery Capacity": "24000 (mAh)",
-    "Wattage Output": "140 Watts",
-    "Battery": "1 Non-Universal Lithium Ion",
-    "Generous Capacity, Exceptional Portability": "Empower your charging with 24,000 mAh",
-}
-AMAZON_SPECS = {
-    "Battery Capacity": "20000 milliamp_hours",
-    "Number of Ports": "5",
-    "Output Wattage": "22.5 watts",
-    "Item Dimensions L x W x Thickness": '5.91"L x 2.83"W x 1.09"Th',
-    "Item Dimensions": "5.91 x 2.83 x 1.09 inches",
-    "Battery Weight": "148 g",
-    "Battery Cell Type": "Lithium Polymer",
-}
-
 
 # minimal candidate; only the fields the function under test reads matter
 def make_candidate(price, spec_match=0.0, review_score=0.0):
@@ -107,58 +60,6 @@ def test_build_query():
 )
 def test_first_number(raw, expected):
     assert first_number(raw) == expected
-
-
-@pytest.mark.parametrize(
-    "must_haves,expected",
-    [
-        ([{"field": "Battery Capacity", "op": ">=", "value": 20000}], True),
-        ([{"field": "Product Weight", "op": "<=", "value": 1.0}], False),
-        ([{"field": "Pass-Through Charging", "op": "contains", "value": "yes"}], True),
-        ([{"field": "Waterproof", "op": "exists"}], False),
-        ([], True),
-    ],
-)
-def test_passes_must_haves(must_haves, expected):
-    assert passes_must_haves(SPECS, must_haves) is expected
-
-
-@pytest.mark.parametrize(
-    "specs,field,expected",
-    [
-        # the reported bug: Best Buy prints a shorter name than the rule asks for
-        (BESTBUY_SPECS, "Battery Capacity", "20000 milliampere hours"),
-        # the second bug: neither substring direction matches, tokens do
-        (AMAZON_SPECS, "Number of USB Ports", "5"),
-        # exact match wins over the longer key that also contains it
-        (AMAZON_SPECS, "Item Dimensions", "5.91 x 2.83 x 1.09 inches"),
-        # fewest tokens beats the marketing soft bullet
-        (TARGET_SPECS, "Capacity", "24000 (mAh)"),
-        # Battery Weight is a different quantity, so no match at all
-        (AMAZON_SPECS, "Product Weight", None),
-        # punctuation and case are normalized away
-        ({"Dimensions (Overall)": "x"}, "dimensions overall", "x"),
-        # vague single-token field: fewest tokens, then insertion order
-        (AMAZON_SPECS, "Battery", "20000 milliamp_hours"),
-        (TARGET_SPECS, "Battery", "1 Non-Universal Lithium Ion"),
-        # a field with no usable tokens must not match every key by empty-subset
-        (TARGET_SPECS, "   ", None),
-        (TARGET_SPECS, "()", None),
-    ],
-)
-def test_find_spec_value(specs, field, expected):
-    assert find_spec_value(specs, field) == expected
-
-
-# end to end for the reported bug: the must_have now passes against Best Buy's Capacity key
-def test_must_have_matches_a_shorter_retailer_spec_name():
-    rule = [{"field": "Battery Capacity", "op": ">=", "value": 20000}]
-    assert passes_must_haves(BESTBUY_SPECS, rule) is True
-
-
-def test_compute_spec_match():
-    assert compute_spec_match(SPECS, PREFERRED_SPECS) == pytest.approx(0.5, abs=1e-3)
-    assert compute_spec_match(SPECS, []) == 1.0
 
 
 @pytest.mark.parametrize(
@@ -232,22 +133,12 @@ def test_no_retailer_row_is_neutral():
     assert compute_review_score(EXTERNAL_ROWS) == NEUTRAL_SCORE
 
 
-# a model-number match is the same physical product, so the rating is not discounted
-def test_model_inherited_rating_is_not_discounted():
+# the model grouped two listings by reading their titles, which is weaker than the retailer's
+# own feed, so an inherited rating is discounted
+def test_inherited_rating_is_discounted():
     inherited = [{**AMAZON_ROW, "source": "amazon_inherited"}]
-    assert compute_review_score(inherited) == compute_review_score([AMAZON_ROW])
-
-
-# title identity is weaker evidence than a model number, so the soft score says so
-def test_inherited_specs_are_discounted_in_spec_match():
-    first_party = make_candidate(99.99)
-    inherited = make_candidate(99.99)
-    for candidate in (first_party, inherited):
-        candidate.specs = SPECS
-    inherited.specs_inherited_from = "amazon"
-    filter_on_specs([first_party, inherited], [], PREFERRED_SPECS)
-    assert inherited.spec_match == pytest.approx(
-        first_party.spec_match * SPEC_MATCH_INHERITED_PENALTY, abs=1e-9
+    assert compute_review_score(inherited) == pytest.approx(
+        compute_review_score([AMAZON_ROW]) * INHERITED_RATING_PENALTY, abs=1e-9
     )
 
 

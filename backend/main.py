@@ -1,4 +1,5 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
@@ -22,6 +23,10 @@ from backend.scheduler import start_scheduler  # noqa: E402
 # (tests, scripts) never starts a background thread
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # product filtering has no offline path: without a key every search would silently return
+    # unfiltered results, so refuse to start instead
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        raise RuntimeError("ANTHROPIC_API_KEY is required")
     start_scheduler()
     yield
 
