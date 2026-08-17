@@ -20,17 +20,20 @@ LON = -122.4194
 HISTORY = [{"role": "user", "content": "x"}, {"role": "assistant", "content": "y"}]
 
 
+@pytest.mark.live
 def test_first_turn_is_a_followup():
     result = asyncio.run(extract([], "anything"))
     assert result["type"] == "followup"
     assert result["question"]
 
 
+@pytest.mark.live
 def test_later_turn_returns_criteria():
     result = asyncio.run(extract(HISTORY, "anything"))
     assert result["type"] == "criteria"
 
 
+@pytest.mark.live
 def test_criteria_shape():
     item_criteria = asyncio.run(extract(HISTORY, "anything"))["criteria"]
     assert item_criteria["name"]
@@ -41,6 +44,7 @@ def test_criteria_shape():
 
 
 # catches drift between criteria.py and pipeline.py
+@pytest.mark.live
 def test_criteria_runs_through_the_pipeline():
     item_criteria = asyncio.run(extract(HISTORY, "anything"))["criteria"]
     ranked = asyncio.run(
@@ -65,6 +69,7 @@ def test_normalize_replaces_nulls():
 
 # regression: a null min_review_count reached "review_count < min_review_count" and the
 # TypeError was swallowed by the per-retailer except, so the run returned nothing
+@pytest.mark.live
 def test_null_min_review_count_still_ranks():
     item_criteria = normalize({"name": "portable charger", "min_review_count": None})
     ranked = asyncio.run(
@@ -80,6 +85,7 @@ def test_normalize_replaces_null_lists():
     assert filled["must_haves"] == []
 
 
+@pytest.mark.live
 def test_null_lists_still_rank():
     item_criteria = normalize(
         {"name": "portable charger", "keywords": None, "must_haves": None}
@@ -139,6 +145,7 @@ def test_canned_criteria_has_no_bad_rules():
 
 # a rule with no value is a conversation problem: ask for the number rather than send a rule
 # the model cannot judge
+@pytest.mark.live
 def test_null_valued_rule_returns_a_followup(monkeypatch):
     broken = {**CANNED_CRITERIA,
               "must_haves": [{"field": "Battery Capacity", "op": ">=", "value": None}]}

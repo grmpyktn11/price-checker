@@ -46,6 +46,7 @@ def test_parse_sentiment_reply_garbage(reply):
     assert parse_sentiment_reply(reply) == CANNED_SENTIMENT
 
 
+@pytest.mark.live
 def test_classify_with_nothing_to_read():
     assert asyncio.run(classify([])) == CANNED_SENTIMENT
 

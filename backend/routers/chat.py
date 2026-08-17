@@ -1,6 +1,6 @@
 import json
 import logging
-from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Literal
 
 import anthropic
@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from backend.db import get_db
-from backend.models import Item, Listing, PriceHistory
+from backend.models import Conversation, Item, Listing, PriceHistory, utcnow
 from backend.routers.profile import get_or_create_profile
 from backend.services import criteria as criteria_service
 from backend.services import reviews_store
@@ -19,29 +19,53 @@ from backend.services.ranking import RankedProduct
 
 router = APIRouter(prefix="/api", tags=["chat"])
 
-MAX_CONVERSATIONS = 50   # single user; drop the oldest so a long-running process cannot grow forever
+TITLE_MAX_CHARS = 80   # conversation list only, the full first message stays in history
 
 logger = logging.getLogger(__name__)
 
 
-# scratch state: only the "watch" decision produces anything durable, so no table for this
-@dataclass
-class Conversation:
-    history: list[dict] = field(default_factory=list)   # [{"role", "content"}], oldest first
-    criteria: dict | None = None                        # set once extraction completes
-    results: list[RankedProduct] = field(default_factory=list)   # indexed by product_id
+# the id is client-generated, so a first message creates the row
+def get_or_create_conversation(db: Session, conversation_id: str) -> Conversation:
+    conversation = db.get(Conversation, conversation_id)
+    if conversation is None:
+        conversation = Conversation(id=conversation_id, history_json="[]", results_json="[]")
+        db.add(conversation)
+        db.commit()
+    return conversation
 
 
-CONVERSATIONS: dict[str, Conversation] = {}
+def load_json(text: str | None, default):
+    return json.loads(text) if text else default
 
 
-# dicts keep insertion order, so the first key is the oldest conversation
-def get_conversation(conversation_id: str) -> Conversation:
-    if conversation_id not in CONVERSATIONS:
-        if len(CONVERSATIONS) >= MAX_CONVERSATIONS:
-            del CONVERSATIONS[next(iter(CONVERSATIONS))]
-        CONVERSATIONS[conversation_id] = Conversation()
-    return CONVERSATIONS[conversation_id]
+# onupdate only fires when a column actually changes, and a re-sent identical history would
+# not, so the timestamp is set explicitly
+def save_conversation(db: Session, conversation: Conversation, history: list[dict],
+                      item_criteria: dict | None = None,
+                      results: list[dict] | None = None) -> None:
+    conversation.history_json = json.dumps(history)
+    if item_criteria is not None:
+        conversation.criteria_json = json.dumps(item_criteria)
+    if results is not None:
+        conversation.results_json = json.dumps(results)
+    conversation.updated_at = utcnow()
+    db.commit()
+
+
+# everything /chat/decision needs, and nothing else: buy_now quotes name/url/retailer, watch
+# writes the listing fields plus the reviews rows. the ranking scores are not stored - the
+# client already has them from the /chat/message response
+def decision_record(ranked: RankedProduct) -> dict:
+    return {
+        "name": ranked.product.get("name"),
+        "url": ranked.product.get("url"),
+        "price": ranked.product.get("price"),
+        "in_stock": ranked.product.get("in_stock"),
+        "store_id": ranked.product.get("store_id"),
+        "distance_miles": ranked.product.get("distance_miles"),
+        "retailer": ranked.retailer,
+        "reviews": ranked.reviews,
+    }
 
 
 class MessageIn(BaseModel):
@@ -122,76 +146,125 @@ def to_product_out(product_id: int, ranked: RankedProduct) -> ProductOut:
 # so the client always sees store_id/distance_miles rather than a missing key
 @router.post("/chat/message", response_model=MessageOut, response_model_exclude_unset=True)
 async def post_message(body: MessageIn, db: Session = Depends(get_db)) -> MessageOut:
-    conversation = get_conversation(body.conversation_id)
+    conversation = get_or_create_conversation(db, body.conversation_id)
+    history = load_json(conversation.history_json, [])
     try:
-        result = await criteria_service.extract(conversation.history, body.message)
+        result = await criteria_service.extract(history, body.message)
     # transport failure, not a bad reply: nothing useful to say back to the user
     except anthropic.APIError as error:
         logger.warning("criteria extraction failed: %s", error)
         raise HTTPException(502, "criteria extraction failed")
 
     # appended after extraction so the new message is not duplicated in the prompt
-    conversation.history.append({"role": "user", "content": body.message})
+    history.append({"role": "user", "content": body.message})
 
     if result["type"] == "followup":
-        conversation.history.append({"role": "assistant", "content": result["question"]})
+        history.append({"role": "assistant", "content": result["question"]})
+        save_conversation(db, conversation, history)
         return MessageOut(type="followup", question=result["question"])
 
     item_criteria = result["criteria"]
     profile = get_or_create_profile(db)
     if profile.lat is None or profile.lon is None:
-        # drop the turn we just appended: leaving a user message with no assistant reply
-        # would put two user turns in a row in the next prompt
-        conversation.history.pop()
+        # the turn we just appended is never saved: leaving a user message with no assistant
+        # reply would put two user turns in a row in the next prompt
         raise HTTPException(400, "Set your location first: PATCH /api/profile/location")
 
     ranked = await run_pipeline(
         item_criteria, profile.lat, profile.lon, item_criteria["radius_miles"]
     )
-    conversation.criteria = item_criteria
-    conversation.results = ranked[:TOP_N]
-    narration = await narrate(item_criteria, conversation.results)
-    conversation.history.append({"role": "assistant", "content": narration})
+    top = ranked[:TOP_N]
+    narration = await narrate(item_criteria, top)
+    history.append({"role": "assistant", "content": narration})
+    save_conversation(db, conversation, history, item_criteria,
+                      [decision_record(r) for r in top])
     return MessageOut(
         type="results",
         narration=narration,
-        products=[to_product_out(index, r) for index, r in enumerate(conversation.results)],
+        products=[to_product_out(index, r) for index, r in enumerate(top)],
     )
 
 
 @router.post("/chat/decision", response_model=DecisionOut, response_model_exclude_unset=True)
 def post_decision(body: DecisionIn, db: Session = Depends(get_db)) -> DecisionOut:
-    conversation = CONVERSATIONS.get(body.conversation_id)
+    conversation = db.get(Conversation, body.conversation_id)
     if conversation is None:
-        raise HTTPException(404, "conversation not found or expired")
-    if not conversation.results:
+        raise HTTPException(404, "conversation not found")
+    results = load_json(conversation.results_json, [])
+    if not results:
         raise HTTPException(404, "no results in this conversation yet")
-    if not 0 <= body.product_id < len(conversation.results):
+    if not 0 <= body.product_id < len(results):
         raise HTTPException(404, "unknown product_id")
 
-    chosen = conversation.results[body.product_id]
+    chosen = results[body.product_id]
     if body.decision == "buy_now":
         return DecisionOut(
             decision="buy_now",
-            url=chosen.product["url"],
-            message=f"Buy {chosen.product['name']} at {chosen.retailer}.",
+            url=chosen["url"],
+            message=f"Buy {chosen['name']} at {chosen['retailer']}.",
         )
 
     # the listings unique key is meaningless without a url, and a rescan cannot re-find it
-    if chosen.product.get("url") is None:
+    if chosen.get("url") is None:
         raise HTTPException(400, "product has no url")
-    item = watch_product(db, conversation.criteria, chosen)
+    item = watch_product(db, load_json(conversation.criteria_json, {}), chosen)
     return DecisionOut(
         decision="watch",
-        url=chosen.product["url"],
+        url=chosen["url"],
         item_id=item.id,
-        message=f"Watching {chosen.product['name']}.",
+        message=f"Watching {chosen['name']}.",
+    )
+
+
+class ConversationSummary(BaseModel):
+    id: str
+    title: str            # first user message, truncated
+    created_at: datetime
+    updated_at: datetime
+
+
+class ConversationOut(BaseModel):
+    id: str
+    history: list[dict]   # [{"role", "content"}], oldest first
+    created_at: datetime
+    updated_at: datetime
+
+
+def conversation_title(history: list[dict]) -> str:
+    first = next((turn["content"] for turn in history if turn.get("role") == "user"), "")
+    return first[:TITLE_MAX_CHARS]
+
+
+@router.get("/conversations", response_model=list[ConversationSummary])
+def list_conversations(db: Session = Depends(get_db)) -> list[ConversationSummary]:
+    rows = db.query(Conversation).order_by(Conversation.updated_at.desc()).all()
+    return [
+        ConversationSummary(
+            id=row.id,
+            title=conversation_title(load_json(row.history_json, [])),
+            created_at=row.created_at,
+            updated_at=row.updated_at,
+        )
+        for row in rows
+    ]
+
+
+@router.get("/conversations/{conversation_id}", response_model=ConversationOut)
+def get_conversation(conversation_id: str, db: Session = Depends(get_db)) -> ConversationOut:
+    conversation = db.get(Conversation, conversation_id)
+    if conversation is None:
+        raise HTTPException(404, "conversation not found")
+    return ConversationOut(
+        id=conversation.id,
+        history=load_json(conversation.history_json, []),
+        created_at=conversation.created_at,
+        updated_at=conversation.updated_at,
     )
 
 
 # one item, one listing, one price_history row, for the picked product only.
 # finding better alternatives is the job of the separate new_alternative scan
-def watch_product(db: Session, item_criteria: dict, chosen: RankedProduct) -> Item:
+def watch_product(db: Session, item_criteria: dict, chosen: dict) -> Item:
     item = Item(
         name=item_criteria["name"],
         category=item_criteria.get("category"),
@@ -207,14 +280,14 @@ def watch_product(db: Session, item_criteria: dict, chosen: RankedProduct) -> It
     db.flush()
     listing = Listing(
         item_id=item.id,
-        retailer=chosen.retailer,
-        store_id=chosen.product.get("store_id"),
+        retailer=chosen["retailer"],
+        store_id=chosen.get("store_id"),
         # Best Buy search returns online rows with no store
         store_name=None,
-        distance_miles=chosen.product.get("distance_miles"),
-        url=chosen.product["url"],
-        price=chosen.product.get("price"),
-        in_stock=chosen.product.get("in_stock"),
+        distance_miles=chosen.get("distance_miles"),
+        url=chosen["url"],
+        price=chosen.get("price"),
+        in_stock=chosen.get("in_stock"),
         shipping_days_est=None,
     )
     db.add(listing)
@@ -224,7 +297,7 @@ def watch_product(db: Session, item_criteria: dict, chosen: RankedProduct) -> It
         db.add(PriceHistory(listing_id=listing.id, price=listing.price))
     # first writer for the reviews table: the chosen product's retailer row (first-party or
     # inherited) plus the shared external rows, so a rescan can reuse them instead of quota
-    reviews_store.save_reviews(db, item.id, chosen.reviews)
+    reviews_store.save_reviews(db, item.id, chosen.get("reviews", []))
     db.commit()
     db.refresh(item)
     return item

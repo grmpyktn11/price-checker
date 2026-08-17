@@ -87,6 +87,20 @@ class Review(Base):
     fetched_at = Column(DateTime, default=utcnow)
 
 
+# the app only ever reads or writes a whole conversation, so JSON columns rather than a
+# row per turn. no eviction: rows are tiny and the user wants the history kept
+class Conversation(Base):
+    __tablename__ = "conversations"
+    id = Column(String, primary_key=True)        # client-generated conversation_id
+    history_json = Column(String)                # [{"role", "content"}], oldest first
+    criteria_json = Column(String)               # set once extraction completes
+    # only what /chat/decision needs per product, indexed by product_id, not the whole
+    # RankedProduct: the scores are already in the response the client kept
+    results_json = Column(String)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+
+
 class Alert(Base):
     __tablename__ = "alerts"
     id = Column(Integer, primary_key=True)

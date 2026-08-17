@@ -9,7 +9,6 @@ from sqlalchemy.orm import sessionmaker
 from backend.db import Base, get_db
 from backend.main import app
 from backend.models import Item, Listing, PriceHistory, Profile, Review
-from backend.routers.chat import CONVERSATIONS
 
 
 @pytest.fixture
@@ -27,7 +26,6 @@ def db():
 
 @pytest.fixture
 def client(db):
-    CONVERSATIONS.clear()
     app.dependency_overrides[get_db] = lambda: db
     yield TestClient(app)
     app.dependency_overrides.clear()
@@ -67,6 +65,7 @@ def counts(db):
     return [db.query(model).count() for model in (Item, Listing, PriceHistory)]
 
 
+@pytest.mark.live
 def test_first_message_is_a_followup(client, db):
     set_location(db)
     body = send(client, "c1", "i need a portable charger").json()
@@ -75,6 +74,7 @@ def test_first_message_is_a_followup(client, db):
     assert "products" not in body
 
 
+@pytest.mark.live
 def test_second_message_returns_results(client, db):
     set_location(db)
     body = search(client)
@@ -95,6 +95,7 @@ def test_second_message_returns_results(client, db):
 
 
 # null product fields must serialize as null, not vanish: the client reads them by key
+@pytest.mark.live
 def test_nullable_product_fields_are_present_as_null(client, db):
     set_location(db)
     first = search(client)["products"][0]
@@ -103,6 +104,7 @@ def test_nullable_product_fields_are_present_as_null(client, db):
 
 
 # provenance has to reach the client, so Phase 8 can render it without a backend change
+@pytest.mark.live
 def test_specs_inherited_from_is_serialized(client, db):
     set_location(db)
     first = search(client)["products"][0]
@@ -111,6 +113,7 @@ def test_specs_inherited_from_is_serialized(client, db):
 
 # the reviews table gets its first rows here: the chosen product's row plus the shared
 # item-level ones
+@pytest.mark.live
 def test_watch_persists_reviews(client, db):
     set_location(db)
     search(client)
@@ -120,6 +123,7 @@ def test_watch_persists_reviews(client, db):
     assert {"reddit", "youtube"} <= sources
 
 
+@pytest.mark.live
 def test_search_without_location_is_400(client, db):
     send(client, "c1", "i need a portable charger")
     response = send(client, "c1", "under $150")
@@ -127,6 +131,7 @@ def test_search_without_location_is_400(client, db):
     assert "PATCH /api/profile/location" in response.json()["detail"]
 
 
+@pytest.mark.live
 def test_buy_now_writes_nothing(client, db):
     set_location(db)
     body = search(client)
@@ -136,6 +141,7 @@ def test_buy_now_writes_nothing(client, db):
     assert counts(db) == [0, 0, 0]
 
 
+@pytest.mark.live
 def test_watch_writes_one_row_each(client, db):
     set_location(db)
     body = search(client)
@@ -149,6 +155,7 @@ def test_watch_writes_one_row_each(client, db):
     assert stored["name"] == "portable charger"
 
 
+@pytest.mark.live
 def test_second_watch_creates_a_second_item(client, db):
     set_location(db)
     search(client)
@@ -161,18 +168,21 @@ def test_unknown_conversation_is_404(client, db):
     assert decide(client, 0, "watch", conversation_id="nope").status_code == 404
 
 
+@pytest.mark.live
 def test_out_of_range_product_id_is_404(client, db):
     set_location(db)
     search(client)
     assert decide(client, 99, "watch").status_code == 404
 
 
+@pytest.mark.live
 def test_decision_before_results_is_404(client, db):
     set_location(db)
     send(client, "c2", "i need a portable charger")
     assert decide(client, 0, "watch", conversation_id="c2").status_code == 404
 
 
+@pytest.mark.live
 def test_bad_decision_value_is_422(client, db):
     set_location(db)
     search(client)

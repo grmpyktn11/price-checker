@@ -125,6 +125,7 @@ def test_parse_comments():
 
 
 # every candidate from every retailer carries the three item-level dicts
+@pytest.mark.live
 def test_item_level_reviews_reach_every_candidate():
     ranked = asyncio.run(run_pipeline(CANNED_CRITERIA, LAT, LON, 25))
     assert ranked

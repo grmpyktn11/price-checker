@@ -143,6 +143,7 @@ def test_record_alert_after_send(db):
     assert scheduler.record_alert(db, item.id, listing.id, "price_drop") is not None
 
 
+@pytest.mark.live
 def test_scrape_item_writes_listings_and_history(db, seeded_profile):
     item = make_item(db)
     result = asyncio.run(scheduler.scrape_item(db, item))
@@ -152,12 +153,14 @@ def test_scrape_item_writes_listings_and_history(db, seeded_profile):
 
 
 # first scrape of a new listing is always at its own all-time low, so deals fire
+@pytest.mark.live
 def test_scrape_item_records_alerts(db, seeded_profile):
     item = make_item(db)
     asyncio.run(scheduler.scrape_item(db, item))
     assert db.query(Alert).count() >= 1
 
 
+@pytest.mark.live
 def test_target_hit_is_sent_immediately(db, seeded_profile, sent):
     # any real price is under this, so every listing is a target hit
     item = make_item(db, target_price=100000.0)
@@ -169,6 +172,7 @@ def test_target_hit_is_sent_immediately(db, seeded_profile, sent):
 
 
 # everything that is not a target hit waits for the digest
+@pytest.mark.live
 def test_price_drop_is_not_sent_immediately(db, seeded_profile, sent):
     item = make_item(db)
     asyncio.run(scheduler.scrape_item(db, item))
