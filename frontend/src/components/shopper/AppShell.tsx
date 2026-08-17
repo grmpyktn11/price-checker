@@ -6,6 +6,7 @@ const nav = [
   { to: "/watchlist", label: "Watchlist" },
   { to: "/alerts", label: "Alerts" },
   { to: "/settings", label: "Settings" },
+  { to: "/how-it-works", label: "How it works" },
 ] as const;
 
 export function AppShell({

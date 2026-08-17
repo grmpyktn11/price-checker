@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AlertsRouteImport } from './routes/alerts'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as ItemsIdRouteImport } from './routes/items.$id'
@@ -23,6 +24,11 @@ const IndexRoute = IndexRouteImport.update({
 const AlertsRoute = AlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -44,6 +50,7 @@ const ItemsIdRoute = ItemsIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/settings': typeof SettingsRoute
   '/watchlist': typeof WatchlistRoute
   '/items/$id': typeof ItemsIdRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/settings': typeof SettingsRoute
   '/watchlist': typeof WatchlistRoute
   '/items/$id': typeof ItemsIdRoute
@@ -59,21 +67,42 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/settings': typeof SettingsRoute
   '/watchlist': typeof WatchlistRoute
   '/items/$id': typeof ItemsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/alerts' | '/settings' | '/watchlist' | '/items/$id'
+  fullPaths:
+    | '/'
+    | '/alerts'
+    | '/how-it-works'
+    | '/settings'
+    | '/watchlist'
+    | '/items/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alerts' | '/settings' | '/watchlist' | '/items/$id'
-  id: '__root__' | '/' | '/alerts' | '/settings' | '/watchlist' | '/items/$id'
+  to:
+    | '/'
+    | '/alerts'
+    | '/how-it-works'
+    | '/settings'
+    | '/watchlist'
+    | '/items/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/alerts'
+    | '/how-it-works'
+    | '/settings'
+    | '/watchlist'
+    | '/items/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlertsRoute: typeof AlertsRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   SettingsRoute: typeof SettingsRoute
   WatchlistRoute: typeof WatchlistRoute
   ItemsIdRoute: typeof ItemsIdRoute
@@ -93,6 +122,13 @@ declare module '@tanstack/react-router' {
       path: '/alerts'
       fullPath: '/alerts'
       preLoaderRoute: typeof AlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -122,6 +158,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlertsRoute: AlertsRoute,
+  HowItWorksRoute: HowItWorksRoute,
   SettingsRoute: SettingsRoute,
   WatchlistRoute: WatchlistRoute,
   ItemsIdRoute: ItemsIdRoute,
