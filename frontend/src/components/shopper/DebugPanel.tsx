@@ -1,169 +1,247 @@
-import { useEffect, useState } from "react";
-
+import { useState } from "react";
 import type { DebugTrace } from "@/api";
-import { ApiError, getLastDebug, safeUrl } from "@/api";
+import { getLastDebug } from "@/api";
 
-// the outcomes the backend records per retailer fetch. colour-coded so a failed search is
-// readable at a glance rather than by reading the tree
-const outcomeStyles: Record<string, string> = {
-  OK: "bg-primary text-primary-foreground",
-  OK_BUT_EMPTY: "bg-butter",
-  SELECTORS_RETURNED_NOTHING: "bg-sky",
-  BLOCKED: "bg-strawberry text-accent-foreground",
+// the trace is a plain dict from the backend, so read it defensively rather than typing it
+function rows(trace: DebugTrace, key: string): Record<string, unknown>[] {
+  const value = trace[key];
+  return Array.isArray(value) ? (value as Record<string, unknown>[]) : [];
+}
+
+function group(trace: DebugTrace, key: string): Record<string, unknown> {
+  const value = trace[key];
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+}
+
+function text(value: unknown): string {
+  if (value === null || value === undefined) return "-";
+  if (typeof value === "number") return String(value);
+  return String(value);
+}
+
+// what each outcome means, in the terms someone debugging actually needs
+const OUTCOME_HELP: Record<string, string> = {
+  OK: "answered, rows parsed",
+  OK_BUT_EMPTY: "answered, genuinely no results",
+  SELECTORS_RETURNED_NOTHING: "real page, parser found nothing - our bug",
+  BLOCKED: "bot wall, captcha or 403 - wait it out",
+  ERROR: "threw before parsing",
 };
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+function Outcome({ value }: { value: unknown }) {
+  const name = String(value ?? "");
+  const bad = name === "BLOCKED" || name === "ERROR";
+  const ours = name === "SELECTORS_RETURNED_NOTHING";
+  const colour = bad ? "text-strawberry" : ours ? "text-foreground" : "text-muted-foreground";
+  return <span className={`font-bold ${colour}`}>{name || "-"}</span>;
 }
 
-// the trace shape is still moving, so outcomes are found by value anywhere in the tree
-// instead of at a fixed path
-function collectOutcomes(node: unknown, found: string[] = []): string[] {
-  if (typeof node === "string" && node in outcomeStyles) found.push(node);
-  else if (Array.isArray(node)) node.forEach((entry) => collectOutcomes(entry, found));
-  else if (isRecord(node)) Object.values(node).forEach((entry) => collectOutcomes(entry, found));
-  return found;
-}
-
-function OutcomePill({ value }: { value: string }) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <span
-      className={`sticker rounded-full px-2 py-0.5 text-xs font-extrabold ${outcomeStyles[value] ?? "bg-secondary"}`}
-    >
-      {value}
-    </span>
+    <div className="mt-4 first:mt-0">
+      <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+        {title}
+      </p>
+      {children}
+    </div>
   );
 }
 
-function Scalar({ value }: { value: unknown }) {
-  if (typeof value === "string" && value in outcomeStyles) return <OutcomePill value={value} />;
-  const href = typeof value === "string" ? safeUrl(value) : null;
-  if (href) {
-    return (
-      <a href={href} target="_blank" rel="noreferrer noopener" className="break-all underline">
-        {href}
-      </a>
-    );
-  }
-  return <span className="break-all">{JSON.stringify(value)}</span>;
-}
-
-// every branch is a native <details>, so the whole tree is collapsed until it is opened
-// and no expansion state has to be tracked
-function Node({ label, value }: { label: string; value: unknown }) {
-  if (!isRecord(value) && !Array.isArray(value)) {
-    return (
-      <div className="flex flex-wrap gap-2 py-0.5">
-        <span className="font-bold">{label}</span>
-        <Scalar value={value} />
-      </div>
-    );
-  }
-  const entries = Array.isArray(value)
-    ? value.map((entry, index) => [String(index), entry] as const)
-    : Object.entries(value);
-  const outcomes = collectOutcomes(value);
+// one scrollable table; the page must never scroll sideways because of it
+function Table({ head, body }: { head: string[]; body: (string | React.ReactNode)[][] }) {
   return (
-    <details className="py-0.5" open={entries.length <= 8}>
-      <summary className="cursor-pointer font-bold">
-        {label}{" "}
-        <span className="font-normal text-muted-foreground">
-          {Array.isArray(value) ? `[${entries.length}]` : `{${entries.length}}`}
-        </span>{" "}
-        {[...new Set(outcomes)].map((outcome) => (
-          <OutcomePill key={outcome} value={outcome} />
-        ))}
-      </summary>
-      <div className="ml-3 border-l-2 border-border pl-3">
-        {entries.map(([key, entry]) => (
-          <Node key={key} label={key} value={entry} />
-        ))}
-      </div>
-    </details>
+    <div className="overflow-x-auto">
+      <table className="w-full text-left text-sm tabular-nums">
+        <thead>
+          <tr className="text-xs uppercase text-muted-foreground">
+            {head.map((h) => (
+              <th key={h} className="pr-4 pb-1 font-semibold">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {body.map((row, i) => (
+            <tr key={i} className="border-t border-foreground/15">
+              {row.map((cell, j) => (
+                <td key={j} className="pr-4 py-1 align-top">
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
-export function DebugPanel({ trace }: { trace: DebugTrace | null }) {
+export function DebugPanel({ trace }: { trace?: DebugTrace }) {
   const [open, setOpen] = useState(false);
-  const [fetched, setFetched] = useState<DebugTrace | null>(null);
+  const [loaded, setLoaded] = useState<DebugTrace | undefined>();
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
-  const shown = fetched ?? trace;
-  const outcomes = shown ? collectOutcomes(shown) : [];
-
-  // a fresh search supersedes whatever Load last put here, including its error
-  useEffect(() => {
-    setFetched(null);
-    setError(null);
-  }, [trace]);
+  const data = trace ?? loaded;
 
   async function loadLast() {
     setError(null);
     try {
-      setFetched(await getLastDebug());
-    } catch (caught) {
-      setError(
-        caught instanceof ApiError && caught.status === 404
-          ? "No trace recorded yet (GET /api/debug/last returned 404)."
-          : caught instanceof ApiError
-            ? caught.message
-            : "Request failed"
-      );
+      setLoaded(await getLastDebug());
+    } catch {
+      setError("No search has run since the backend started.");
     }
   }
 
-  function copy() {
-    if (!shown) return;
-    void navigator.clipboard.writeText(JSON.stringify(shown, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  }
+  const retailers = rows(data ?? {}, "retailers");
+  const research = rows(data ?? {}, "research");
+  const drops = rows(data ?? {}, "drops");
+  const stores = group(data ?? {}, "stores");
+  const filter = group(data ?? {}, "product_filter");
+  const youtube = group(data ?? {}, "youtube");
+  const distances = group(stores, "distance_miles");
+  const stages = group(data ?? {}, "stages_ms");
 
   return (
-    <section className="sticker mt-6 rounded-3xl bg-card p-4">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="sticker mt-6 rounded-3xl bg-card p-4">
+      <div className="flex flex-wrap items-center gap-3">
         <button
+          type="button"
           onClick={() => setOpen(!open)}
-          className="text-sm font-extrabold"
-          aria-expanded={open}
+          className="text-sm font-bold underline underline-offset-4"
         >
-          {open ? "▾" : "▸"} Debug trace
+          {open ? "Hide" : "Show"} search debug
         </button>
-        {[...new Set(outcomes)].map((outcome) => (
-          <OutcomePill key={outcome} value={outcome} />
-        ))}
-        <div className="ml-auto flex gap-2">
-          <button
-            onClick={loadLast}
-            className="sticker rounded-full bg-card px-3 py-1 text-xs font-extrabold"
-          >
-            Load last
-          </button>
-          <button
-            onClick={copy}
-            disabled={!shown}
-            className="sticker rounded-full bg-butter px-3 py-1 text-xs font-extrabold disabled:opacity-50"
-          >
-            {copied ? "Copied" : "Copy JSON"}
-          </button>
-        </div>
+        {open ? (
+          <>
+            <button type="button" onClick={loadLast} className="text-sm underline underline-offset-4">
+              Load last search
+            </button>
+            {data ? (
+              <button
+                type="button"
+                onClick={() => navigator.clipboard.writeText(JSON.stringify(data, null, 2))}
+                className="text-sm underline underline-offset-4"
+              >
+                Copy JSON
+              </button>
+            ) : null}
+          </>
+        ) : null}
       </div>
 
       {open ? (
-        <div className="mt-3 overflow-x-auto text-xs">
-          {error ? <p className="font-semibold text-destructive">{error}</p> : null}
-          {shown ? (
-            Object.entries(shown).map(([key, value]) => (
-              <Node key={key} label={key} value={value} />
-            ))
-          ) : (
-            <p className="text-muted-foreground">
-              No trace yet. Run a search, or press Load last to read the most recent one.
+        <div className="mt-3">
+          {error ? <p className="text-sm text-strawberry">{error}</p> : null}
+          {!data ? (
+            <p className="text-sm text-muted-foreground">
+              No trace yet. Run a search, or load the last one.
             </p>
+          ) : (
+            <>
+              <p className="text-sm">
+                {text(data.products_returned)} products returned in {text(data.total_ms)} ms
+                {data.retailers_answered === false ? " - no retailer answered" : ""}
+              </p>
+
+              <Section title="Retailers">
+                <Table
+                  head={["retailer", "outcome", "http", "page bytes", "rows", "kept", "ms"]}
+                  body={retailers.map((r) => [
+                    text(r.retailer),
+                    <Outcome value={r.outcome} />,
+                    text(r.http_status),
+                    text(r.page_chars),
+                    text(r.raw_rows),
+                    text(r.candidates_kept),
+                    text(r.ms),
+                  ])}
+                />
+                <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+                  {[...new Set(retailers.map((r) => String(r.outcome ?? "")))]
+                    .filter((name) => OUTCOME_HELP[name])
+                    .map((name) => (
+                      <li key={name}>
+                        <span className="font-bold">{name}</span> - {OUTCOME_HELP[name]}
+                      </li>
+                    ))}
+                </ul>
+              </Section>
+
+              {Object.keys(filter).length ? (
+                <Section title="Filtering">
+                  <p className="text-sm">
+                    {text(filter.products_in)} in, {text(filter.qualified)} qualified,{" "}
+                    {text(filter.rejected)} rejected ({text(filter.ms)} ms)
+                  </p>
+                </Section>
+              ) : null}
+
+              {drops.length ? (
+                <Section title="Dropped">
+                  <Table
+                    head={["stage", "product", "why"]}
+                    body={drops.map((d) => [
+                      text(d.stage),
+                      text(d.name).slice(0, 46),
+                      text(d.reason),
+                    ])}
+                  />
+                </Section>
+              ) : null}
+
+              {research.length ? (
+                <Section title="Research">
+                  <Table
+                    head={["#", "product", "reddit posts", "youtube"]}
+                    body={research.map((r) => [
+                      text(r.rank),
+                      text(r.name).slice(0, 46),
+                      text(r.reddit_posts),
+                      r.youtube ? text(r.youtube_videos) + " videos" : "not needed",
+                    ])}
+                  />
+                  {youtube.triggered !== undefined ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {youtube.triggered ? text(youtube.reason) : "ranking was decisive, no youtube quota spent"}
+                    </p>
+                  ) : null}
+                </Section>
+              ) : null}
+
+              {Object.keys(distances).length ? (
+                <Section title="Nearest stores">
+                  <p className="text-sm">
+                    {Object.entries(distances)
+                      .map(([name, miles]) => `${name} ${Number(miles).toFixed(2)} mi`)
+                      .join(" · ")}
+                  </p>
+                </Section>
+              ) : null}
+
+              {Object.keys(stages).length ? (
+                <Section title="Time per stage (ms)">
+                  <p className="text-sm">
+                    {Object.entries(stages)
+                      .sort((a, b) => Number(b[1]) - Number(a[1]))
+                      .map(([name, ms]) => `${name} ${text(ms)}`)
+                      .join(" · ")}
+                  </p>
+                </Section>
+              ) : null}
+
+              <Section title="Search urls">
+                <ul className="space-y-0.5 text-xs break-all text-muted-foreground">
+                  {retailers.map((r, i) => (
+                    <li key={i}>
+                      {text(r.retailer)}: {text(r.search_url)}
+                    </li>
+                  ))}
+                </ul>
+              </Section>
+            </>
           )}
         </div>
       ) : null}
-    </section>
+    </div>
   );
 }

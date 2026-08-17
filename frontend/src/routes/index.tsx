@@ -241,7 +241,7 @@ function ChatPage() {
         </section>
       </div>
 
-      <DebugPanel trace={debug} />
+      <DebugPanel trace={debug ?? undefined} />
     </AppShell>
   );
 }

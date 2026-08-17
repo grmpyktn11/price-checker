@@ -18,7 +18,7 @@ export function AppShell({
   subtitle?: string;
 }) {
   return (
-    <div className="min-h-screen dotgrid">
+    <div className="flex min-h-screen flex-col dotgrid">
       <header className="border-b-[3px] border-foreground gingham">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2">
@@ -46,7 +46,7 @@ export function AppShell({
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-8">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
         <div className="mb-6">
           <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
             {title}
