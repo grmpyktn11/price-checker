@@ -6,7 +6,6 @@ from backend.scrapers.target import TargetScraper
 from backend.services import (
     attribution,
     nice_to_have,
-    reviews_forums,
     reviews_reddit,
     reviews_store,
     reviews_youtube,
@@ -30,7 +29,7 @@ from backend.services.ranking import (
 # the criteria dict this module consumes, as criteria.py (LLM call #1) will emit it:
 # {
 #     "name": "portable charger",          # main search noun, required
-#     "category": "electronics",           # picks the subreddit/forum site lists
+#     "category": "electronics",           # picks the subreddit list
 #     "keywords": ["usb-c", "140w"],       # extra search terms, may be empty
 #     "must_haves": [                      # hard filter, all must pass
 #         {"field": "Battery Capacity", "op": ">=", "value": 20000},
@@ -90,9 +89,9 @@ def wanted_spec_fields(item_criteria: dict) -> list[str]:
     return list(dict.fromkeys([*fields, "Model Number"]))
 
 
-# reddit, forums and youtube are fetched once per run and keyed on the item query, not per
-# product: per-product would be 18 CSE queries per run against a 100/day tier. the honest
-# cost is that the external signal is item-level, not product-level
+# reddit and youtube are fetched once per run and keyed on the item query, not per product:
+# per-product would be 9 reddit requests and 900 YouTube units per run. the honest cost is
+# that the external signal is item-level, not product-level
 async def gather_external_reviews(item_criteria: dict, db=None, item_id: int | None = None
                                   ) -> list[dict]:
     # a watched item with rows under a week old costs zero quota. a first chat search has no
@@ -106,7 +105,6 @@ async def gather_external_reviews(item_criteria: dict, db=None, item_id: int | N
     category = item_criteria.get("category")
     gathered = [
         await reviews_reddit.gather(query, category),
-        await reviews_forums.gather(query, category),
         await reviews_youtube.gather(query),
     ]
     return [review for review in gathered if review]

@@ -71,7 +71,7 @@ class Review(Base):
     __tablename__ = "reviews"
     id = Column(Integer, primary_key=True)
     item_id = Column(Integer, ForeignKey("items.id"))
-    # amazon | bestbuy | target | reddit | forum | youtube | <retailer>_inherited
+    # amazon | bestbuy | target | reddit | youtube | <retailer>_inherited
     # | <retailer>_title_inherited. the two inherited values are ratings attributed from
     # another candidate in the same run: _inherited on exact model number, _title_inherited
     # on the weaker search-title match

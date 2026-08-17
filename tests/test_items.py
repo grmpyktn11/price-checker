@@ -191,7 +191,7 @@ def test_listings_price_history_and_reviews(client, db):
     assert {row["listing_id"] for row in history} <= {row["id"] for row in listings}
 
     reviews = client.get(f"/api/items/{item_id}/reviews").json()
-    assert {"reddit", "forum", "youtube"} <= {row["source"] for row in reviews}
+    assert {"reddit", "youtube"} <= {row["source"] for row in reviews}
 
 
 def test_listings_for_unknown_item_is_404(client, db):

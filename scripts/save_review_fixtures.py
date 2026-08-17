@@ -12,15 +12,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 load_dotenv()
 
 from backend.scrapers.base import FIXTURES_DIR  # noqa: E402
-from backend.services import google_cse, reviews_forums, reviews_reddit, reviews_youtube  # noqa: E402
+from backend.services import reviews_reddit, reviews_youtube  # noqa: E402
 
-# the committed cse_*.json are hand-built in the documented CSE response shape, not live
-# captures: the Custom Search API is not enabled on the project's key yet (403). run this
-# once it is, to replace them with real ones
 QUERY = "portable charger"
 CATEGORY = "electronics"
-# one full capture costs 2 CSE queries and 102 YouTube units. run it once, not in a loop
-COST_NOTE = "cost: 2 CSE queries, 102 YouTube units"
+# reddit is keyless but rate-limits hard, so this is one request. youtube costs 102 units.
+# run it once, not in a loop
+COST_NOTE = "cost: 1 reddit request, 102 YouTube units"
 
 
 def write(filename: str, payload: dict) -> None:
@@ -28,12 +26,20 @@ def write(filename: str, payload: dict) -> None:
     print(f"{filename}: {len(json.dumps(payload))} chars")
 
 
-async def save_cse() -> None:
-    write("cse_reddit.json", await google_cse.search(reviews_reddit.build_reddit_query(QUERY, CATEGORY)))
-    write("cse_forums.json", await google_cse.search(reviews_forums.build_forum_query(QUERY, CATEGORY)))
+# reddit's feed is xml, so it is written as text rather than re-serialized json
+async def save_reddit() -> None:
+    xml_text = await reviews_reddit.search(QUERY, CATEGORY)
+    if not xml_text:
+        print(f"{reviews_reddit.FIXTURE} skipped: search returned nothing")
+        return
+    (FIXTURES_DIR / reviews_reddit.FIXTURE).write_text(xml_text, encoding="utf-8")
+    print(f"{reviews_reddit.FIXTURE}: {len(xml_text)} chars")
 
 
 async def save_youtube() -> None:
+    if not reviews_youtube.YOUTUBE_API_KEY:
+        print("youtube fixtures skipped: no YOUTUBE_API_KEY")
+        return
     async with httpx.AsyncClient(timeout=reviews_youtube.TIMEOUT_SECONDS) as client:
         search = await reviews_youtube.get_json(client, reviews_youtube.SEARCH_URL, {
             "part": "snippet", "type": "video", "order": "relevance",
@@ -56,12 +62,8 @@ async def save_youtube() -> None:
 
 
 async def main():
-    if not google_cse.GOOGLE_CSE_API_KEY or not reviews_youtube.YOUTUBE_API_KEY:
-        print("set GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID and YOUTUBE_API_KEY in .env: this tool "
-              "only writes fixtures from live responses")
-        return
     print(COST_NOTE)
-    await save_cse()
+    await save_reddit()
     await save_youtube()
 
 

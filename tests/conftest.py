@@ -4,10 +4,8 @@ from backend.scrapers import amazon, bestbuy, target
 from backend.services import (
     criteria,
     email,
-    google_cse,
     narration,
     nice_to_have,
-    reviews_forums,
     reviews_reddit,
     reviews_youtube,
     sentiment,
@@ -25,11 +23,9 @@ def canned_mode(monkeypatch):
     monkeypatch.setattr(nice_to_have, "ANTHROPIC_API_KEY", "")
     monkeypatch.setattr(sentiment, "ANTHROPIC_API_KEY", "")
     monkeypatch.setattr(spec_extraction, "ANTHROPIC_API_KEY", "")
-    monkeypatch.setattr(reviews_reddit, "GOOGLE_CSE_API_KEY", "")
-    monkeypatch.setattr(reviews_forums, "GOOGLE_CSE_API_KEY", "")
     monkeypatch.setattr(reviews_youtube, "YOUTUBE_API_KEY", "")
-    # belt and braces: even if a guard is ever missed, the shared CSE call refuses to run
-    monkeypatch.setattr(google_cse, "GOOGLE_CSE_API_KEY", "")
+    # reddit is keyless, so LIVE_SCRAPE is its switch, same as the scrapers
+    monkeypatch.setattr(reviews_reddit, "LIVE_SCRAPE", "")
     # no test may send an email: the render path still runs, the send returns False
     monkeypatch.setattr(email, "RESEND_API_KEY", "")
     monkeypatch.setattr(email, "USER_EMAIL", "")

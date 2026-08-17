@@ -1,5 +1,5 @@
 import asyncio
-from datetime import date, timedelta
+from datetime import timedelta
 
 import pytest
 from sqlalchemy import create_engine
@@ -8,25 +8,14 @@ from sqlalchemy.pool import StaticPool
 
 from backend.db import Base
 from backend.models import Review, utcnow
-from backend.scrapers.base import load_fixture
-from backend.services import google_cse, reviews_forums, reviews_reddit, reviews_store, reviews_youtube
+from backend.scrapers.base import load_fixture, load_fixture_text
+from backend.services import reviews_reddit, reviews_store, reviews_youtube
 from backend.services.criteria import CANNED_CRITERIA
 from backend.services.pipeline import run_pipeline
 
 LAT = 37.7749
 LON = -122.4194
-EXTERNAL_SOURCES = ("reddit", "forum", "youtube")
-# the two cse_*.json fixtures are hand-built in the documented CSE response shape: the
-# Custom Search API is not enabled on the project's key, so a live capture 403s
-CSE_FIXTURES = ("cse_reddit.json", "cse_forums.json")
-
-
-# the in-process counter must not leak between tests
-@pytest.fixture
-def fresh_budget():
-    google_cse._SPENT.update({"date": None, "count": 0})
-    yield
-    google_cse._SPENT.update({"date": None, "count": 0})
+EXTERNAL_SOURCES = ("reddit", "youtube")
 
 
 @pytest.fixture
@@ -47,61 +36,69 @@ def external_review(source, **overrides):
             "summary_text": "text", "mention_count": 50, "authenticity_flag": "ok", **overrides}
 
 
-@pytest.mark.parametrize("filename", CSE_FIXTURES)
-def test_parse_items(filename):
-    items = google_cse.parse_items(load_fixture(filename))
-    assert items
-    for item in items:
-        assert item["title"] and item["snippet"] and item["display_link"]
-        assert item["link"].startswith("https://")
+# the reddit fixture is a real capture of the public search feed, so this asserts the shape
+# the live endpoint actually returns
+def test_parse_posts():
+    posts = reviews_reddit.parse_posts(load_fixture_text(reviews_reddit.FIXTURE))
+    assert posts
+    for post in posts:
+        assert post["title"]
+        assert post["subreddit"]
+        assert post["url"].startswith("https://www.reddit.com/")
+    # full post bodies are the point of this source: a search snippet would never be this long
+    assert any(len(post["selftext"]) > 200 for post in posts)
 
 
-def test_forum_fixture_covers_several_domains():
-    domains = {item["display_link"] for item in google_cse.parse_items(load_fixture("cse_forums.json"))}
-    assert len(domains) >= 2
+# a link post has no body between the markers, and that is not an error
+def test_parse_selftext_without_a_body():
+    assert reviews_reddit.parse_selftext("<a href='x'>[link]</a>") == ""
 
 
 @pytest.mark.parametrize(
-    "gather,source",
+    "gather,source,max_chars",
     [
-        (lambda: reviews_reddit.gather("portable charger", "electronics"), "reddit"),
-        (lambda: reviews_forums.gather("portable charger", "electronics"), "forum"),
-        (lambda: reviews_youtube.gather("portable charger"), "youtube"),
+        (lambda: reviews_reddit.gather("portable charger", "electronics"), "reddit",
+         reviews_reddit.MAX_SUMMARY_CHARS),
+        (lambda: reviews_youtube.gather("portable charger"), "youtube",
+         reviews_youtube.MAX_SUMMARY_CHARS),
     ],
 )
-def test_external_review_shape(gather, source):
+def test_external_review_shape(gather, source, max_chars):
     review = asyncio.run(gather())
     assert review["source"] == source
-    # no external source publishes a star rating, and a hit count is not a review count
+    # no external source publishes a star rating, and a thread count is not a review count
     assert review["rating"] is None
     assert review["review_count"] is None
     assert review["verified_ratio"] is None
     assert review["summary_text"]
-    assert len(review["summary_text"]) <= google_cse.MAX_SUMMARY_CHARS
+    assert len(review["summary_text"]) <= max_chars
     assert isinstance(review["mention_count"], int)
     assert review["url"].startswith("https://")
 
 
-def test_build_reddit_query():
-    query = reviews_reddit.build_reddit_query("portable charger", "electronics")
-    assert "site:reddit.com/r/" in query
-    assert query.count("site:") <= reviews_reddit.MAX_SUBREDDITS
+def test_build_subreddit_path():
+    path = reviews_reddit.build_subreddit_path("electronics")
+    assert path.startswith("electronics+")
+    assert len(path.split("+")) <= reviews_reddit.MAX_SUBREDDITS
 
 
 def test_unknown_category_falls_back():
-    assert "r/BuyItForLife" in reviews_reddit.build_reddit_query("x", "spaceships")
-    assert "rtings.com" in reviews_forums.build_forum_query("x", "spaceships")
+    assert "BuyItForLife" in reviews_reddit.build_subreddit_path("spaceships")
 
 
-def test_forum_sites_are_bare_domains():
-    for sites in [*reviews_forums.FORUM_SITES.values(), reviews_forums.DEFAULT_FORUM_SITES]:
-        for site in sites:
-            assert "://" not in site
+def test_subreddits_are_bare_names():
+    for names in [*reviews_reddit.CATEGORY_SUBREDDIT_MAP.values(),
+                  reviews_reddit.DEFAULT_SUBREDDITS]:
+        for name in names:
+            assert not name.startswith("r/") and "/" not in name
 
 
-def test_forum_query_is_capped():
-    query = reviews_forums.build_forum_query("x", "computers")
-    assert query.count("site:") <= reviews_forums.MAX_SITES_PER_QUERY
+# the summary is what LLM call #4 reads, so it must carry the post bodies, not just titles
+def test_summary_carries_post_bodies():
+    posts = reviews_reddit.parse_posts(load_fixture_text(reviews_reddit.FIXTURE))
+    summary = reviews_reddit.build_summary(posts)
+    assert posts[0]["selftext"][:100] in summary
+    assert f"[r/{posts[0]['subreddit']}]" in summary
 
 
 def test_parse_videos_merges_statistics():
@@ -136,38 +133,19 @@ def test_item_level_reviews_reach_every_candidate():
         assert set(EXTERNAL_SOURCES) <= sources
 
 
-# a count of Google hits is not a count of reviews: mention_count must not reach the filter
+# a count of reddit threads is not a count of reviews: mention_count must not reach the filter
 def test_external_sources_do_not_satisfy_min_review_count():
     reviews = [external_review(source) for source in EXTERNAL_SOURCES]
     assert max((r["review_count"] or 0) for r in reviews) == 0
 
 
-def test_budget_rolls_over_by_day(fresh_budget):
-    assert google_cse.budget_left(date(2026, 1, 1)) == google_cse.DAILY_BUDGET
-    google_cse._SPENT["count"] = google_cse.DAILY_BUDGET
-    assert google_cse.budget_left(date(2026, 1, 1)) == 0
-    assert google_cse.budget_left(date(2026, 1, 2)) == google_cse.DAILY_BUDGET
-
-
-def test_exhausted_budget_makes_no_request(monkeypatch, fresh_budget):
-    monkeypatch.setattr(google_cse, "GOOGLE_CSE_API_KEY", "key")
-    monkeypatch.setattr(google_cse, "GOOGLE_CSE_ID", "cx")
-
-    # any attempt to open a connection fails the test rather than reaching the network
+# fixture mode is the offline switch: no LIVE_SCRAPE means no socket, ever
+def test_fixture_mode_makes_no_request(monkeypatch):
     def explode(*args, **kwargs):
-        raise AssertionError("cse tried to make a request with no budget left")
+        raise AssertionError("reddit tried to make a request in fixture mode")
 
-    monkeypatch.setattr(google_cse.httpx, "AsyncClient", explode)
-    google_cse._SPENT.update({"date": date.today(), "count": google_cse.DAILY_BUDGET})
-    assert asyncio.run(google_cse.search("anything")) == {}
-
-
-def test_missing_key_makes_no_request(monkeypatch, fresh_budget):
-    def explode(*args, **kwargs):
-        raise AssertionError("cse tried to make a request with no key")
-
-    monkeypatch.setattr(google_cse.httpx, "AsyncClient", explode)
-    assert asyncio.run(google_cse.search("anything")) == {}
+    monkeypatch.setattr(reviews_reddit.httpx, "AsyncClient", explode)
+    assert asyncio.run(reviews_reddit.gather("anything", "electronics"))["source"] == "reddit"
 
 
 def test_save_and_load_round_trip(db):

@@ -11,20 +11,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 load_dotenv()
 
-from backend.services import google_cse, reviews_forums, reviews_reddit, reviews_youtube, sentiment  # noqa: E402
+from backend.services import reviews_reddit, reviews_youtube, sentiment  # noqa: E402
 
 QUERY = "portable charger usb-c 140w"
 CATEGORY = "electronics"
-FIXTURE_NOTE = ("FIXTURE MODE: every source returns the same saved capture, taken for "
-                "'portable charger', regardless of the query above.")
+FIXTURE_NOTE = ("FIXTURE MODE: the source returns the saved capture, taken for 'portable "
+                "charger', regardless of the query above.")
 
 logging.basicConfig(level=logging.INFO)
 # httpx logs full urls at INFO and our keys ride in query strings
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
-def mode(has_key: bool) -> str:
-    return "LIVE" if has_key else "FIXTURE"
+def mode(live: bool) -> str:
+    return "LIVE" if live else "FIXTURE"
 
 
 def show(review: dict | None) -> None:
@@ -37,17 +37,14 @@ def show(review: dict | None) -> None:
 
 
 async def main():
-    cse_live = bool(google_cse.GOOGLE_CSE_API_KEY and google_cse.GOOGLE_CSE_ID)
-    print("reddit  MODE:", mode(bool(reviews_reddit.GOOGLE_CSE_API_KEY and cse_live)))
-    print("forums  MODE:", mode(bool(reviews_forums.GOOGLE_CSE_API_KEY and cse_live)))
+    print("reddit  MODE:", mode(bool(reviews_reddit.LIVE_SCRAPE)))
     print("youtube MODE:", mode(bool(reviews_youtube.YOUTUBE_API_KEY)))
-    if not cse_live:
+    if not reviews_reddit.LIVE_SCRAPE or not reviews_youtube.YOUTUBE_API_KEY:
         print(FIXTURE_NOTE)
 
     reviews = []
     for label, review in (
         ("reddit", await reviews_reddit.gather(QUERY, CATEGORY)),
-        ("forums", await reviews_forums.gather(QUERY, CATEGORY)),
         ("youtube", await reviews_youtube.gather(QUERY)),
     ):
         print(f"\n{label}:")
@@ -56,7 +53,6 @@ async def main():
             reviews.append(review)
 
     print("\nsentiment:", json.dumps(await sentiment.classify(reviews)))
-    print("cse budget left:", google_cse.budget_left())
 
 
 asyncio.run(main())

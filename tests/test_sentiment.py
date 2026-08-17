@@ -52,7 +52,7 @@ def test_classify_with_nothing_to_read():
 
 def test_build_input_labels_and_truncates():
     reviews = [{"source": "reddit", "summary_text": "a" * 5000},
-               {"source": "forum", "summary_text": "b" * 5000}]
+               {"source": "youtube", "summary_text": "b" * 5000}]
     text = build_input(reviews)
     assert text.startswith("[reddit]")
     assert len(text) == MAX_INPUT_CHARS

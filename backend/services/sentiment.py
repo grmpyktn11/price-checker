@@ -8,7 +8,7 @@ from backend.services.criteria import parse_json_reply
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 MODEL = "claude-sonnet-4-5"
 MAX_TOKENS = 300
-MAX_INPUT_CHARS = 6000   # 3 sources x google_cse.MAX_SUMMARY_CHARS
+MAX_INPUT_CHARS = 5000   # reviews_reddit.MAX_SUMMARY_CHARS + reviews_youtube.MAX_SUMMARY_CHARS
 CANNED_SENTIMENT = {"sentiment": "unknown", "confidence": 0.0, "summary": ""}
 VALID_SENTIMENTS = ("positive", "negative", "mixed", "unknown")
 POSITIVE_RATING_FLOOR = 4.3    # a rating this high alongside negative talk is the contradiction

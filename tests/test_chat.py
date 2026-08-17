@@ -117,7 +117,7 @@ def test_watch_persists_reviews(client, db):
     decide(client, 0, "watch")
     item_id = db.query(Item).one().id
     sources = {row.source for row in db.query(Review).filter(Review.item_id == item_id)}
-    assert {"reddit", "forum", "youtube"} <= sources
+    assert {"reddit", "youtube"} <= sources
 
 
 def test_search_without_location_is_400(client, db):

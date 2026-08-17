@@ -29,7 +29,7 @@ AMAZON_ROW = {"source": "amazon", "rating": 4.7, "review_count": 1843, "verified
 EXTERNAL_ROWS = [
     {"source": source, "rating": None, "review_count": None, "verified_ratio": None,
      "summary_text": "text", "mention_count": 9, "authenticity_flag": "ok"}
-    for source in ("reddit", "forum", "youtube")
+    for source in ("reddit", "youtube")
 ]
 
 # retailer spec strings, inline: these tests are about ranking math, not about any scraper

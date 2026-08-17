@@ -6,9 +6,10 @@ from sqlalchemy.orm import Session
 from backend.models import Review, utcnow
 
 # external sentiment moves slowly, and retailer ratings are refetched free with the page we
-# already load. without this cache four rescans a day per item would exhaust the CSE tier
+# already load. without this cache four rescans a day per item would hammer reddit and burn
+# the YouTube unit budget
 REVIEW_STALENESS_DAYS = 7
-EXTERNAL_SOURCES = ("reddit", "forum", "youtube")
+EXTERNAL_SOURCES = ("reddit", "youtube")
 
 
 def row_to_dict(row: Review) -> dict:
