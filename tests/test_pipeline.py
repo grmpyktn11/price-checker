@@ -10,6 +10,8 @@ from backend.services.pipeline import (
 from backend.services.ranking import RankedProduct
 
 RATING_ROW = {"source": "bestbuy", "rating": 4.5, "review_count": 120}
+# a retailer that published a count, and the count is zero
+ZERO_RATING_ROW = {"source": "target", "rating": None, "review_count": 0}
 REDDIT_ROW = {"source": "reddit", "rating": None, "review_count": None, "mention_count": 8,
               "summary_text": "held up for two years"}
 YOUTUBE_ROW = {"source": "youtube", "rating": None, "review_count": None, "mention_count": 5,
@@ -43,7 +45,9 @@ def test_tile_rank_puts_buyable_first():
         # Best Buy publishes no review count: the discussion about this product is the evidence
         ([REDDIT_ROW, YOUTUBE_ROW], 8),
         ([RATING_ROW, REDDIT_ROW], 120),
-        ([], 0),
+        # a retailer that answered zero is a fact about the product; no rows at all is not
+        ([ZERO_RATING_ROW], 0),
+        ([], None),
     ],
 )
 def test_evidence_count(reviews, expected):
@@ -53,9 +57,16 @@ def test_evidence_count(reviews, expected):
 # a researched product clears a floor its retailer could never have cleared alone
 def test_discussion_clears_the_review_floor():
     researched = candidate("Anker 737", [REDDIT_ROW])
-    bare = candidate("No Name Charger", [])
-    survivors = filter_on_reviews([researched, bare], 5)
+    counted = candidate("No Name Charger", [ZERO_RATING_ROW])
+    survivors = filter_on_reviews([researched, counted], 5)
     assert [c.product["name"] for c in survivors] == ["Anker 737"]
+
+
+# the rgb mouse bug: Best Buy product pages are blocked, so its listings carry no review row
+# at all. counting that as zero deleted the only products that actually matched the search
+def test_unknown_review_count_is_not_a_drop():
+    survivors = filter_on_reviews([candidate("CORSAIR M75 RGB", [])], 5)
+    assert [c.product["name"] for c in survivors] == ["CORSAIR M75 RGB"]
 
 
 def test_research_payload_labels_each_source():

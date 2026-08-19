@@ -240,6 +240,11 @@ searched, so a position can be listed as too close and still show `youtube: fals
 product, the retailer, and a human-readable `reason`. This is the answer to "why is this list
 short".
 
+`review_floor` only drops a product a source actually published a count for. A blocked product
+page reports no count at all, and that is unknown rather than zero — it is not a reason to drop
+the product, since the alternative deletes the best matches at whichever retailer is walled off
+that day. `candidates[].evidence_count` is `null` in exactly that case.
+
 **`stages_ms` / `total_ms`** — milliseconds per stage, for attributing a slow search. Stage names
 are `collect_candidates`, `amazon_review_tiles`, `product_filter`, `lookup_missing_reviews`,
 `research_top`, `research_reddit`, `research_youtube`. Nesting is real: `research_reddit` and

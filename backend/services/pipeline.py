@@ -403,11 +403,15 @@ async def research_top(candidates: list[RankedProduct], category: str | None) ->
 
 # star ratings and discussion both count: Best Buy product pages are blocked and publish no
 # review count at all, so a product with real reddit/youtube threads about it clears the floor
-# on those instead. a candidate with neither is the one that gets dropped
-def evidence_count(candidate: RankedProduct) -> int:
-    counts = [(row.get("review_count") or 0) for row in candidate.reviews]
-    mentions = [(row.get("mention_count") or 0) for row in candidate.reviews]
-    return max([0, *counts, *mentions])
+# on those instead.
+# None, not 0, when no source reported anything. a blocked product page and a product nobody
+# has reviewed produce the same empty list here, and only the second is a fact about the
+# product - see filter_on_reviews
+def evidence_count(candidate: RankedProduct) -> int | None:
+    reported = [row[field] for row in candidate.reviews
+                for field in ("review_count", "mention_count")
+                if row.get(field) is not None]
+    return max(reported) if reported else None
 
 
 # one line per candidate that reached ranking: the evidence it carries, and whether its specs
@@ -433,6 +437,12 @@ def filter_on_reviews(candidates: list[RankedProduct],
     survivors = []
     for candidate in candidates:
         count = evidence_count(candidate)
+        # nobody published a count for this product, so there is nothing to be below the floor.
+        # dropping here would delete the best match for a retailer whose pages we cannot read,
+        # which is exactly what happened to the only RGB mice in an "rgb mouse" search
+        if count is None:
+            survivors.append(candidate)
+            continue
         if count < min_review_count:
             logger.info("skip %s: %s reviews or mentions", candidate.product["name"], count)
             trace.drop("review_floor", candidate.product.get("name"), candidate.retailer,

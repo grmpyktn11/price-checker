@@ -34,11 +34,20 @@ Reply with a single JSON object and nothing else:
     neither the title nor the specs say anything about it, the product does not qualify.
   * false as well when the listing is a different kind of product, or an accessory or spare
     part for one: a pack of switches is not a keyboard, a cable is not a power bank.
-  * Vague or subjective wording - "yellow switches", "compact", "good for travel" - is never a
-    reason to disqualify. It belongs in the fit scores instead. Only the strict checks above
-    decide this field.
-- spec_fit: 0.0-1.0, how well it matches required_specs, preferred_specs and any vague wording
-  in the keywords. 0.5 when the listing says nothing either way.
+  * A stated feature is strict when the listing clearly lacks it. The shopper asked for a
+    feature - RGB lighting, mechanical, waterproof, backlit - and this is plainly a product
+    without it: it does not qualify. Use what you know about the product, not only the words
+    in the title. A $9 own-brand office mouse has no RGB lighting, whether or not the title
+    bothers to say so.
+  * But unclear is not absent. When the feature is one this product might well have and
+    nothing settles it, qualify it and let spec_fit carry the doubt. Do not disqualify a
+    gaming mouse for RGB just because its title does not list the feature.
+  * Vague or subjective wording - "compact", "good for travel", "looks nice" - is never a
+    reason to disqualify. It belongs in the fit scores instead.
+- spec_fit: 0.0-1.0, how well it matches required_specs, preferred_specs and the keywords.
+  0.5 when the listing says nothing either way. A keyword the product does not satisfy must
+  pull this down - a mouse with no RGB scores low against "rgb", it does not score 1.0 for
+  being a mouse. Every keyword counts here, including ones that also appear in nice_to_haves.
 - nice_fit: 0.0-1.0, the same judgement for nice_to_haves. 0.5 when there are none, or when the
   listing says nothing either way.
 - group: a short id you invent, shared by listings of the SAME product at different retailers -
