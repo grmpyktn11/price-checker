@@ -10,7 +10,7 @@ GOOGLE_PLACES_API_KEY = os.getenv("GOOGLE_PLACES_API_KEY", "")
 FIELD_MASK = "places.displayName,places.location,places.formattedAddress"
 # retailer -> what to type into Places. Amazon is absent on purpose: it has no stores, so it
 # is never looked up and its candidates score the online case
-STORE_QUERIES = {"target": "Target", "bestbuy": "Best Buy"}
+STORE_QUERIES = {"target": "Target", "bestbuy": "Best Buy", "microcenter": "Micro Center"}
 SEARCH_RADIUS_METERS = 40000.0   # ~25 miles, the default profile radius
 MAX_RESULTS = 10
 TIMEOUT_SECONDS = 10

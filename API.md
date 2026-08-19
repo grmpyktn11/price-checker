@@ -7,7 +7,7 @@ Personal single-user app: **no auth, no user ids, no tenancy**. One profile row,
 
 ## The two flows
 
-**Chat** — you describe what you want, the backend extracts criteria, searches three retailers,
+**Chat** — you describe what you want, the backend extracts criteria, searches four retailers,
 ranks the results, and narrates them. You then buy now or watch.
 
 **Watchlist** — watched items are re-scanned on a schedule. Price changes are recorded, deals raise

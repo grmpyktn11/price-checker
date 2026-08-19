@@ -4,6 +4,7 @@ import time
 
 from backend.scrapers.amazon import AmazonScraper
 from backend.scrapers.bestbuy import BestBuyScraper
+from backend.scrapers.microcenter import MicroCenterScraper
 from backend.scrapers.target import TargetScraper
 from backend.services import (
     product_filter,
@@ -55,6 +56,7 @@ SCRAPERS = [
     ("bestbuy", BestBuyScraper()),
     ("target", TargetScraper()),
     ("amazon", AMAZON),
+    ("microcenter", MicroCenterScraper()),
 ]
 
 # each search returns ~24 products and each detail page is a browser launch, so this is a hard

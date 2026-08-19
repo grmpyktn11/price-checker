@@ -19,12 +19,12 @@ export const Route = createFileRoute("/how-it-works")({
 // the order is the point: cheap work first, expensive research only on what survives
 const steps = [
   "You describe what you want. If something important is missing, it asks one question first.",
-  "Best Buy, Target and Amazon get searched at the same time.",
-  "The best listings get their product pages read, for specs and star ratings.",
+  "Best Buy, Target, Amazon and Micro Center get searched at the same time.",
+  "Star ratings come off the search page itself. The best listings also get their product pages read, for specs.",
   "One pass decides what actually qualifies. A number you stated is strict - a 2,000mAh charger does not survive a 20,000mAh request.",
-  "The top five get their own Reddit search, so the reviews are about that exact product.",
+  "The top five get their own Reddit search, so the reviews are about that exact product. Every card can show you what those sources actually said.",
   "If the top two are too close to call, YouTube reviews are pulled in to break the tie.",
-  "Everything is ranked and the results are written up from the real numbers.",
+  "Everything is ranked and written up from the real numbers. The same product in two colours is shown once, with the other colour listed on its card.",
 ];
 
 const weights = [
@@ -64,7 +64,7 @@ function HowItWorksPage() {
       <div className="space-y-8">
         <Card>
           <p className="text-base">
-            Shopper <strong>searches</strong> three retailers, researches the best candidates and
+            Shopper <strong>searches</strong> four retailers, researches the best candidates and
             ranks them. Anything you <strong>track</strong> gets re-checked every six hours, and you
             get an email when the price drops.
           </p>

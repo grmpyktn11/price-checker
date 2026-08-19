@@ -36,7 +36,7 @@ def test_nearest_miles_without_results():
 
 # amazon has no stores, so it is never looked up and always scores the online case
 def test_amazon_is_not_a_store_retailer():
-    assert set(STORE_QUERIES) == {"target", "bestbuy"}
+    assert set(STORE_QUERIES) == {"target", "bestbuy", "microcenter"}
 
 
 # the curve the store distance feeds: nearest is best, neutral when there is no store

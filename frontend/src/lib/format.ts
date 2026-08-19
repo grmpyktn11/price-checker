@@ -16,6 +16,7 @@ const retailerLabels: Record<string, string> = {
   amazon: "Amazon",
   bestbuy: "Best Buy",
   target: "Target",
+  microcenter: "Micro Center",
   reddit: "Reddit",
   youtube: "YouTube",
 };

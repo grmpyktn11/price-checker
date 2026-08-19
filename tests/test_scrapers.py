@@ -1,6 +1,6 @@
 import pytest
 
-from backend.scrapers import amazon, bestbuy, target
+from backend.scrapers import amazon, bestbuy, microcenter, target
 from backend.scrapers.base import load_fixture, load_fixture_text
 from backend.scrapers.browser import looks_blocked, page_text
 from backend.services import trace
@@ -192,3 +192,47 @@ def test_targets_zero_star_unrated_products_read_as_no_rating():
     row = target.parse_search({"data": {"search": {"products": [unrated]}}})[0]
     assert row["rating"] is None
     assert row["review_count"] is None
+
+
+# Micro Center is server-rendered and puts name, price and rating on the search tile, so one
+# page load is the whole story: no product page, no hydration wait
+def test_microcenter_search_parses_the_tile():
+    rows = microcenter.parse_search(load_fixture_text("microcenter_search.html"))
+    assert len(rows) == 24
+    assert set(rows[0]) == SEARCH_KEYS
+    for row in rows:
+        assert row["name"]
+        assert row["url"].startswith("https://www.microcenter.com/product/")
+        assert row["price"] is None or isinstance(row["price"], float)
+        assert row["rating"] is None or 0.0 < row["rating"] <= 5.0
+
+
+# the tile's own href list starts with a sign-in redirect and a "#", so taking the first
+# anchor would send the spec fetch to the login page
+def test_microcenter_takes_the_product_link_not_the_first_link():
+    tile = """<li class="product_wrapper">
+      <a href="https://account.microcenter.com/auth/signin/?RedirectUrl=x">fav</a>
+      <a href="#">compare</a>
+      <a class="x" data-name="A Keyboard" data-price="59.99" href="/product/698072/a-keyboard">go</a>
+    </li>"""
+    row = microcenter.parse_search(tile)[0]
+    assert row["url"] == "https://www.microcenter.com/product/698072/a-keyboard"
+
+
+# same guard as the other scrapers: this url is handed to page.goto() for specs
+def test_microcenter_drops_an_offsite_product_link():
+    tile = """<li class="product_wrapper">
+      <a data-name="X" data-price="1.00" href="https://evil.example.com/product/1/x">go</a>
+    </li>"""
+    assert microcenter.parse_search(tile) == []
+
+
+# no spec table on the page: specs are label/value div pairs under group headings. and unlike
+# Best Buy or Amazon this page actually loads for us, so these are specs we really get
+def test_microcenter_product_page_parses_specs_and_rating():
+    html = load_fixture_text("microcenter_product.html")
+    specs = microcenter.parse_specs(html)
+    assert specs["Type"] == "Mechanical"
+    # the manufacturer part number is the strongest hint two listings are the same product
+    assert specs["Mfr Part#"]
+    assert microcenter.parse_reviews(html)["rating"] == 5.0

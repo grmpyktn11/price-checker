@@ -1,6 +1,6 @@
 # Deal Tracker
 
-Personal deal-tracking app. Chat describes what you want, three retailers get searched, results are
+Personal deal-tracking app. Chat describes what you want, four retailers get searched, results are
 ranked and narrated. Watched items are re-scanned on a schedule and price drops raise email alerts.
 
 See [API.md](API.md) for the endpoint contract and [spec.md](spec.md) for the original design.
@@ -38,7 +38,7 @@ the browser's own location.
 
 ## How a search works
 
-1. Search all three retailers, filter and score the results — one model call judges every listing
+1. Search all four retailers, filter and score the results — one model call judges every listing
    at once (does it qualify, how well does it fit, which listings are the same product).
 2. Rank them.
 3. Research the **top 5 individually**: one Reddit search per product, on that product's own name,
@@ -65,8 +65,8 @@ parser found no rows in it) or `ERROR`. They are kept apart because they need di
 because "nothing matched your criteria" is only true when a retailer actually answered — when none
 of them did, the reply says the search did not run instead.
 
-`distance_score` is per retailer, not per product: Google Places finds the nearest Target and Best
-Buy to your saved location once per location, and the score falls linearly from the door to the
+`distance_score` is per retailer, not per product: Google Places finds the nearest Target, Best
+Buy and Micro Center to your saved location once per location, and the score falls linearly from the door to the
 edge of `radius_miles`. Amazon and any failed lookup score a neutral 0.5.
 
 ## Tests
@@ -85,8 +85,17 @@ calls and is marked `live`.
 
 The app is live-only — every search hits the real sites, there is no fixture mode.
 
-Current state (2026-08-17): Target's redsky endpoints 403 intermittently, Best Buy product pages
-are Akamai-blocked (search prices still come through, and the evidence comes from Amazon or from
-the product's own discussion instead), Amazon works but rate-limits under load, and Reddit 429s a
-fair share of searches — the pipeline treats every one of these as a missing source, never a
-failed run.
+Current state (2026-08-19):
+
+| retailer | search | product page | notes |
+| --- | --- | --- | --- |
+| Micro Center | works | works | server-rendered, no bot wall, publishes the Mfr Part# |
+| Best Buy | works | Akamai-blocked | rating comes off the search tile instead |
+| Target | 403s in stretches | works when search does | plain JSON, no browser |
+| Amazon | works, throttles under load | first thing to be throttled | rating comes off the search tile |
+
+Reddit 429s a fair share of searches. The pipeline treats every one of these as a missing
+source, never a failed run.
+
+**All four print the star rating on their search page**, which is the page most likely to load,
+so a rating no longer depends on reaching a product page.

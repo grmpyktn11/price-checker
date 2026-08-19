@@ -8,7 +8,7 @@ const POLL_MS = 900;
 // the pipeline's stage names, in the order they run, with what to say while each one is in
 // flight. a stage missing from here still shows - it just gets its raw name
 const STAGES: { key: string; label: string }[] = [
-  { key: "collect_candidates", label: "Searching Best Buy, Target and Amazon" },
+  { key: "collect_candidates", label: "Searching Best Buy, Target, Amazon and Micro Center" },
   { key: "amazon_review_tiles", label: "Looking up the missing star ratings" },
   { key: "product_filter", label: "Working out which ones actually match" },
   { key: "lookup_missing_reviews", label: "Filling in the last of the ratings" },
