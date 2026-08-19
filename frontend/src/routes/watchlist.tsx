@@ -2,7 +2,16 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import type { Alert, Item, Listing } from "@/api";
-import { ApiError, createItem, deleteItem, getAlerts, getItems, getListings, rescanItem } from "@/api";
+import {
+  ApiError,
+  createItem,
+  deleteItem,
+  getAlerts,
+  getItems,
+  getListings,
+  getPriceHistory,
+  rescanItem,
+} from "@/api";
 import { AppShell } from "@/components/shopper/AppShell";
 import { dealLabel, money, retailerLabel, timeAgo } from "@/lib/format";
 
@@ -15,9 +24,24 @@ async function loadBest(items: Item[]): Promise<Record<number, Listing | undefin
   return Object.fromEntries(items.map((item, index) => [item.id, lists[index]?.[0]]));
 }
 
+// the earliest recorded price per item, so the card can say how far it has moved since then
+async function loadFirstPrices(items: Item[]): Promise<Record<number, number | undefined>> {
+  const histories = await Promise.all(
+    items.map((item) => getPriceHistory(item.id).catch(() => []))
+  );
+  return Object.fromEntries(
+    items.map((item, index) => {
+      const dated = histories[index].filter((p) => p.price !== null && p.recorded_at !== null);
+      dated.sort((a, b) => (a.recorded_at! < b.recorded_at! ? -1 : 1));
+      return [item.id, dated[0]?.price ?? undefined];
+    })
+  );
+}
+
 function WatchlistPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [best, setBest] = useState<Record<number, Listing | undefined>>({});
+  const [firstPrice, setFirstPrice] = useState<Record<number, number | undefined>>({});
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -36,6 +60,7 @@ function WatchlistPage() {
       setItems(nextItems);
       setAlerts(nextAlerts);
       setBest(await loadBest(nextItems));
+      setFirstPrice(await loadFirstPrices(nextItems));
       setError(null);
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : "Request failed");
@@ -121,6 +146,11 @@ function WatchlistPage() {
         {items.map((item) => {
           const listing = best[item.id];
           const reason = latestReason(item.id);
+          const first = firstPrice[item.id];
+          const delta =
+            listing?.price != null && first != null && Math.abs(listing.price - first) >= 0.01
+              ? listing.price - first
+              : null;
           return (
             <article key={item.id} className="panel rounded-3xl bg-card p-4">
               <div className="flex items-start gap-2">
@@ -150,7 +180,17 @@ function WatchlistPage() {
                       {retailerLabel(listing.retailer)}
                     </p>
                     <p className="text-sm font-semibold">
-                      {money(listing.price)} ·{" "}
+                      {money(listing.price)}
+                      {delta !== null ? (
+                        <span
+                          className={`ml-2 inline-block rounded-full px-2 py-0.5 text-xs font-extrabold ${
+                            delta < 0 ? "bg-primary text-primary-foreground" : "bg-strawberry text-accent-foreground"
+                          }`}
+                        >
+                          {delta < 0 ? "▼" : "▲"} {money(Math.abs(delta))} since first check
+                        </span>
+                      ) : null}{" "}
+                      ·{" "}
                       {listing.in_stock === null
                         ? "stock unknown"
                         : listing.in_stock

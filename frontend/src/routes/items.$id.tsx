@@ -24,9 +24,9 @@ import {
 
 export const Route = createFileRoute("/items/$id")({ component: ItemDetailPage });
 
-// picked for contrast against each other, not for order: chart-3 is the pale butter tone and
-// would disappear on the card
-const seriesColors = ["var(--chart-1)", "var(--chart-2)", "var(--sky)", "var(--foreground)"];
+// the chart draws on an LCD, so every series is a dark pixel tone against the lime glass
+const LCD_INK = "oklch(0.3 0.08 135)";
+const seriesColors = [LCD_INK, "oklch(0.45 0.11 135)", "oklch(0.5 0.12 30)", "oklch(0.4 0.06 90)"];
 
 // one row per timestamp, one column per listing. sparse by construction: a point is only
 // written when that listing's price changed, so most cells are undefined and the lines are
@@ -67,17 +67,19 @@ function PriceChart({ chart }: { chart: Chart }) {
     );
   }
   return (
+    <div className="lcd mt-2 rounded-xl p-2">
     <ResponsiveContainer width="100%" height={220}>
       <LineChart data={chart.rows} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-        <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
+        <CartesianGrid stroke={`color-mix(in oklab, ${LCD_INK} 25%, transparent)`} strokeDasharray="3 3" />
         <XAxis
           dataKey="t"
           type="number"
           domain={["dataMin", "dataMax"]}
           tickFormatter={(value: number) => new Date(value).toLocaleDateString()}
-          tick={{ fontSize: 11 }}
+          tick={{ fontSize: 11, fill: LCD_INK }}
+          stroke={LCD_INK}
         />
-        <YAxis tick={{ fontSize: 11 }} domain={["auto", "auto"]} />
+        <YAxis tick={{ fontSize: 11, fill: LCD_INK }} stroke={LCD_INK} domain={["auto", "auto"]} />
         <Tooltip
           labelFormatter={(value: number) => new Date(value).toLocaleString()}
           formatter={(value: number) => `$${value.toFixed(2)}`}
@@ -97,6 +99,7 @@ function PriceChart({ chart }: { chart: Chart }) {
         ))}
       </LineChart>
     </ResponsiveContainer>
+    </div>
   );
 }
 

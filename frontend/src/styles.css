@@ -171,34 +171,16 @@
     font-weight: 400; /* DotGothic16 has one weight; faux bold smears the pixels */
     letter-spacing: 0.02em;
   }
-
-  /* faint CRT scanlines over the whole app */
-  body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 50;
-    background: repeating-linear-gradient(
-      0deg,
-      oklch(0.31 0.055 140 / 0.028) 0 1px,
-      transparent 1px 3px
-    );
-  }
 }
 
-/* the gingham names stay (they are all over the components); the pattern is now a 90s
-   appliance pinstripe instead of a picnic check */
+/* the gingham names stay (they are all over the components), but the pattern is gone:
+   the header and footer are plain cream now */
 @utility gingham {
   background-color: var(--cream);
-  background-image:
-    repeating-linear-gradient(90deg, var(--gingham-green) 0 3px, transparent 3px 16px);
 }
 
 @utility gingham-red {
   background-color: var(--cream);
-  background-image:
-    repeating-linear-gradient(90deg, var(--gingham-red) 0 3px, transparent 3px 16px);
 }
 
 /* the page background is flat on purpose: gingham in the header and footer is enough pattern,
@@ -207,16 +189,15 @@
   background-image: none;
 }
 
-/* the light frame for surfaces that are not a product card. beveled like 90s OS chrome:
-   light on the top and left, shadow on the bottom and right, and a hard drop */
+/* surfaces that are not a product card carry no border at all: the page window is the
+   box, and a faint tint is enough to group what is inside it */
 @utility panel {
-  border: 2px solid;
-  border-color:
-    color-mix(in oklab, white 65%, var(--card))
-    color-mix(in oklab, var(--foreground) 32%, var(--card))
-    color-mix(in oklab, var(--foreground) 32%, var(--card))
-    color-mix(in oklab, white 65%, var(--card));
-  box-shadow: 0 3px 0 color-mix(in oklab, var(--foreground) 22%, transparent);
+  border: 0;
+  background-image: linear-gradient(
+    0deg,
+    color-mix(in oklab, var(--foreground) 4.5%, transparent),
+    color-mix(in oklab, var(--foreground) 4.5%, transparent)
+  );
 }
 
 @utility sticker {
@@ -266,11 +247,22 @@
   box-shadow: inset 0 0 18px oklch(0.32 0.07 128 / 0.22);
 }
 
-/* chunky 90s plastic press-down for anything clickable that carries sticker */
+/* one button shape: a quiet rounded rectangle that presses down. the pill radius and
+   lift-on-hover eagerness are gone */
+button.sticker,
+a.sticker {
+  border-radius: 0.65rem;
+  border-width: 2px;
+  box-shadow: 2px 2px 0 oklch(0.31 0.055 140 / 0.7);
+}
+button.sticker:hover,
+a.sticker:hover {
+  transform: none;
+}
 button.sticker:active,
 a.sticker:active {
   transform: translateY(2px);
-  box-shadow: 1px 1px 0 oklch(0.32 0.05 30 / 0.85);
+  box-shadow: 0 0 0 oklch(0.31 0.055 140 / 0.7);
 }
 
 @utility wobble {

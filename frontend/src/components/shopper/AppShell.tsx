@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
+
 const nav = [
   { to: "/", label: "Chat" },
   { to: "/projects", label: "Projects" },
@@ -48,7 +49,7 @@ export function AppShell({
 
   return (
     <div className="flex min-h-screen flex-col dotgrid">
-      <header className="border-b-[3px] border-foreground gingham">
+      <header className="border-b-2 border-border gingham">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
           <Link to="/" className="font-display text-2xl font-extrabold tracking-tight">
             shopper
@@ -153,7 +154,7 @@ export function AppShell({
         </div>
       </main>
 
-      <footer className="mt-12 border-t-[3px] border-foreground gingham-red">
+      <footer className="mt-12 border-t-2 border-border gingham-red">
         <div className="mx-auto max-w-5xl px-4 py-6 text-sm font-semibold">
           shopper
         </div>
