@@ -43,9 +43,14 @@ call pulls out the things you would have to buy. Tick what you want, and each on
 search. Results land on a project page with Buy/Track on every pick, plus a markdown summary to
 paste back into the chat that started it.
 
-There is no Claude API for reading conversations, so there is no "log in with Claude": the
-transcript arrives by paste or by a share link the user creates and can revoke. A share URL is
-host-checked against claude.ai before it is fetched.
+There is no Claude API for reading conversations, so there is no "log in with Claude".
+
+**Paste is the path that works.** Share links are accepted and host-checked against claude.ai
+before being fetched, but claude.ai sits behind Cloudflare, which answers our headless browser
+with a bot check rather than the page (measured 2026-08-19). That is reported as a block saying
+so, not as "your conversation had nothing to buy" — the challenge page is short enough that it
+used to slip past the length check and reach the model, which then truthfully reported no
+products in a conversation it had never seen.
 
 A run is **5 items at a time, sequential, with no Reddit/YouTube stage** — N parallel or fully
 researched pipelines multiply the request rate against retailers that already rate-limit us.

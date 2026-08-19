@@ -171,16 +171,20 @@ claude.ai **share link**, which is a public snapshot the user creates and can re
 { "share_url": "https://claude.ai/share/..." }
 ```
 
-Send one or the other. A share URL is fetched with a rendering browser and **the host is checked
-against claude.ai before anything is fetched** — the URL is user-supplied and reaches
-`page.goto()`. One model call extracts the list; it is told to keep only things a shop sells, so
+Send one or the other. **Paste is the path that works.** A share URL is fetched with a rendering
+browser and **the host is checked against claude.ai before anything is fetched** — the URL is
+user-supplied and reaches `page.goto()` — but claude.ai is behind Cloudflare, which serves an
+interstitial instead of the page. That is detected and reported as a block. One model call extracts the list; it is told to keep only things a shop sells, so
 "time", "patience", software and services never become rows, and neither does anything the
 conversation decided against or the user already owns.
 
 `201` with the project. Items the model marked `essential` start `selected: true`.
 
 **Errors:** `400` neither field sent, or not a claude.ai host. `422` the conversation had nothing
-buyable in it. `502` the share link would not load.
+buyable in it. `502` the share link would not load — a bot check, a still-private chat, or a page
+too short to be a transcript, each with its own message. A `502` never means "nothing to buy":
+that distinction matters, because telling someone their conversation was empty when it was never
+read sends them to fix the wrong thing.
 
 ### `POST /api/projects/{id}/search`
 

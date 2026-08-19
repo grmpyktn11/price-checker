@@ -169,3 +169,69 @@ def test_a_page_with_no_transcript_is_reported_not_extracted(monkeypatch):
     monkeypatch.setattr(claude_share, "fetch_html", shell)
     with pytest.raises(claude_share.ShareUnreadable):
         asyncio.run(claude_share.fetch_transcript("https://claude.ai/share/gone"))
+
+
+# measured 2026-08-19: claude.ai is behind Cloudflare, which serves our headless browser an
+# interstitial instead of the conversation. it is ~370 characters, so the old length check let
+# it through to the model, which truthfully said there were no products in it - and the person
+# was told their conversation had nothing to buy when it had never been read
+CLOUDFLARE_PAGE = (
+    "<html><body><main>Just a moment... claude.ai Performing security verification "
+    "This website uses a security service to protect against malicious bots. This page is "
+    "displayed while the website verifies you are not a bot. Enable JavaScript and cookies "
+    "to continue Ray ID: a2d9217e5b78e5f6 Performance and Security by Cloudflare"
+    "</main></body></html>"
+)
+
+
+def test_a_bot_challenge_is_reported_as_a_block_not_an_empty_conversation(monkeypatch):
+    async def challenge(url, wait_for):
+        return CLOUDFLARE_PAGE
+
+    monkeypatch.setattr(claude_share, "fetch_html", challenge)
+    with pytest.raises(claude_share.ShareBlocked) as caught:
+        asyncio.run(claude_share.fetch_transcript("https://claude.ai/share/abc"))
+    # the message must not send someone off checking a link that is perfectly fine
+    assert "Nothing is wrong with your link" in str(caught.value)
+
+
+def test_a_sign_in_wall_says_the_chat_is_still_private(monkeypatch):
+    async def wall(url, wait_for):
+        return "<html><body><main>Sign in to continue to Claude</main></body></html>"
+
+    monkeypatch.setattr(claude_share, "fetch_html", wall)
+    with pytest.raises(claude_share.ShareUnreadable) as caught:
+        asyncio.run(claude_share.fetch_transcript("https://claude.ai/share/abc"))
+    assert "private" in str(caught.value)
+
+
+# a challenge is not "unreadable link": they are separate types because they need separate
+# advice, and a caller must be able to tell them apart
+def test_a_block_is_not_reported_as_an_unreadable_link(monkeypatch):
+    async def challenge(url, wait_for):
+        return CLOUDFLARE_PAGE
+
+    monkeypatch.setattr(claude_share, "fetch_html", challenge)
+    with pytest.raises(claude_share.ShareBlocked):
+        asyncio.run(claude_share.fetch_transcript("https://claude.ai/share/abc"))
+    assert not issubclass(claude_share.ShareBlocked, claude_share.ShareUnreadable)
+
+
+# a page that is neither blocked nor a sign-in wall but far too short for a transcript
+def test_a_short_page_is_still_an_unreadable_link(monkeypatch):
+    async def stub(url, wait_for):
+        return "<html><body><main>Nothing here</main></body></html>"
+
+    monkeypatch.setattr(claude_share, "fetch_html", stub)
+    with pytest.raises(claude_share.ShareUnreadable):
+        asyncio.run(claude_share.fetch_transcript("https://claude.ai/share/abc"))
+
+
+def test_a_real_length_transcript_gets_through(monkeypatch):
+    async def real(url, wait_for):
+        body = "we need a keyboard and a mouse and a monitor. " * 60
+        return f"<html><body><main>{body}</main></body></html>"
+
+    monkeypatch.setattr(claude_share, "fetch_html", real)
+    text = asyncio.run(claude_share.fetch_transcript("https://claude.ai/share/abc"))
+    assert len(text) >= claude_share.MIN_TEXT_CHARS

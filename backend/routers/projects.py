@@ -95,7 +95,7 @@ async def read_transcript(body: ImportIn) -> tuple[str, str, str | None]:
             return await claude_share.fetch_transcript(body.share_url), "share_link", body.share_url
         except claude_share.NotAShareUrl as error:
             raise HTTPException(400, str(error))
-        except claude_share.ShareUnreadable as error:
+        except (claude_share.ShareBlocked, claude_share.ShareUnreadable) as error:
             raise HTTPException(502, str(error))
         # a browser launch failure is not the user's fault and not a 400
         except Exception as error:

@@ -72,11 +72,18 @@ function ProjectsPage() {
       <div className="space-y-6">
         <div className="sticker rounded-3xl bg-card p-5">
           <label htmlFor="transcript" className="font-display text-lg font-bold">
-            Paste the conversation, or a share link
+            Paste the conversation
           </label>
           <p className="mt-1 text-sm text-muted-foreground">
-            In Claude, hit <strong>Share</strong> and paste the link here — or just select the
-            chat and paste the text. Shopper pulls out the things you would have to buy.
+            Select the chat in Claude, copy it, paste it here. Shopper pulls out the things you
+            would have to buy.
+          </p>
+          {/* share links are accepted but claude.ai is behind Cloudflare, which serves our
+              browser a bot check instead of the page. saying so up front beats letting someone
+              wait 30 seconds for a failure */}
+          <p className="mt-1 text-xs text-muted-foreground">
+            Share links usually don't work — claude.ai answers automated requests with a bot
+            check. Pasting the text always does.
           </p>
           <textarea
             id="transcript"
@@ -84,7 +91,7 @@ function ProjectsPage() {
             onChange={(event) => setDraft(event.target.value)}
             rows={8}
             disabled={importing}
-            placeholder="https://claude.ai/share/…    or paste the whole conversation"
+            placeholder="Paste the whole conversation here…"
             className="sticker mt-3 w-full rounded-2xl bg-background px-3 py-2 text-sm disabled:opacity-60"
           />
           <div className="mt-3 flex flex-wrap items-center gap-3">
