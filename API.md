@@ -155,6 +155,79 @@ that clears the transcript and generates a new `conversation_id`.
 
 ---
 
+## Projects
+
+Import a Claude planning conversation, pull the shopping list out of it, and search for the
+items you tick.
+
+**There is no Claude API for reading a user's conversations** — no conversations endpoint, no
+consumer OAuth. The transcript arrives one of two ways, both user-driven: pasted text, or a
+claude.ai **share link**, which is a public snapshot the user creates and can revoke.
+
+### `POST /api/projects/import`
+
+```json
+{ "text": "the whole conversation" }
+{ "share_url": "https://claude.ai/share/..." }
+```
+
+Send one or the other. A share URL is fetched with a rendering browser and **the host is checked
+against claude.ai before anything is fetched** — the URL is user-supplied and reaches
+`page.goto()`. One model call extracts the list; it is told to keep only things a shop sells, so
+"time", "patience", software and services never become rows, and neither does anything the
+conversation decided against or the user already owns.
+
+`201` with the project. Items the model marked `essential` start `selected: true`.
+
+**Errors:** `400` neither field sent, or not a claude.ai host. `422` the conversation had nothing
+buyable in it. `502` the share link would not load.
+
+### `POST /api/projects/{id}/search`
+
+```json
+{ "item_ids": [3, 4] }
+```
+
+`202` with `{"searching": [...], "skipped": [...]}`. Returns immediately — the run takes minutes.
+**Max 5 items per run**, sequentially, and project searches skip the Reddit/YouTube research
+stage. Both limits exist for the same reason: N concurrent or fully-researched pipelines multiply
+the request rate against retailers that already rate-limit us. Ranking still uses retailer star
+ratings, which all four print on their search page.
+
+**Errors:** `400` no location set or nothing ticked, `404` unknown project or items, `409`
+already running.
+
+### `GET /api/projects/{id}/progress`
+
+```json
+{ "running": true, "status": "running", "current_index": 1,
+  "items": [{"id": 3, "name": "8-port gigabit switch", "state": "done", "products_found": 3},
+            {"id": 4, "name": "Cat6 patch cables", "state": "searching", "products_found": 0}],
+  "current_search": { "stage": "collect_candidates", "...": "the live trace of this item" } }
+```
+
+`{"running": false}` is the stop-polling signal. `state` is `pending | searching | done | failed`.
+
+This is **not** `trace._live`: that entry is popped when a run finishes, so a multi-item project
+would report `running: false` in the gap between items and the client would stop polling. This
+store lives for the whole project run, and embeds the per-item trace as `current_search`.
+
+### `GET /api/projects/{id}` / `GET /api/projects` / `DELETE /api/projects/{id}`
+
+The detail response carries `items` plus `results`, keyed by item id, holding `ProductOut`-shaped
+dicts — so the page survives a reload. `run_pipeline` persists nothing on its own.
+
+### `POST /api/projects/{id}/items/{item_id}/track`
+
+```json
+{ "product_id": 0 }
+```
+
+Creates an ordinary watchlist item, so the scheduler rescans and alerts on it like any other.
+`/chat/decision` cannot serve this: it looks its product up in a conversation.
+
+---
+
 ## Debug trace
 
 A live search fails for several unrelated reasons at once, and `products: []` hides all of them.

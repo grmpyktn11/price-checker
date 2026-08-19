@@ -14,7 +14,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 from backend.db import Base, engine  # noqa: E402
 from backend import models  # noqa: E402,F401  imported so create_all sees every table
-from backend.routers import alerts, chat, debug, items, listings, profile  # noqa: E402
+from backend.routers import alerts, chat, debug, items, listings, profile, projects  # noqa: E402
 from backend.scheduler import start_scheduler  # noqa: E402
 
 
@@ -40,4 +40,5 @@ app.include_router(chat.router)
 app.include_router(items.router)
 app.include_router(listings.router)
 app.include_router(alerts.router)
+app.include_router(projects.router)
 app.include_router(debug.router)

@@ -487,7 +487,8 @@ def research_rows(candidate: RankedProduct) -> list[dict]:
 # the winner's research is persisted; without either, nothing is written
 async def run_pipeline(item_criteria: dict, lat: float, lon: float, radius_mi: int,
                        db=None, item_id: int | None = None,
-                       progress_key: str | None = None) -> list[RankedProduct]:
+                       progress_key: str | None = None,
+                       research_top_n: int = RESEARCH_TOP_N) -> list[RankedProduct]:
     # progress_key is the conversation, so that conversation can poll its own run. the
     # scheduler passes none: nothing is watching a rescan
     trace.start(build_query(item_criteria), item_criteria, key=progress_key)
@@ -512,8 +513,13 @@ async def run_pipeline(item_criteria: dict, lat: float, lon: float, radius_mi: i
 
     # cheap pass first, so the research is spent on the products that are actually in contention
     ranked = rank(candidates, budget_max)
-    with trace.stage("research_top"):
-        await research_top(ranked[:RESEARCH_TOP_N], item_criteria.get("category"))
+    # research_top_n=0 skips reddit and youtube entirely. a project search does that: five
+    # reddit searches per item, on a source that already 429s most requests, is how one
+    # project run gets everything blocked partway through. ranking still has the retailer
+    # star ratings, which now come off the search tile
+    if research_top_n:
+        with trace.stage("research_top"):
+            await research_top(ranked[:research_top_n], item_criteria.get("category"))
     # re-rank: the research moved review_score through the per-product authenticity flags
     ranked = filter_on_reviews(rank(ranked, budget_max), item_criteria["min_review_count"])
 

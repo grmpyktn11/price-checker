@@ -68,6 +68,10 @@ function HowItWorksPage() {
             ranks them. Anything you <strong>track</strong> gets re-checked every six hours, and you
             get an email when the price drops.
           </p>
+          <p className="mt-2 text-base">
+            Planned a project with Claude? Paste the conversation into <strong>Projects</strong>
+            {" "}and Shopper pulls out the shopping list, then goes and finds each thing.
+          </p>
         </Card>
 
         <Section title="A search, step by step">

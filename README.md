@@ -36,6 +36,21 @@ import and Vite bakes `VITE_` vars in at startup. Address autocomplete on Settin
 `VITE_GOOGLE_PLACES_API_KEY` with the Places API (New) enabled; without it the page falls back to
 the browser's own location.
 
+## Projects
+
+Paste a Claude planning conversation — or a claude.ai share link — into `/projects` and one model
+call pulls out the things you would have to buy. Tick what you want, and each one gets a real
+search. Results land on a project page with Buy/Track on every pick, plus a markdown summary to
+paste back into the chat that started it.
+
+There is no Claude API for reading conversations, so there is no "log in with Claude": the
+transcript arrives by paste or by a share link the user creates and can revoke. A share URL is
+host-checked against claude.ai before it is fetched.
+
+A run is **5 items at a time, sequential, with no Reddit/YouTube stage** — N parallel or fully
+researched pipelines multiply the request rate against retailers that already rate-limit us.
+About a minute an item.
+
 ## How a search works
 
 1. Search all four retailers, filter and score the results — one model call judges every listing

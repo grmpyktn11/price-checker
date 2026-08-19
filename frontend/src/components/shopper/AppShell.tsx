@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 const nav = [
   { to: "/", label: "Chat" },
+  { to: "/projects", label: "Projects" },
   { to: "/watchlist", label: "Watchlist" },
   { to: "/alerts", label: "Alerts" },
   { to: "/settings", label: "Settings" },

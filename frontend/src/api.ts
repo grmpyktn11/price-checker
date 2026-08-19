@@ -274,6 +274,81 @@ export function getSearchProgress(conversationId: string): Promise<SearchProgres
   return request<SearchProgress>(`/api/chat/progress/${conversationId}`);
 }
 
+// mirrors ProjectItemOut in backend/routers/projects.py
+export interface ProjectItem {
+  id: number;
+  name: string | null;
+  why: string | null;
+  quantity: number | null;
+  essential: boolean | null;
+  selected: boolean | null;
+  status: string | null; // pending | searching | done | failed
+  error: string | null;
+}
+
+export interface Project {
+  id: number;
+  name: string | null;
+  source: string | null; // paste | share_link
+  source_url: string | null;
+}
+
+// results are keyed by item id, so they survive a reload - run_pipeline persists nothing itself
+export interface ProjectDetail extends Project {
+  items: ProjectItem[];
+  results: Record<string, Product[]>;
+}
+
+// running:false is the stop-polling signal, same contract as the chat progress endpoint
+export interface ProjectProgress {
+  running: boolean;
+  status?: string;
+  current_index?: number;
+  items?: { id: number; name: string; state: string; products_found: number }[];
+  current_search?: SearchProgress | null;
+}
+
+// send either the pasted conversation or a claude.ai share link, never both
+export function importProject(body: { text?: string; share_url?: string }): Promise<ProjectDetail> {
+  return request<ProjectDetail>("/api/projects/import", "POST", body);
+}
+
+export function getProjects(): Promise<Project[]> {
+  return request<Project[]>("/api/projects");
+}
+
+export function getProject(projectId: number): Promise<ProjectDetail> {
+  return request<ProjectDetail>(`/api/projects/${projectId}`);
+}
+
+export function deleteProject(projectId: number): Promise<{ deleted: number }> {
+  return request<{ deleted: number }>(`/api/projects/${projectId}`, "DELETE");
+}
+
+// returns as soon as the run starts; watch getProjectProgress for the rest
+export function searchProject(
+  projectId: number,
+  itemIds: number[],
+): Promise<{ searching: number[]; skipped: number[] }> {
+  return request(`/api/projects/${projectId}/search`, "POST", { item_ids: itemIds });
+}
+
+// a project pick becomes an ordinary watchlist item. the chat decision endpoint cannot serve
+// this: it looks its product up in a conversation, and a project is not one
+export function trackProjectProduct(
+  projectId: number,
+  itemId: number,
+  productId: number,
+): Promise<{ item_id: number; url: string | null; message: string }> {
+  return request(`/api/projects/${projectId}/items/${itemId}/track`, "POST", {
+    product_id: productId,
+  });
+}
+
+export function getProjectProgress(projectId: number): Promise<ProjectProgress> {
+  return request<ProjectProgress>(`/api/projects/${projectId}/progress`);
+}
+
 export function getProfile(): Promise<Profile> {
   return request<Profile>("/api/profile");
 }

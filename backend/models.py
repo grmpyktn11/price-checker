@@ -108,3 +108,33 @@ class Alert(Base):
     listing_id = Column(Integer, ForeignKey("listings.id"))
     reason = Column(String)                      # price_drop | target_hit | new_alternative
     sent_at = Column(DateTime)                   # null until included in a digest/immediate email
+
+
+# a shopping list pulled out of a planning conversation. the conversation itself is not kept:
+# only what it said to buy, which is the part that stays useful
+class Project(Base):
+    __tablename__ = "projects"
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    source = Column(String)                      # paste | share_link
+    source_url = Column(String)                  # share_link only
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+
+
+class ProjectItem(Base):
+    __tablename__ = "project_items"
+    id = Column(Integer, primary_key=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), index=True)
+    name = Column(String)
+    why = Column(String)                         # what the conversation wanted it for
+    criteria_json = Column(String)               # normalized, ready for run_pipeline
+    quantity = Column(Integer, default=1)
+    essential = Column(Boolean, default=True)    # the model's read of must-have vs optional
+    selected = Column(Boolean, default=False)    # ticked by the user for the next run
+    status = Column(String, default="pending")   # pending | searching | done | failed
+    # ProductOut-shaped dicts, as Conversation.results_json holds. run_pipeline persists
+    # nothing on its own, so without this a project page is empty after a reload
+    results_json = Column(String)
+    error = Column(String)                       # why this item failed, shown on the card
+    searched_at = Column(DateTime)
