@@ -238,6 +238,25 @@ A live search fails for several unrelated reasons at once, and `products: []` hi
 Every run records a trace of what actually happened, returned inline on the results response under
 `debug` and readable again afterwards from this endpoint.
 
+### `GET /api/debug/status`
+
+State the Debug page needs: scheduler jobs with their next run times, how many alerts are queued
+for the digest, whether email is configured and where it goes, and the watched-item count.
+
+### `POST /api/debug/jobs/{scrape|review_check|digest}`
+
+Runs a scheduled job now. `scrape` and `review_check` re-search every watched item, so they take
+minutes — they start in the background and return immediately. `digest` is fast and returns how
+many alerts it emailed. `404` for an unknown name.
+
+### `POST /api/debug/test-email`
+
+Sends one message to `USER_EMAIL`. Proves delivery without waiting for an alert to exist.
+Returns `{"sent": false, "detail": "..."}` rather than an error when the keys are missing.
+
+**These are unauthenticated, like the rest of the API.** Fine on localhost; do not expose them
+through a tunnel.
+
 ### `GET /api/debug/last` → the most recent trace
 
 `404` with `detail: "no search has run since the backend started"` until a search has run. The last

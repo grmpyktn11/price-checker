@@ -9,6 +9,7 @@ const nav = [
   { to: "/alerts", label: "Alerts" },
   { to: "/settings", label: "Settings" },
   { to: "/how-it-works", label: "How it works" },
+  { to: "/debug", label: "Debug" },
 ] as const;
 
 export function AppShell({

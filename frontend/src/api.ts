@@ -357,6 +357,28 @@ export function getProjectProgress(projectId: number): Promise<ProjectProgress> 
   return request<ProjectProgress>(`/api/projects/${projectId}/progress`);
 }
 
+// mirrors StatusOut in backend/routers/debug.py
+export interface DebugStatus {
+  jobs: { id: string; next_run: string | null }[];
+  pending_alerts: number;
+  email_configured: boolean;
+  user_email: string | null;
+  watched_items: number;
+}
+
+export function getDebugStatus(): Promise<DebugStatus> {
+  return request<DebugStatus>("/api/debug/status");
+}
+
+// scrape and review_check return as soon as they start; digest reports how many it emailed
+export function runJob(job: string): Promise<{ job: string; ran: boolean; detail: string }> {
+  return request(`/api/debug/jobs/${job}`, "POST", {});
+}
+
+export function sendTestEmail(): Promise<{ sent: boolean; detail: string }> {
+  return request("/api/debug/test-email", "POST", {});
+}
+
 export function getProfile(): Promise<Profile> {
   return request<Profile>("/api/profile");
 }

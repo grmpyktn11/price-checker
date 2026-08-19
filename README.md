@@ -114,6 +114,9 @@ Items, conversations and projects can each be deleted from the UI. Deleting a co
 deliberately leaves anything you watched from it alone — a watched product is a watchlist item
 of its own by then, and clearing chat history must not silently stop tracking a price.
 
+The **Debug** page runs any of them on demand, and sends a test email, so testing alert delivery
+does not mean waiting until 08:00.
+
 Three background jobs, started with the server:
 
 | job | when | what |

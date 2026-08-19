@@ -294,3 +294,16 @@ def test_with_no_prices_stored_anything_new_alerts(db, monkeypatch):
     item = make_item(db)
     patch_rank(monkeypatch, [candidate(70.0, url="https://example.com/first")])
     assert len(asyncio.run(scheduler.check_new_alternatives(db, item))) == 1
+
+
+# the debug panel triggers the same job functions the scheduler does, so an unknown name must
+# not silently do nothing
+def test_debug_job_names_match_the_scheduled_ones():
+    from backend.routers.debug import JOBS, SLOW_JOBS
+
+    assert set(JOBS) == {"scrape", "review_check", "digest"}
+    # the two that re-search every watched item take minutes and must not block a request
+    assert set(SLOW_JOBS) == {"scrape", "review_check"}
+    assert "digest" not in SLOW_JOBS
+    for runner in JOBS.values():
+        assert callable(runner)
