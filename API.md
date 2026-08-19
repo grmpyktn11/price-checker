@@ -62,7 +62,8 @@ Results:
       "price_score": 1.0,
       "distance_score": 0.98,
       "nice_to_have_score": 0.5,
-      "specs_inherited_from": "amazon"
+      "specs_inherited_from": "amazon",
+      "video_url": "https://www.youtube.com/watch?v=..."
     }
   ]
 }
@@ -87,6 +88,10 @@ Fields worth understanding:
 - `rating_source` — `"amazon"` is first-party; anything ending `_inherited` means the rating came
   from the same product at another retailer. Worth surfacing, since it is not this listing's own rating.
 - `specs_inherited_from` — retailer the specs came from, or null. Same idea.
+- `video_url` — a YouTube review for this product, or null. Only the products the YouTube stage
+  actually reached have one, and that stage only runs when the ranking is too close to call, so
+  **null is the normal case**. Hide the control rather than showing a dead one. Treat it like any
+  other scraped url: it is model-supplied, so scheme-check it before putting it in an `href`.
 - the five sub-scores are the ranking breakdown and always sum to `final_score` at
   `0.35 / 0.25 / 0.20 / 0.10 / 0.10`. Useful to show; not required.
 - `distance_score` is per-**retailer**, not per-product: it scores how far the nearest Target or
