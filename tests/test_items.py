@@ -217,3 +217,21 @@ def test_alerts_are_newest_first_with_item_and_listing_fields(client, db):
     assert body[0]["retailer"] == "bestbuy"
     assert body[0]["price"] == 10.0
     assert body[0]["sent_at"] is None
+
+
+# the alert address is set in Settings and stored on the profile; USER_EMAIL is only a fallback
+def test_email_can_be_set_and_cleared(client, db):
+    from backend.routers.profile import alert_recipient
+    from backend.services import email as email_service
+
+    assert client.patch("/api/profile/email", json={"email": "me@example.com"}).json()["email"] \
+        == "me@example.com"
+    assert alert_recipient(db) == "me@example.com"
+
+    # blank clears it and falls back to the env var
+    assert client.patch("/api/profile/email", json={"email": "  "}).json()["email"] is None
+    assert alert_recipient(db) == email_service.USER_EMAIL
+
+
+def test_a_non_address_is_refused(client):
+    assert client.patch("/api/profile/email", json={"email": "not-an-address"}).status_code == 422

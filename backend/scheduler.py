@@ -10,6 +10,7 @@ from backend.models import Alert, Item, Listing, PriceHistory, utcnow
 from backend.routers.profile import get_or_create_profile
 from backend.services import email
 from backend.services.deals import evaluate_deal
+from backend.routers.profile import alert_recipient
 from backend.services.pipeline import run_pipeline
 from backend.services.ranking import RankedProduct
 
@@ -144,7 +145,8 @@ def alert_row(db: Session, alert: Alert) -> dict:
 # spec.md: target hits are sent at detection time, everything else waits for the digest
 async def send_immediately(db: Session, alert: Alert) -> bool:
     row = alert_row(db, alert)
-    sent = await email.send_email(email.immediate_subject(row), email.render_digest([row]))
+    sent = await email.send_email(email.immediate_subject(row), email.render_digest([row]),
+                                  to=alert_recipient(db))
     if sent:
         alert.sent_at = utcnow()
         db.commit()
@@ -253,7 +255,8 @@ async def run_digest_job() -> int:
             return 0
         rows = [alert_row(db, alert) for alert in pending]
         # a failed send leaves sent_at null, so the alerts roll into tomorrow's digest
-        if not await email.send_email(email.digest_subject(rows), email.render_digest(rows)):
+        if not await email.send_email(email.digest_subject(rows), email.render_digest(rows),
+                                      to=alert_recipient(db)):
             return 0
         sent_at = utcnow()
         for alert in pending:

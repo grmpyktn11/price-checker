@@ -12,7 +12,7 @@ load_dotenv()
 # so leaving it on writes plaintext keys into the server log
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
-from backend.db import Base, engine  # noqa: E402
+from backend.db import Base, add_missing_columns, engine  # noqa: E402
 from backend import models  # noqa: E402,F401  imported so create_all sees every table
 from backend.routers import alerts, chat, debug, items, listings, profile, projects  # noqa: E402
 from backend.scheduler import start_scheduler  # noqa: E402
@@ -34,6 +34,7 @@ app = FastAPI(title="Shopper", lifespan=lifespan)
 
 # single user, single process, no migrations
 Base.metadata.create_all(bind=engine)
+add_missing_columns()
 
 app.include_router(profile.router)
 app.include_router(chat.router)

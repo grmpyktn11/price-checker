@@ -114,8 +114,13 @@ Items, conversations and projects can each be deleted from the UI. Deleting a co
 deliberately leaves anything you watched from it alone — a watched product is a watchlist item
 of its own by then, and clearing chat history must not silently stop tracking a price.
 
-The **Debug** page runs any of them on demand, and sends a test email, so testing alert delivery
-does not mean waiting until 08:00.
+The alert address is set on **Settings** and stored on the profile row; `USER_EMAIL` in `.env`
+is only the fallback. The **Debug** page runs any job on demand and sends a test email, so
+testing delivery does not mean waiting until 08:00.
+
+There are no migrations, and `create_all()` adds missing tables but never missing columns, so
+`add_missing_columns()` runs at startup and `ALTER TABLE`s in any column the models declare and
+the file lacks. Additive only — it never drops, renames or retypes.
 
 Three background jobs, started with the server:
 

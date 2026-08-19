@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import type { Profile } from "@/api";
-import { ApiError, getProfile, updateLocation } from "@/api";
+import { ApiError, getProfile, updateEmail, updateLocation } from "@/api";
 import { AppShell } from "@/components/shopper/AppShell";
 
 export const Route = createFileRoute("/settings")({ component: SettingsPage });
@@ -94,11 +94,16 @@ function SettingsPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [emailDraft, setEmailDraft] = useState("");
+  const [savingEmail, setSavingEmail] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     getProfile()
-      .then(setProfile)
+      .then((loaded) => {
+        setProfile(loaded);
+        setEmailDraft(loaded.email ?? "");
+      })
       .catch((caught) => setError(caught instanceof ApiError ? caught.message : "Request failed"));
   }, []);
 
@@ -184,6 +189,20 @@ function SettingsPage() {
     return Promise.race([lookup, timeout]);
   }
 
+  async function saveEmail() {
+    setSavingEmail(true);
+    setError(null);
+    try {
+      const updated = await updateEmail(emailDraft.trim());
+      setProfile(updated);
+      setStatus(updated.email ? `Alerts go to ${updated.email}.` : "Cleared, using .env.");
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "Could not save that");
+    } finally {
+      setSavingEmail(false);
+    }
+  }
+
   function useCurrentLocation() {
     setStatus("Getting current location...");
     navigator.geolocation.getCurrentPosition(
@@ -224,7 +243,30 @@ function SettingsPage() {
           </button>
         </section>
 
-        <section className="sticker space-y-3 rounded-3xl bg-card p-4">
+        <section className="panel space-y-3 rounded-3xl bg-card p-4">
+          <h2 className="font-display text-xl font-extrabold">Alert email</h2>
+          <p className="text-sm text-muted-foreground">
+            Where price alerts go. Blank uses USER_EMAIL from .env.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <input
+              type="email"
+              value={emailDraft}
+              onChange={(event) => setEmailDraft(event.target.value)}
+              placeholder="you@example.com"
+              className="panel min-w-0 flex-1 rounded-2xl bg-background px-3 py-2 text-sm"
+            />
+            <button
+              onClick={() => void saveEmail()}
+              disabled={savingEmail}
+              className="sticker rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground disabled:opacity-50"
+            >
+              {savingEmail ? "Saving..." : "Save"}
+            </button>
+          </div>
+        </section>
+
+        <section className="panel space-y-3 rounded-3xl bg-card p-4">
           <h2 className="font-display text-xl font-extrabold">Saved</h2>
           <p className="text-sm font-semibold">
             {located

@@ -44,8 +44,9 @@ def job_db(db, monkeypatch):
 def sent(monkeypatch):
     captured = []
 
-    async def fake_send(subject, html_body):
-        captured.append((subject, html_body))
+    # the recipient is captured too: it now comes from the profile, not a module constant
+    async def fake_send(subject, html_body, to=None):
+        captured.append((subject, html_body, to))
         return True
 
     monkeypatch.setattr(email, "send_email", fake_send)

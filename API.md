@@ -249,9 +249,14 @@ Runs a scheduled job now. `scrape` and `review_check` re-search every watched it
 minutes — they start in the background and return immediately. `digest` is fast and returns how
 many alerts it emailed. `404` for an unknown name.
 
+### `PATCH /api/profile/email`
+
+`{"email": "you@example.com"}` — where alerts go. `""` clears it and falls back to the
+`USER_EMAIL` env var. `422` if it has no `@`.
+
 ### `POST /api/debug/test-email`
 
-Sends one message to `USER_EMAIL`. Proves delivery without waiting for an alert to exist.
+Sends one message to the alert address. Proves delivery without waiting for an alert to exist.
 Returns `{"sent": false, "detail": "..."}` rather than an error when the keys are missing.
 
 **These are unauthenticated, like the rest of the API.** Fine on localhost; do not expose them

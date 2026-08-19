@@ -110,6 +110,7 @@ export interface Profile {
   lat: number | null;
   lon: number | null;
   display_address: string | null;
+  email: string | null;
 }
 
 // mirrors ItemOut in backend/routers/items.py
@@ -364,6 +365,11 @@ export interface DebugStatus {
   email_configured: boolean;
   user_email: string | null;
   watched_items: number;
+}
+
+// "" clears it and falls back to the USER_EMAIL env var
+export function updateEmail(email: string): Promise<Profile> {
+  return request<Profile>("/api/profile/email", "PATCH", { email });
 }
 
 export function getDebugStatus(): Promise<DebugStatus> {

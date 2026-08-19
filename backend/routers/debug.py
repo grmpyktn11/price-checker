@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from backend import scheduler
 from backend.db import get_db
 from backend.models import Alert
+from backend.routers.profile import alert_recipient
 from backend.services import email, trace
 
 router = APIRouter(prefix="/api", tags=["debug"])
@@ -91,18 +92,19 @@ class MailOut(BaseModel):
 
 # proves the whole mail path end to end without needing an alert to exist first
 @router.post("/debug/test-email", response_model=MailOut)
-async def send_test_email() -> MailOut:
+async def send_test_email(db: Session = Depends(get_db)) -> MailOut:
     if not email.RESEND_API_KEY:
-        return MailOut(sent=False, detail="RESEND_API_KEY is not set")
-    if not email.USER_EMAIL:
-        return MailOut(sent=False, detail="USER_EMAIL is not set")
+        return MailOut(sent=False, detail="RESEND_API_KEY unset")
+    recipient = alert_recipient(db)
+    if not recipient:
+        return MailOut(sent=False, detail="no recipient: set one in Settings")
     sent = await email.send_email(
         "Shopper: test email",
         "<h2>Shopper</h2><p>If you are reading this, alert delivery works.</p>",
+        to=recipient,
     )
-    return MailOut(sent=sent,
-                   detail=f"sent to {email.USER_EMAIL}" if sent
-                          else "Resend rejected it - check the server log")
+    return MailOut(sent=sent, detail=f"200 -> {recipient}" if sent
+                                     else "resend rejected it, see server log")
 
 
 class StatusOut(BaseModel):
@@ -120,8 +122,8 @@ def debug_status(db: Session = Depends(get_db)) -> StatusOut:
     return StatusOut(
         jobs=jobs,
         pending_alerts=db.query(Alert).filter(Alert.sent_at.is_(None)).count(),
-        email_configured=bool(email.RESEND_API_KEY and email.USER_EMAIL),
+        email_configured=bool(email.RESEND_API_KEY and alert_recipient(db)),
         # shown so a test email that "sent" but never arrived has an obvious first suspect
-        user_email=email.USER_EMAIL or None,
+        user_email=alert_recipient(db) or None,
         watched_items=len(scheduler.watched_items(db)),
     )

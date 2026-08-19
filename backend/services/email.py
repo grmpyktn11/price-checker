@@ -8,6 +8,8 @@ import httpx
 # bearer token, httpx is already a dependency, and the sdk is sync-only while both callers
 # (scrape_job's immediate send and digest_job) are async
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+# the fallback only. the address is set in Settings and stored on the profile row; this keeps
+# an install that never opened Settings working
 USER_EMAIL = os.getenv("USER_EMAIL", "")
 ENDPOINT = "https://api.resend.com/emails"
 # Resend's shared sender. without a verified domain Resend only delivers to the account's
@@ -72,11 +74,12 @@ def immediate_subject(row: dict) -> str:
 
 # no key or no recipient configured: render still happened, nothing is sent. False means the
 # caller must leave sent_at null so the alert is retried in the next digest
-async def send_email(subject: str, html_body: str) -> bool:
-    if not RESEND_API_KEY or not USER_EMAIL:
+async def send_email(subject: str, html_body: str, to: str | None = None) -> bool:
+    recipient = to or USER_EMAIL
+    if not RESEND_API_KEY or not recipient:
         logger.info("email not configured, skipping send: %s", subject)
         return False
-    payload = {"from": FROM_EMAIL, "to": [USER_EMAIL], "subject": subject, "html": html_body}
+    payload = {"from": FROM_EMAIL, "to": [recipient], "subject": subject, "html": html_body}
     try:
         async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
             response = await client.post(

@@ -30,6 +30,29 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
 
 
+# there are no migrations: create_all() adds missing tables but never missing columns, so a
+# column added to an existing table is invisible until the file is deleted. this adds the ones
+# the models declare and the table lacks. deliberately additive only - it never drops, renames
+# or retypes anything
+def add_missing_columns() -> None:
+    from sqlalchemy import inspect, text
+
+    inspector = inspect(engine)
+    existing_tables = set(inspector.get_table_names())
+    with engine.begin() as connection:
+        for table in Base.metadata.sorted_tables:
+            if table.name not in existing_tables:
+                continue
+            have = {column["name"] for column in inspector.get_columns(table.name)}
+            for column in table.columns:
+                if column.name in have:
+                    continue
+                kind = column.type.compile(engine.dialect)
+                connection.execute(
+                    text(f'ALTER TABLE "{table.name}" ADD COLUMN "{column.name}" {kind}')
+                )
+
+
 # request-scoped session, closed when the request ends
 def get_db():
     db = SessionLocal()

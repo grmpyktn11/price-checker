@@ -26,6 +26,9 @@ class Profile(Base):
     lat = Column(Float)
     lon = Column(Float)
     display_address = Column(String)
+    # where alerts go. falls back to the USER_EMAIL env var when unset, so an existing
+    # install keeps working without touching Settings
+    email = Column(String)
 
 
 class Item(Base):

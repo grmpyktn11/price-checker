@@ -9,134 +9,133 @@ export const Route = createFileRoute("/debug")({
   component: DebugPage,
 });
 
-// what each job does, in the terms someone testing it needs, plus whether it can email
+// slow ones re-run the pipeline per watched item and return as soon as they start
 const JOBS = [
-  {
-    id: "scrape",
-    label: "Re-price watched items",
-    detail: "Runs the full search again for every watched item. Records price changes and can raise alerts. Minutes.",
-    schedule: "every 6 hours",
-  },
-  {
-    id: "review_check",
-    label: "Look for cheaper alternatives",
-    detail: "Searches again and alerts on anything cheaper than what is already stored. Minutes.",
-    schedule: "daily 03:00",
-  },
-  {
-    id: "digest",
-    label: "Send the digest email",
-    detail: "Emails every alert that has not been sent yet, then marks them sent. Seconds.",
-    schedule: "daily 08:00",
-  },
+  { id: "scrape", schedule: "interval 6h", note: "re-prices every item · async" },
+  { id: "review_check", schedule: "cron 03:00", note: "cheaper alternatives · async" },
+  { id: "digest", schedule: "cron 08:00", note: "sends pending alerts · sync" },
 ] as const;
 
 function DebugPage() {
   const [status, setStatus] = useState<DebugStatus | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [log, setLog] = useState<string[]>([]);
 
   const load = useCallback(async () => {
     try {
       setStatus(await getDebugStatus());
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : "Cannot reach the backend");
+      append(caught instanceof ApiError ? `status ${caught.status}` : "backend unreachable");
     }
   }, []);
+
+  function append(line: string) {
+    const at = new Date().toLocaleTimeString();
+    setLog((current) => [`${at}  ${line}`, ...current].slice(0, 20));
+  }
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  async function trigger(id: string, run: () => Promise<{ detail: string }>) {
+  async function fire(id: string, run: () => Promise<{ detail: string }>) {
     setBusy(id);
-    setNotice(null);
-    setError(null);
+    append(`${id} ...`);
     try {
       const result = await run();
-      setNotice(result.detail);
+      append(`${id} -> ${result.detail}`);
       void load();
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : "That failed");
+      append(`${id} -> ${caught instanceof ApiError ? `${caught.status} ${caught.message}` : "failed"}`);
     } finally {
       setBusy(null);
     }
   }
 
-  return (
-    <AppShell title="Debug" subtitle="Run the scheduled jobs now instead of waiting for them.">
-      <div className="space-y-4">
-        {notice ? (
-          <p className="rounded-2xl bg-sky px-3 py-2 text-sm font-semibold">{notice}</p>
-        ) : null}
-        {error ? (
-          <p className="rounded-2xl bg-strawberry px-3 py-2 text-sm font-semibold text-accent-foreground">
-            {error}
-          </p>
-        ) : null}
+  const rows: [string, string][] = status
+    ? [
+        ["watched items", String(status.watched_items)],
+        ["alerts pending", String(status.pending_alerts)],
+        ["email", status.email_configured ? (status.user_email ?? "?") : "NOT CONFIGURED"],
+        ...status.jobs.map((job): [string, string] => [
+          `next ${job.id}`,
+          job.next_run ?? "unscheduled",
+        ]),
+      ]
+    : [];
 
-        <section className="panel rounded-3xl bg-card p-4">
-          <h2 className="font-display text-xl font-extrabold">State</h2>
-          {status ? (
-            <ul className="mt-2 space-y-1 text-sm font-semibold">
-              <li>{status.watched_items} watched item{status.watched_items === 1 ? "" : "s"}</li>
-              <li>
-                {status.pending_alerts} alert{status.pending_alerts === 1 ? "" : "s"} queued for
-                the next digest
-              </li>
-              <li>
-                {status.email_configured
-                  ? `email goes to ${status.user_email}`
-                  : "email is not configured — set RESEND_API_KEY and USER_EMAIL in .env"}
-              </li>
-            </ul>
+  return (
+    <AppShell title="Debug" subtitle="POST /api/debug/*">
+      <div className="space-y-4 font-mono text-sm">
+        <section className="panel rounded-2xl bg-card p-3">
+          <table className="w-full tabular-nums">
+            <tbody>
+              {rows.map(([key, value]) => (
+                <tr key={key} className="border-b border-foreground/10 last:border-0">
+                  <td className="py-1 pr-4 text-muted-foreground">{key}</td>
+                  <td className="py-1 break-all">{value}</td>
+                </tr>
+              ))}
+              {rows.length === 0 ? (
+                <tr>
+                  <td className="py-1 text-muted-foreground">loading</td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </section>
+
+        <section className="panel rounded-2xl bg-card p-3">
+          <table className="w-full">
+            <tbody>
+              <tr className="border-b border-foreground/10">
+                <td className="py-1.5 pr-3">
+                  <button
+                    onClick={() => void fire("test-email", sendTestEmail)}
+                    disabled={busy !== null}
+                    className="sticker rounded px-2 py-0.5 text-xs font-bold disabled:opacity-40"
+                  >
+                    run
+                  </button>
+                </td>
+                <td className="py-1.5 pr-3 font-bold">test-email</td>
+                <td className="py-1.5 pr-3 text-muted-foreground">—</td>
+                <td className="py-1.5 text-muted-foreground">one message to the alert address</td>
+              </tr>
+              {JOBS.map((job) => (
+                <tr key={job.id} className="border-b border-foreground/10 last:border-0">
+                  <td className="py-1.5 pr-3">
+                    <button
+                      onClick={() => void fire(job.id, () => runJob(job.id))}
+                      disabled={busy !== null}
+                      className="sticker rounded px-2 py-0.5 text-xs font-bold disabled:opacity-40"
+                    >
+                      run
+                    </button>
+                  </td>
+                  <td className="py-1.5 pr-3 font-bold">{job.id}</td>
+                  <td className="py-1.5 pr-3 text-muted-foreground">{job.schedule}</td>
+                  <td className="py-1.5 text-muted-foreground">{job.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        <section className="panel rounded-2xl bg-card p-3">
+          <p className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">output</p>
+          {log.length === 0 ? (
+            <p className="text-muted-foreground">—</p>
           ) : (
-            <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
-          )}
-          {status?.jobs.length ? (
-            <ul className="mt-3 space-y-0.5 text-xs text-muted-foreground">
-              {status.jobs.map((job) => (
-                <li key={job.id}>
-                  next {job.id}: {job.next_run ?? "not scheduled"}
+            <ul className="space-y-0.5">
+              {log.map((line, index) => (
+                <li key={index} className="break-all">
+                  {line}
                 </li>
               ))}
             </ul>
-          ) : null}
+          )}
         </section>
-
-        <section className="panel rounded-3xl bg-card p-4">
-          <h2 className="font-display text-xl font-extrabold">Email</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Sends one message now. Proves delivery without needing an alert to exist.
-          </p>
-          <button
-            onClick={() => void trigger("test-email", sendTestEmail)}
-            disabled={busy !== null || status?.email_configured === false}
-            className="sticker mt-3 rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground disabled:opacity-50"
-          >
-            {busy === "test-email" ? "Sending…" : "Send test email"}
-          </button>
-        </section>
-
-        {JOBS.map((job) => (
-          <section key={job.id} className="panel rounded-3xl bg-card p-4">
-            <div className="flex flex-wrap items-baseline gap-2">
-              <h2 className="font-display text-xl font-extrabold">{job.label}</h2>
-              <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold">
-                {job.schedule}
-              </span>
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">{job.detail}</p>
-            <button
-              onClick={() => void trigger(job.id, () => runJob(job.id))}
-              disabled={busy !== null}
-              className="sticker mt-3 rounded-full bg-card px-4 py-2 text-sm font-extrabold disabled:opacity-50"
-            >
-              {busy === job.id ? "Starting…" : "Run now"}
-            </button>
-          </section>
-        ))}
       </div>
     </AppShell>
   );
