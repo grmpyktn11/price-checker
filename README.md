@@ -7,7 +7,7 @@ drops.
 
 ![Typing a request, four retailers answering, and five ranked results](docs/demo.gif)
 
-*[Full walkthrough, 73s](docs/demo.mp4)*
+*[Full walkthrough, 76s](docs/demo.mp4)*
 
 Python/FastAPI + React + SQLite, Claude for the judgment calls. Runs on your own machine.
 A search takes about 80 seconds, almost all of it waiting on retailers.
