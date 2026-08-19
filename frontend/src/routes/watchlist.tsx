@@ -151,17 +151,30 @@ function WatchlistPage() {
             listing?.price != null && first != null && Math.abs(listing.price - first) >= 0.01
               ? listing.price - first
               : null;
+          // the meta line only says what was actually set; "uncategorised · target —" was
+          // two null values wearing punctuation
+          const meta = [
+            item.budget_max !== null ? `budget ${money(item.budget_max)}` : null,
+            item.target_price !== null ? `target ${money(item.target_price)}` : null,
+          ].filter(Boolean);
           return (
             <article key={item.id} className="panel rounded-3xl bg-card p-4">
               <div className="flex items-start gap-2">
                 <div className="min-w-0">
+                  {/* the title is the way in; a "View detail" button was a third button
+                      saying what the name already says */}
                   <h2 className="font-display text-xl font-extrabold leading-tight break-words">
-                    {item.name ?? "Unnamed item"}
+                    <Link
+                      to="/items/$id"
+                      params={{ id: String(item.id) }}
+                      className="underline-offset-4 hover:underline"
+                    >
+                      {item.name ?? "Unnamed item"}
+                    </Link>
                   </h2>
-                  <p className="text-sm text-muted-foreground">
-                    {item.category ?? "uncategorised"} · budget {money(item.budget_max)} · target{" "}
-                    {money(item.target_price)}
-                  </p>
+                  {meta.length ? (
+                    <p className="text-sm text-muted-foreground">{meta.join(" · ")}</p>
+                  ) : null}
                 </div>
                 {reason ? (
                   <span className="sticker ml-auto shrink-0 rounded-full bg-strawberry px-2.5 py-1 text-xs font-extrabold text-accent-foreground">
@@ -171,49 +184,33 @@ function WatchlistPage() {
               </div>
 
               <div className="mt-3 rounded-2xl bg-secondary/60 p-3">
-                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                  Best option now
-                </p>
                 {listing ? (
-                  <>
-                    <p className="font-display text-lg font-bold leading-tight">
+                  <p className="text-sm font-semibold">
+                    <span className="font-display text-lg font-bold">
                       {retailerLabel(listing.retailer)}
-                    </p>
-                    <p className="text-sm font-semibold">
+                    </span>{" "}
+                    <span className="lcd ml-1 inline-block rounded px-1.5">
                       {money(listing.price)}
-                      {delta !== null ? (
-                        <span
-                          className={`ml-2 inline-block rounded-full px-2 py-0.5 text-xs font-extrabold ${
-                            delta < 0 ? "bg-primary text-primary-foreground" : "bg-strawberry text-accent-foreground"
-                          }`}
-                        >
-                          {delta < 0 ? "▼" : "▲"} {money(Math.abs(delta))} since first check
-                        </span>
-                      ) : null}{" "}
-                      ·{" "}
-                      {listing.in_stock === null
-                        ? "stock unknown"
-                        : listing.in_stock
-                          ? "in stock"
-                          : "out of stock"}
-                      {listing.shipping_days_est !== null
-                        ? ` · ships in ${listing.shipping_days_est}d`
-                        : ""}
-                    </p>
-                  </>
+                    </span>
+                    {delta !== null ? (
+                      <span
+                        className={`ml-2 inline-block rounded-full px-2 py-0.5 text-xs font-extrabold ${
+                          delta < 0 ? "bg-primary text-primary-foreground" : "bg-strawberry text-accent-foreground"
+                        }`}
+                      >
+                        {delta < 0 ? "▼" : "▲"} {money(Math.abs(delta))}
+                      </span>
+                    ) : null}
+                    {/* stock is only news when it is bad or unknown */}
+                    {listing.in_stock === null ? " · stock unknown" : ""}
+                    {listing.in_stock === false ? " · out of stock" : ""}
+                  </p>
                 ) : (
                   <p className="text-sm font-semibold">No listings found yet.</p>
                 )}
               </div>
 
               <div className="mt-4 flex flex-wrap items-center gap-2">
-                <Link
-                  to="/items/$id"
-                  params={{ id: String(item.id) }}
-                  className="sticker rounded-full bg-primary px-3 py-2 text-sm font-extrabold text-primary-foreground transition-transform hover:-translate-y-0.5"
-                >
-                  View detail
-                </Link>
                 <button
                   onClick={() => void rescan(item)}
                   disabled={rescanning !== null}
