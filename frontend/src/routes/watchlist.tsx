@@ -177,7 +177,7 @@ function WatchlistPage() {
                   ) : null}
                 </div>
                 {reason ? (
-                  <span className="sticker ml-auto shrink-0 rounded-full bg-strawberry px-2.5 py-1 text-xs font-extrabold text-accent-foreground">
+                  <span className="ml-auto shrink-0 rounded-md bg-strawberry px-2 py-0.5 text-xs font-extrabold text-accent-foreground">
                     {dealLabel[reason] ?? reason}
                   </span>
                 ) : null}
@@ -193,9 +193,11 @@ function WatchlistPage() {
                         stock ticker draws it, not a separate badge in another material */}
                     <span className="lcd ml-1 inline-block rounded px-1.5">
                       {money(listing.price)}
-                      {delta !== null
-                        ? ` ${delta < 0 ? "▼" : "▲"}${Math.abs(delta).toFixed(2)}`
-                        : ""}
+                      {delta !== null ? (
+                        <span className="ml-3">
+                          {delta < 0 ? "▼" : "▲"} {Math.abs(delta).toFixed(2)}
+                        </span>
+                      ) : null}
                     </span>
                     {/* stock is only news when it is bad or unknown */}
                     {listing.in_stock === null ? " · stock unknown" : ""}
