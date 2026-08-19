@@ -56,8 +56,13 @@ export function ProductCard({
   return (
     <article className="sticker relative rounded-3xl bg-card p-4">
       <div className="min-w-0">
-        <h3 className="font-display text-lg font-bold leading-tight break-words">
-          {product.name ?? "Unnamed listing"}
+        {/* retailer names are SEO keyword dumps: everything after the first | is not the
+            name. body font and a two-line clamp; the full name stays on hover */}
+        <h3
+          className="font-sans line-clamp-2 text-base font-bold leading-snug break-words"
+          title={product.name ?? undefined}
+        >
+          {(product.name ?? "Unnamed listing").split("|")[0].trim()}
         </h3>
         <p className="text-sm text-muted-foreground">
           {retailerLabel(product.retailer)}
