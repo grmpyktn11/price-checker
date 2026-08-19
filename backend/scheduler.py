@@ -39,24 +39,19 @@ def watched_items(db: Session) -> list[Item]:
     return db.query(Item).filter(Item.status == "watching").all()
 
 
-# the pipeline needs coordinates; without a profile location there is nothing to scan
-def profile_location(db: Session) -> tuple[float, float] | None:
+# no location just means an online-only rescan with neutral distance scores
+def profile_location(db: Session) -> tuple[float | None, float | None]:
     profile = get_or_create_profile(db)
-    if profile.lat is None or profile.lon is None:
-        return None
     return profile.lat, profile.lon
 
 
 async def rank_for_item(db: Session, item: Item) -> list[RankedProduct]:
-    location = profile_location(db)
-    if location is None:
-        logger.warning("no profile location, skipping item %s", item.id)
-        return []
+    lat, lon = profile_location(db)
     item_criteria = json.loads(item.criteria_json)
     return await run_pipeline(
         item_criteria,
-        location[0],
-        location[1],
+        lat,
+        lon,
         item.radius_miles or DEFAULT_RADIUS_MILES,
         db=db,
         item_id=item.id,

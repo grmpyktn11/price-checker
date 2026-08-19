@@ -22,7 +22,7 @@ playwright install chromium
 cd frontend && npm install && npm run dev
 ```
 
-Set your location on `/settings` first, or every search returns a 400.
+Set your location on `/settings` so store distance counts; without one, searches run online-only.
 
 ```bash
 pytest              # 362 tests, no network, no model calls, ~5s

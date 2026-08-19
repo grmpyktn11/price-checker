@@ -189,10 +189,19 @@ def test_scrape_job_skips_archived_items(job_db, seeded_profile):
     assert job_db.query(Listing).count() == 0
 
 
-def test_scrape_job_without_location_writes_nothing(job_db):
-    make_item(job_db)
+# no profile location is not a reason to skip: the rescan runs online-only with a neutral
+# distance score, same as a chat search
+def test_scrape_job_runs_without_location(job_db, monkeypatch):
+    item = make_item(job_db)
+    scanned = []
+
+    async def fake_scrape(db, scanned_item):
+        scanned.append(scanned_item.id)
+        return {}
+
+    monkeypatch.setattr(scheduler, "scrape_item", fake_scrape)
     asyncio.run(scheduler.run_scrape_job())
-    assert job_db.query(Listing).count() == 0
+    assert scanned == [item.id]
 
 
 @pytest.mark.live

@@ -60,7 +60,7 @@ def mark(project_id: int, index: int, **fields) -> None:
 
 # one item, on its own session state. the caller holds the try/except: a single item failing
 # must not end the run
-async def search_item(db, item: ProjectItem, lat: float, lon: float, project_id: int,
+async def search_item(db, item: ProjectItem, lat: float | None, lon: float | None, project_id: int,
                       to_product_out) -> int:
     item_criteria = json.loads(item.criteria_json)
     item.status = "searching"
@@ -89,7 +89,7 @@ TOP_N = 3
 # the whole run, sequentially. never parallel: reddit's pacing is per-run so N runs remove the
 # spacing, amazon's caps are per-run so N runs multiply its request rate, and browser.py's
 # product-page cache holds one entry, which two concurrent pipelines would thrash
-async def run_project(project_id: int, item_ids: list[int], lat: float, lon: float,
+async def run_project(project_id: int, item_ids: list[int], lat: float | None, lon: float | None,
                       to_product_out) -> None:
     db = SessionLocal()
     try:

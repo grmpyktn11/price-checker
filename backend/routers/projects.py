@@ -164,9 +164,8 @@ async def start_search(project_id: int, body: SearchIn,
     if not body.item_ids:
         raise HTTPException(400, "tick at least one item")
 
+    # no location set is fine: the run is online-only with neutral distance scores
     profile = get_or_create_profile(db)
-    if profile.lat is None or profile.lon is None:
-        raise HTTPException(400, "Set your location first: PATCH /api/profile/location")
 
     known = {item.id for item in project_items(db, project.id)}
     chosen = [item_id for item_id in body.item_ids if item_id in known]

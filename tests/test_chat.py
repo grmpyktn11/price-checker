@@ -141,12 +141,15 @@ def test_watch_persists_reviews(client, db):
     assert {"reddit", "youtube"} <= sources
 
 
+# no location set: the search still runs, online-only, with distance scored neutral
 @pytest.mark.live
-def test_search_without_location_is_400(client, db):
+def test_search_without_location_runs_online_only(client, db):
     send(client, "c1", "i need a portable charger")
     response = send(client, "c1", "under $150")
-    assert response.status_code == 400
-    assert "PATCH /api/profile/location" in response.json()["detail"]
+    assert response.status_code == 200
+    body = response.json()
+    assert body["type"] == "results"
+    assert body["debug"]["stores"]["source"] == "no location set"
 
 
 @pytest.mark.live

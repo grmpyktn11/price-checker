@@ -130,7 +130,8 @@ and disable the input; do not let a second message start while one is in flight.
 `/api/chat/progress/{conversation_id}` (below) to show what it is actually doing rather than a
 bare spinner.
 
-**Errors:** `400` location not set (see profile), `404` unknown conversation, `502` model call failed.
+**Errors:** `404` unknown conversation, `502` model call failed. No location set is not an
+error: the search runs online-only and distance scores neutral.
 
 ### `POST /api/chat/decision`
 
@@ -198,7 +199,7 @@ stage. Both limits exist for the same reason: N concurrent or fully-researched p
 the request rate against retailers that already rate-limit us. Ranking still uses retailer star
 ratings, which all four print on their search page.
 
-**Errors:** `400` no location set or nothing ticked, `404` unknown project or items, `409`
+**Errors:** `400` nothing ticked, `404` unknown project or items, `409`
 already running.
 
 ### `GET /api/projects/{id}/progress`
@@ -522,7 +523,7 @@ Always returns `200` and creates a blank row on first call. `lat`/`lon` null mea
 
 All three required. Out-of-range lat/lon is a `422`.
 
-**Chat search 400s until a location is set**, so a location form is not optional — it gates the
+**Without a location, searches run online-only** with a neutral distance score, so the location form is worth surfacing early — it improves the
 main flow. Address autocomplete uses Google Places (New) with a browser-exposed key; a coordinates-only
 fallback is acceptable when the key is missing.
 
@@ -542,7 +543,7 @@ const message = Array.isArray(detail)
 
 | Code | Means |
 |---|---|
-| 400 | location not set, or product has no url |
+| 400 | product has no url |
 | 404 | unknown item, unknown/expired conversation, bad product_id, no trace recorded yet |
 | 422 | validation failure — `detail` is an array |
 | 502 | model call failed upstream |

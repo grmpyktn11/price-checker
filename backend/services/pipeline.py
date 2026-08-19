@@ -107,7 +107,10 @@ class SpecExtractionBudget:
 
 
 # ScraperBase defines find_nearby_stores for everyone, so hasattr cannot detect Amazon's opt-out
-async def nearby_store_ids(scraper, lat: float, lon: float, radius_mi: int) -> list[str] | None:
+async def nearby_store_ids(scraper, lat: float | None, lon: float | None,
+                           radius_mi: int) -> list[str] | None:
+    if lat is None or lon is None:
+        return None
     try:
         stores_found = await scraper.find_nearby_stores(lat, lon, radius_mi)
     except NotImplementedError:
@@ -280,15 +283,16 @@ async def lookup_missing_reviews(candidates: list[RankedProduct],
 
 
 # every retailer, capped, with specs and the retailer's own rating for each candidate
-async def collect_candidates(item_criteria: dict, lat: float, lon: float,
+async def collect_candidates(item_criteria: dict, lat: float | None, lon: float | None,
                              radius_mi: int) -> list[RankedProduct]:
     query = build_query(item_criteria)
     wanted_fields = wanted_spec_fields(item_criteria)
-    # one Places lookup per location for the whole run, not per product
+    # one Places lookup per location for the whole run, not per product. no location set means
+    # no lookup: every retailer scores a neutral distance and the search is online-only
     started = time.monotonic()
-    store_distances = await stores.nearest_stores(lat, lon)
+    store_distances = await stores.nearest_stores(lat, lon) if lat is not None and lon is not None else {}
     trace.note("stores", {
-        "source": "google places text search",
+        "source": "google places text search" if lat is not None else "no location set",
         "distance_miles": store_distances,
         # a retailer with stores that Places did not return: no store nearby, or a failed
         # lookup. either way its candidates score a neutral distance
@@ -514,7 +518,7 @@ def research_rows(candidate: RankedProduct) -> list[dict]:
 
 # db and item_id are optional: a first chat search has neither and must still work. with both,
 # the winner's research is persisted; without either, nothing is written
-async def run_pipeline(item_criteria: dict, lat: float, lon: float, radius_mi: int,
+async def run_pipeline(item_criteria: dict, lat: float | None, lon: float | None, radius_mi: int,
                        db=None, item_id: int | None = None,
                        progress_key: str | None = None,
                        research_top_n: int = RESEARCH_TOP_N) -> list[RankedProduct]:

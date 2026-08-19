@@ -144,12 +144,19 @@ def test_unknown_project_is_a_404(client):
     assert client.post("/api/projects/999/search", json={"item_ids": [1]}).status_code == 404
 
 
-def test_search_needs_a_location(client, extraction):
+# no location is not an error: the run starts anyway, online-only
+def test_search_without_a_location_still_starts(client, extraction, monkeypatch):
+    seen = {}
+
+    async def fake_run(project_id, item_ids, lat, lon, to_product_out):
+        seen.update({"lat": lat, "lon": lon})
+
+    monkeypatch.setattr(project_run, "run_project", fake_run)
     body = import_one(client).json()
     response = client.post(f"/api/projects/{body['id']}/search",
                            json={"item_ids": [body["items"][0]["id"]]})
-    assert response.status_code == 400
-    assert "location" in response.json()["detail"].lower()
+    assert response.status_code == 202
+    assert seen == {"lat": None, "lon": None}
 
 
 def test_search_starts_a_run(client, extraction, db, monkeypatch):

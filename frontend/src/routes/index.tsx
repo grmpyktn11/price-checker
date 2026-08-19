@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import type { ConversationSummary, DebugTrace, Product } from "@/api";
@@ -8,6 +8,7 @@ import {
   deleteConversation,
   getConversation,
   getConversations,
+  getProfile,
   sendDecision,
   sendMessage,
 } from "@/api";
@@ -37,12 +38,17 @@ function ChatPage() {
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [noLocation, setNoLocation] = useState(false);
   const [decision, setDecision] = useState<{ id: number; kind: "buy_now" | "watch" } | null>(null);
   const [past, setPast] = useState<ConversationSummary[]>([]);
   const endRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     void refreshPast();
+    // searches work without a location, just with distance scored neutral - worth a nudge
+    getProfile()
+      .then((profile) => setNoLocation(profile.lat == null || profile.lon == null))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -217,6 +223,14 @@ function ChatPage() {
             {turns.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 Say what you want to buy, and your budget.
+              </p>
+            ) : null}
+            {noLocation ? (
+              <p className="text-sm text-muted-foreground">
+                No location set, so store distance won't count.{" "}
+                <Link to="/settings" className="font-bold underline">
+                  Set it in Settings.
+                </Link>
               </p>
             ) : null}
             {searching ? <SearchProgress conversationId={conversationId} /> : null}

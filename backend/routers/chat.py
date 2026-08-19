@@ -211,11 +211,9 @@ async def post_message(body: MessageIn, db: Session = Depends(get_db)) -> Messag
         return MessageOut(type="followup", question=result["question"])
 
     item_criteria = result["criteria"]
+    # no location is not an error: the search runs online-only and distance scores neutral.
+    # the frontend points at Settings so the user knows what they are missing
     profile = get_or_create_profile(db)
-    if profile.lat is None or profile.lon is None:
-        # the turn we just appended is never saved: leaving a user message with no assistant
-        # reply would put two user turns in a row in the next prompt
-        raise HTTPException(400, "Set your location first: PATCH /api/profile/location")
 
     ranked = await run_pipeline(
         item_criteria, profile.lat, profile.lon, item_criteria["radius_miles"],
