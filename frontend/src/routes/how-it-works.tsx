@@ -62,26 +62,21 @@ function HowItWorksPage() {
 
   if (!short) {
     return (
-      <AppShell title="How Shopper works" subtitle="How much detail do you want?">
-        <div className="grid gap-4 sm:grid-cols-2">
+      <AppShell title="How Shopper works" subtitle="Pick one.">
+        {/* deliberately unlabelled: two buttons that only say how long it takes is funnier,
+            and more honest, than two paragraphs explaining which one to want */}
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={() => setShort(true)}
-            className="sticker rounded-3xl bg-butter p-6 text-left transition-transform hover:-translate-y-0.5"
+            className="sticker rounded-full bg-primary px-5 py-2.5 text-sm font-extrabold text-primary-foreground transition-transform hover:-translate-y-0.5"
           >
-            <span className="font-display block text-2xl font-extrabold">Short way</span>
-            <span className="mt-1 block text-sm">
-              Seven steps, the scoring, and what it cannot do. A minute.
-            </span>
+            Short way
           </button>
-
           <a
             href={LONG_URL}
-            className="sticker block rounded-3xl bg-sky p-6 transition-transform hover:-translate-y-0.5"
+            className="sticker rounded-full bg-card px-5 py-2.5 text-sm font-extrabold transition-transform hover:-translate-y-0.5"
           >
-            <span className="font-display block text-2xl font-extrabold">Long way</span>
-            <span className="mt-1 block text-sm">
-              Every stage with its payloads, the database tables, and where the 80 seconds goes.
-            </span>
+            Long way
           </a>
         </div>
       </AppShell>
