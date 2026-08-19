@@ -1,11 +1,11 @@
 # Shopper
 
-Describe what you want in a sentence. Shopper searches Best Buy, Target, Amazon and Micro Center
-at once, researches the best candidates on Reddit and YouTube, ranks them, and tells you which to
-buy and why. Track anything and it re-checks the price every six hours and emails you when it
-drops.
+Describe what you want in a sentence. If something important is missing, Shopper asks one
+question first. Then it searches Best Buy, Target, Amazon and Micro Center at once, researches
+the best candidates on Reddit and YouTube, ranks them, and tells you which to buy and why. Track
+anything and it re-checks the price every six hours and emails you when it drops.
 
-![Typing a request, four retailers answering, and five ranked results](docs/demo.gif)
+![Asking for a wireless charger, answering one clarifying question, four retailers searching, and the ranked results](docs/demo.gif)
 
 *[Full walkthrough, 78s](docs/demo.mp4)*
 
@@ -32,6 +32,7 @@ pytest -m live      # 29 that hit the real retailers and the real API
 ## What it does
 
 **Chat** — one sentence in, five ranked products out, each with the evidence behind its score.
+If the request is missing something that matters, it asks one question before searching.
 
 **Projects** — paste a Claude conversation, it pulls out the shopping list and prices every item
 you tick.
