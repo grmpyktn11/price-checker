@@ -15,6 +15,17 @@ function sourceLabel(source: string | null): string {
   return SOURCE_LABEL[base] ?? retailerLabel(base);
 }
 
+// what the link out of a source row says. a retailer row has no url of its own, so only the
+// discussion sources get one
+const SOURCE_ACTION: Record<string, string> = {
+  reddit: "read the thread",
+  youtube: "watch the review",
+};
+
+function sourceAction(source: string | null): string {
+  return SOURCE_ACTION[(source ?? "").replace(/_inherited$/, "")] ?? "open source";
+}
+
 // the ranking weights, so the breakdown reads as "this is why it scored what it scored"
 const breakdown = [
   { key: "spec_match", label: "specs" },
@@ -147,7 +158,20 @@ export function ProductCard({
                 return (
                   <li key={index} className="rounded-2xl bg-secondary px-3 py-2 text-xs">
                     <p className="font-bold">
-                      {sourceLabel(row.source)}
+                      {/* the source name is the link, so the thread is one tap from the claim
+                          it is supporting rather than a "read it" hidden under the summary */}
+                      {link ? (
+                        <a
+                          href={link}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="underline underline-offset-2"
+                        >
+                          {sourceLabel(row.source)}
+                        </a>
+                      ) : (
+                        sourceLabel(row.source)
+                      )}
                       {row.rating !== null ? ` · ★ ${row.rating}` : ""}
                       {row.review_count ? ` · ${row.review_count.toLocaleString()} reviews` : ""}
                       {row.mention_count ? ` · ${row.mention_count} threads` : ""}
@@ -163,7 +187,7 @@ export function ProductCard({
                         rel="noreferrer noopener"
                         className="mt-1 inline-block font-bold underline"
                       >
-                        read it
+                        {sourceAction(row.source)} &rarr;
                       </a>
                     ) : null}
                   </li>

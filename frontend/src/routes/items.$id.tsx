@@ -155,7 +155,7 @@ function ReviewRow({ review }: { review: Review }) {
           rel="noreferrer noopener"
           className="text-sm font-bold underline"
         >
-          source
+          {review.source === "youtube" ? "watch the review" : "read the thread"} &rarr;
         </a>
       ) : null}
     </li>
