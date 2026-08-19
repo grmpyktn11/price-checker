@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inside a Shopper Search</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Karla:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap">
+
+<style>
+  :root {
+    --paper: #FBFAF3;
+    --raised: #F3F1E4;
+    --ink: #16281B;
+    --ink-soft: #57665B;
+    --rule: #E0DCCA;
+    --accent: #2C7A3F;
+    --accent-soft: #DCEBDF;
+    --amber: #A87510;
+    --amber-soft: #F6EBCF;
+    --rose: #A83E36;
+    --rose-soft: #F5DFDC;
+    --code-bg: #F2F0E3;
+    --code-ink: #23331F;
+    --col: 74ch;
+    --rail: 5rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #101409;
+      --raised: #1B2118;
+      --ink: #E9EDE0;
+      --ink-soft: #9AA79A;
+      --rule: #2B3228;
+      --accent: #74C285;
+      --accent-soft: #1E2E22;
+      --amber: #DFA93F;
+      --amber-soft: #2E2716;
+      --rose: #E2786F;
+      --rose-soft: #33201E;
+      --code-bg: #1A2017;
+      --code-ink: #D8E0D2;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #101409;
+    --raised: #1B2118;
+    --ink: #E9EDE0;
+    --ink-soft: #9AA79A;
+    --rule: #2B3228;
+    --accent: #74C285;
+    --accent-soft: #1E2E22;
+    --amber: #DFA93F;
+    --amber-soft: #2E2716;
+    --rose: #E2786F;
+    --rose-soft: #33201E;
+    --code-bg: #1A2017;
+    --code-ink: #D8E0D2;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Karla, ui-sans-serif, system-ui, sans-serif;
+    font-size: 16.5px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: calc(var(--col) + var(--rail) + 4rem);
+    margin: 0 auto;
+    padding: 3.5rem 2rem 5rem;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: var(--rail) minmax(0, 1fr);
+    gap: 0 1.5rem;
+    padding-block: 2rem;
+    border-top: 1px solid var(--rule);
+  }
+  .step:first-of-type { border-top: none; }
+
+  .marker { text-align: right; }
+  .marker .n {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.9rem; font-weight: 700; color: var(--accent); display: block;
+  }
+  .marker .cost {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.74rem; color: var(--ink-soft); display: block;
+    margin-top: 0.3rem; font-variant-numeric: tabular-nums;
+  }
+
+  h1 {
+    font-family: Fraunces, Georgia, serif; font-optical-sizing: auto;
+    font-weight: 800; font-size: clamp(2.4rem, 5.5vw, 3.6rem);
+    line-height: 1.03; letter-spacing: -0.02em; margin: 0 0 0.85rem; text-wrap: balance;
+  }
+  h2 {
+    font-family: Fraunces, Georgia, serif; font-weight: 600;
+    font-size: 1.45rem; line-height: 1.2; margin: 0 0 0.55rem; text-wrap: balance;
+  }
+  h3 {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-soft); font-weight: 700; margin: 1.5rem 0 0.5rem;
+  }
+
+  .lede { font-size: 1.12rem; color: var(--ink-soft); max-width: 62ch; margin: 0 0 2.25rem; }
+  .eyebrow {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 1.1rem;
+  }
+
+  p { margin: 0 0 0.85rem; }
+  .step > div > *:last-child { margin-bottom: 0; }
+  ul, ol { margin: 0 0 0.85rem; padding-left: 1.1rem; }
+  li { margin-bottom: 0.3rem; }
+
+  code {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.85em; background: var(--code-bg);
+    padding: 0.1em 0.36em; border-radius: 3px;
+  }
+
+  pre {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    background: var(--code-bg); color: var(--code-ink);
+    font-size: 0.78rem; line-height: 1.55;
+    padding: 0.9rem 1rem; border-radius: 5px;
+    overflow-x: auto; margin: 0 0 0.85rem;
+    border: 1px solid var(--rule);
+  }
+  pre .c { color: var(--ink-soft); }
+
+  .cap {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 0.35rem;
+  }
+
+  .llm {
+    background: var(--amber-soft); border-left: 3px solid var(--amber);
+    padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.94rem;
+  }
+  .llm .tag {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--amber); font-weight: 700; display: block; margin-bottom: 0.25rem;
+  }
+
+  .warn {
+    background: var(--rose-soft); border-left: 3px solid var(--rose);
+    padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; font-size: 0.94rem;
+  }
+
+  .db {
+    background: var(--accent-soft); border-left: 3px solid var(--accent);
+    padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0;
+  }
+  .db .tag {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; display: block; margin-bottom: 0.4rem;
+  }
+  .db pre { background: transparent; border: none; padding: 0; margin: 0; font-size: 0.76rem; }
+
+  .wide { grid-column: 1 / -1; margin-top: 1.25rem; overflow-x: auto; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 32rem; }
+  th {
+    text-align: left; font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.67rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-soft); font-weight: 400;
+    padding: 0 0.85rem 0.45rem 0; border-bottom: 1px solid var(--rule);
+  }
+  td { padding: 0.5rem 0.85rem 0.5rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td.num {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+
+  .waterfall {
+    display: grid; grid-template-columns: 9rem 1fr 4.2rem;
+    gap: 0.4rem 0.8rem; align-items: center; min-width: 29rem;
+  }
+  .waterfall .lbl { font-size: 0.82rem; }
+  .waterfall .track { background: var(--raised); border-radius: 2px; height: 1.3rem; position: relative; }
+  .waterfall .bar { position: absolute; top: 0; bottom: 0; border-radius: 2px; background: var(--accent); }
+  .waterfall .bar.model { background: var(--amber); }
+  .waterfall .ms {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.76rem; font-variant-numeric: tabular-nums; color: var(--ink-soft); text-align: right;
+  }
+
+  .pill {
+    display: inline-block; font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.68rem; letter-spacing: 0.05em; padding: 0.12em 0.5em;
+    border-radius: 100px; background: var(--accent-soft); color: var(--accent); font-weight: 700;
+  }
+  .pill.bad { background: var(--rose-soft); color: var(--rose); }
+
+  footer {
+    margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+    color: var(--ink-soft); font-size: 0.85rem;
+  }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 2.25rem 1rem 3.5rem; }
+    .step { grid-template-columns: 1fr; gap: 0.45rem; padding-block: 1.6rem; }
+    .marker { text-align: left; display: flex; gap: 0.7rem; align-items: baseline; }
+    .marker .cost { margin-top: 0; }
+    .waterfall { grid-template-columns: 6.5rem 1fr 3.4rem; }
+    pre { font-size: 0.72rem; }
+  }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+  <p class="eyebrow">Shopper · technical walkthrough</p>
+  <h1>Inside a Shopper Search</h1>
+  <p class="lede">
+    One sentence in, five ranked products out, about 80 seconds later. Every step, every
+    payload, every row written.
+  </p>
+
+  <div class="step">
+    <div class="marker"><span class="n">§</span></div>
+    <div>
+      <h2>The pieces</h2>
+      <p>
+        A Python backend (FastAPI, port 8000) does the work. A React frontend (Vite, port 5173)
+        is the UI. The frontend never calls a retailer or Claude directly — it only calls the
+        backend. In development Vite proxies <code>/api</code> to port 8000, so both are the
+        same origin and no CORS is needed.
+      </p>
+      <p>
+        Storage is one SQLite file, <code>app.db</code>, resolved from the repo root rather than
+        the working directory. Nine tables. Every one appears below at the point it is written.
+      </p>
+      <p>
+        There are no migrations — <code>Base.metadata.create_all()</code> runs at import. New
+        tables appear on restart; new columns on existing tables do not.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">01</span><span class="cost">instant</span></div>
+    <div>
+      <h2>The request</h2>
+      <p class="cap">POST /api/chat/message</p>
+<pre>{
+  "conversation_id": "8f2a-…",   <span class="c">// crypto.randomUUID() in the browser</span>
+  "message": "i want a wireless mouse under 40 dollars"
+}</pre>
+      <p>
+        The backend loads or creates the conversation row. History is stored as JSON, not one
+        row per turn, because the app only ever reads or writes a whole conversation.
+      </p>
+      <div class="db">
+        <span class="tag">table · conversations</span>
+<pre>id            VARCHAR  PK   <span class="c">// client-generated, not an autoincrement</span>
+history_json  VARCHAR       <span class="c">// [{"role":"user","content":"…"}, …] oldest first</span>
+criteria_json VARCHAR       <span class="c">// set once extraction succeeds</span>
+results_json  VARCHAR       <span class="c">// what /chat/decision needs, indexed by product_id</span>
+created_at    DATETIME
+updated_at    DATETIME</pre>
+      </div>
+      <p>
+        Timestamps are naive UTC. SQLite stores no offset and reads back naive, so writing an
+        aware value would make stored and read values different types.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">02</span><span class="cost">~2s</span></div>
+    <div>
+      <h2>Sentence to criteria</h2>
+      <div class="llm">
+        <span class="tag">model call · claude-sonnet-4-5 · 1000 max tokens</span>
+        The whole history plus the new message. Two possible reply shapes.
+      </div>
+      <p class="cap">reply A — needs more information</p>
+<pre>{"type": "followup", "question": "What is your budget?"}</pre>
+      <p>
+        Turn ends. The question is appended to history, saved, returned. No search, no cost
+        beyond this call. This is why a first message often gets a question back.
+      </p>
+      <p class="cap">reply B — the criteria</p>
+<pre>{"type": "criteria", "criteria": {
+  "name": "wireless mouse",          <span class="c">// the search-box string</span>
+  "category": "electronics",         <span class="c">// picks the subreddit list later</span>
+  "keywords": ["wireless"],          <span class="c">// extra search terms</span>
+  "must_haves": [                    <span class="c">// hard rules</span>
+    {"field": "Battery Capacity", "op": "&gt;=", "value": 20000}
+  ],
+  "preferred_specs": [],             <span class="c">// same shape, soft</span>
+  "nice_to_haves": ["compact"],      <span class="c">// subjective phrases</span>
+  "budget_max": 40.0,                <span class="c">// penalty, never a filter</span>
+  "target_price": null,              <span class="c">// alert threshold only</span>
+  "fulfillment_preference": "either",
+  "radius_miles": 25,
+  "min_review_count": 5
+}}</pre>
+      <p>
+        <code>op</code> is one of <code>&gt;= &lt;= == contains exists</code>.
+        <code>field</code> is the spec name as a retailer prints it — no unit conversion happens
+        later, so "20000" must be in the retailer's unit.
+      </p>
+      <p>
+        Then <code>normalize()</code> replaces explicit nulls: <code>radius_miles</code> → 25,
+        <code>min_review_count</code> → 5, the four list fields → <code>[]</code>. It replaces
+        nulls, not just missing keys — the model emits <code>null</code>, and a <code>None</code>
+        reaching a comparison downstream raised a <code>TypeError</code> that got swallowed and
+        looked like a retailer outage.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">03</span><span class="cost">instant</span></div>
+    <div>
+      <h2>Location gate</h2>
+      <div class="db">
+        <span class="tag">table · profile · read</span>
+<pre>id  INTEGER PK   <span class="c">// always 1; single-user app</span>
+lat FLOAT
+lon FLOAT
+display_address VARCHAR</pre>
+      </div>
+      <p>
+        No lat/lon → <code>400</code>, and the turn just appended is <em>not</em> saved. Leaving
+        a user message with no assistant reply would put two user turns in a row in the next
+        prompt.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">04</span><span class="cost">~1s</span></div>
+    <div>
+      <h2>Nearest stores</h2>
+      <p>
+        One Google Places <code>searchText</code> call per retailer that has stores, cached on
+        rounded coordinates. Returns miles:
+      </p>
+<pre>{"target": 1.07, "bestbuy": 0.57, "microcenter": 12.4}</pre>
+      <p>
+        Score is <code>max(0, 1 − miles / radius_miles)</code>. Amazon, a retailer with nothing
+        nearby, and a failed lookup all get a neutral <code>0.5</code>.
+      </p>
+      <div class="warn">
+        Per <strong>retailer</strong>, not per product. Shopper knows a Best Buy is 0.6 miles
+        away. It cannot know whether that store stocks that mouse — no retailer publishes it.
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">05</span><span class="cost">27.2s</span></div>
+    <div>
+      <h2>Four retailers, concurrently</h2>
+      <p>
+        <code>asyncio.gather</code> over all four. The stage costs the slowest, not the sum —
+        sequentially this was 63s of an 115s search.
+      </p>
+
+      <div class="wide">
+        <table>
+          <thead><tr><th>Retailer</th><th>Transport</th><th>Measured</th><th>State</th></tr></thead>
+          <tbody>
+            <tr><td>Target</td><td>httpx → redsky JSON endpoints</td><td class="num">3.7s</td><td>No browser. 403s for hours, then relents.</td></tr>
+            <tr><td>Micro Center</td><td>Playwright, server-rendered HTML</td><td class="num">23.0s</td><td>No bot wall. Publishes Mfr Part#.</td></tr>
+            <tr><td>Best Buy</td><td>Playwright, JS-hydrated</td><td class="num">24.4s</td><td>Search OK. Product pages Akamai-blocked.</td></tr>
+            <tr><td>Amazon</td><td>Playwright, JS-hydrated</td><td class="num">26.0s</td><td>Works, throttles after a burst.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Every scraper returns this exact shape</h3>
+<pre>{
+  "name": "Logitech M317 Mouse - Blue Aurora",
+  "url": "https://www.target.com/p/-/A-79370051",
+  "price": 11.99,
+  "in_stock": true,        <span class="c">// null = the tile did not say</span>
+  "store_id": null,        <span class="c">// search is national inventory</span>
+  "distance_miles": null,
+  "rating": 4.38,          <span class="c">// off the SEARCH tile, not the product page</span>
+  "review_count": 392
+}</pre>
+      <p>
+        Ratings coming from the search page is the reason cards have ratings at all. They used
+        to be read from the product page — the page Best Buy blocks and Amazon throttles first —
+        so most cards said "no rating found". All four print it on the search results.
+      </p>
+      <p>
+        Top 3 per retailer survive. Each then gets its product page opened for specs, returned
+        as a flat dict of retailer strings:
+      </p>
+<pre>{"Type": "Mechanical", "Mfr Part#": "WOMIER SK80 BLA", "Switches": "…"}</pre>
+      <div class="llm">
+        <span class="tag">model calls 2–4 · spec recovery · max 3 per search</span>
+        Page loaded but no spec table found → raw page text plus the wanted field names goes to
+        Claude. Capped so one retailer with broken markup cannot send a 12,000-character page
+        per product forever. The cap is a shared budget object, not an int, or each concurrent
+        retailer would get the full allowance.
+      </div>
+
+      <p class="cap">every search records an outcome</p>
+      <p>
+        <span class="pill">OK</span> rows parsed ·
+        <span class="pill">OK_BUT_EMPTY</span> answered, genuinely nothing ·
+        <span class="pill bad">BLOCKED</span> captcha/403/challenge ·
+        <span class="pill bad">SELECTORS_RETURNED_NOTHING</span> real page, parser found nothing — our bug ·
+        <span class="pill bad">ERROR</span> threw before parsing
+      </p>
+      <p>
+        Never collapsed into "failed": they need different fixes, and only the first two mean
+        the retailer actually answered.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">06</span><span class="cost">9.8s</span></div>
+    <div>
+      <h2>Qualification, fit and identity</h2>
+      <p>Up to 12 products. One call judges all of them.</p>
+      <p class="cap">payload sent</p>
+<pre>{
+  "requirements": {
+    "product": "wireless mouse",
+    "keywords": ["wireless", "rgb"],
+    "required_specs": [],  "preferred_specs": [],  "nice_to_haves": ["compact"]
+  },
+  "products": [
+    {"index": 0, "retailer": "bestbuy", "title": "CORSAIR M75 …",
+     "price": 52.99, "url": "https://…", "specs": {}}
+  ]
+}</pre>
+      <p class="cap">reply, index-aligned</p>
+<pre>{"products": [
+  {"index": 0, "qualifies": true, "spec_fit": 1.0, "nice_fit": 0.5,
+   "group": "g1", "reason": ""}
+]}</pre>
+      <p>
+        A malformed or partial reply leaves unjudged products at a neutral default rather than
+        dropping them. Only an explicit <code>false</code> disqualifies.
+      </p>
+
+      <h3>What qualifies means</h3>
+      <ul>
+        <li>A stated <strong>quantity</strong> is strict. 2,000mAh fails a 20,000mAh request; so does 10,000.</li>
+        <li>A stated <strong>feature</strong> is strict when the product plainly lacks it — a $9 own-brand mouse has no RGB whether or not the title says so.</li>
+        <li><strong>Unclear is not absent.</strong> A gaming mouse whose title omits RGB is kept; the doubt goes into <code>spec_fit</code>.</li>
+        <li>Vague wording ("compact", "good for travel") never disqualifies.</li>
+      </ul>
+
+      <h3>What group does</h3>
+      <p>
+        Same model at two shops, and the same model in another colour, share a group id. Two
+        consequences.
+      </p>
+      <p>
+        <strong>Inheritance.</strong> A candidate with no first-party rating takes the
+        best-supported rating in its group, tagged <code>"amazon_inherited"</code> and shown as
+        "borrowed" on the card. Specs inherit the same way. Both take a ×0.9 penalty — the
+        identity came from a model reading two titles, which is weaker than a part number.
+      </p>
+      <p>
+        <strong>Deduplication.</strong> Only the best-scoring listing in a group is returned;
+        the rest ride along as <code>variants</code>. Ungrouped candidates are never collapsed —
+        no group means the model said nothing about identity, which is not evidence.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">07</span><span class="cost">instant</span></div>
+    <div>
+      <h2>The in-memory object</h2>
+      <p>Everything from here operates on this. It is never persisted as-is.</p>
+<pre>RankedProduct(
+  product = {…the 8-key scraper dict…},
+  retailer = "bestbuy",
+  specs = {"Type": "Mechanical", …},
+  reviews = [                       <span class="c">// one dict per source</span>
+    {"source": "bestbuy", "rating": 4.4, "review_count": 965,
+     "verified_ratio": None, "rating_distribution": None,
+     "authenticity_flag": "ok"},
+    {"source": "reddit", "rating": None, "review_count": None,
+     "mention_count": 8, "url": "https://…", "summary_text": "…"}
+  ],
+  spec_match = 1.0,  review_score = 0.89,  price_score = 1.0,
+  distance_score = 0.98,  nice_to_have_score = 0.5,  final_score = 0.92,
+  specs_inherited_from = None,  group = "g1",
+  sentiment = "positive",  sentiment_summary = "…",
+  variants = [{"name": "…White", "url": "…", "price": 60.09, "retailer": "bestbuy"}]
+)</pre>
+
+      <h3>The weights</h3>
+      <div class="wide">
+        <div class="waterfall">
+          <span class="lbl">spec_match</span><span class="track"><span class="bar" style="width:100%"></span></span><span class="ms">35%</span>
+          <span class="lbl">review_score</span><span class="track"><span class="bar" style="width:71.4%"></span></span><span class="ms">25%</span>
+          <span class="lbl">price_score</span><span class="track"><span class="bar" style="width:57.1%"></span></span><span class="ms">20%</span>
+          <span class="lbl">distance_score</span><span class="track"><span class="bar" style="width:28.6%"></span></span><span class="ms">10%</span>
+          <span class="lbl">nice_to_have</span><span class="track"><span class="bar" style="width:28.6%"></span></span><span class="ms">10%</span>
+        </div>
+      </div>
+
+      <p style="margin-top:1rem">
+        <strong>price_score is relative to this search.</strong> Cheapest 1.0, dearest 0.0 —
+        unless the whole set is within 5% of the cheapest, then everything scores 1.0. Without
+        that, $60.04 and $60.09 scored 1.0 and 0.0: the full price weight for five cents. Over
+        budget multiplies by <code>budget_max / price</code> — a penalty, not a filter.
+      </p>
+      <p>
+        <strong>review_score</strong> is <code>rating/5</code> scaled by confidence, where
+        confidence is <code>log10(1+count) / log10(1001)</code> — 1,000 reviews is full trust.
+        No rating anywhere gives a neutral 0.5, because a missing feed is not a bad product.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">08</span><span class="cost">27.5s</span></div>
+    <div>
+      <h2>Per-product research</h2>
+      <p>
+        The top 5 each get their own Reddit search on their own name. Not one shared search for
+        the category — that is the whole point.
+      </p>
+<pre>GET https://www.reddit.com/r/{subreddits}/search.rss
+    ?q={product name}&amp;restrict_sr=1&amp;sort=relevance&amp;t=year</pre>
+      <p>
+        Subreddits come from <code>category</code>, up to 4 joined into one multireddit path so
+        a category still costs one request. 10 posts per query, each body clipped to 600
+        characters. No key needed — it is the public RSS feed.
+      </p>
+      <p>
+        Sequential, 2s apart, with one retry after 4s if a search returns nothing. Reddit
+        429s most requests from this host; hurrying gets everything refused. This is the single
+        largest remaining block of the wait.
+      </p>
+      <p>A result appends one row to that product's <code>reviews</code> list:</p>
+<pre>{"source": "reddit", "rating": None, "review_count": None,
+ "mention_count": 8,          <span class="c">// threads found; NOT a review count</span>
+ "url": "https://reddit.com/…",
+ "summary_text": "[r/MouseReview] …",
+ "authenticity_flag": "ok"}</pre>
+      <p>
+        <code>rating</code> and <code>review_count</code> are deliberately null: a count of
+        threads is not a count of reviews, and the review floor must not see it as one.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">09</span><span class="cost">10.9s</span></div>
+    <div>
+      <h2>Reading the discussion, and the tie-break</h2>
+      <p class="cap">payload — one entry per researched product</p>
+<pre>[{"name": "CORSAIR M75 …", "rating": 4.4,
+  "discussion": "[reddit] …\n\n[youtube] …"}]</pre>
+      <div class="llm">
+        <span class="tag">model call · sentiment</span>
+      </div>
+<pre>{"products": [
+   {"index": 0, "sentiment": "positive",   <span class="c">// positive|negative|mixed|unknown</span>
+    "confidence": 0.8, "summary": "one sentence"}
+ ],
+ "too_close": [0, 1]}   <span class="c">// ranked positions it cannot separate; [] = decisive</span></pre>
+      <p>
+        <code>too_close</code> empty → done, <strong>zero YouTube quota spent</strong>. Non-empty
+        → the top 2 get a YouTube search (100 of ~10,000 daily units each) and the same call runs
+        again with the extra evidence. That is exactly why the Video button is on some cards and
+        not others.
+      </p>
+      <p>
+        The sentiment also cross-checks the stars. Negative talk against a rating ≥ 4.3, or
+        positive talk against ≤ 3.5, flags the review row <code>mixed_signal</code> and cuts
+        review_score by 15%. A star distribution that is over 80% five-star with under 10% in the
+        2–4 band flags <code>skewed_distribution</code> and cuts 25%.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">10</span><span class="cost">instant</span></div>
+    <div>
+      <h2>Re-rank, collapse, filter</h2>
+      <p>
+        Scores recompute (research moved review_score), the list re-sorts, groups collapse to one
+        listing each, then the review floor applies.
+      </p>
+      <div class="warn">
+        <strong>No count is not zero.</strong> <code>evidence_count</code> returns
+        <code>None</code> when no source reported anything, and the floor skips those. Reading a
+        blocked page's silence as "0 reviews" deleted the only RGB mice in an RGB search.
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">11</span><span class="cost">~0.8s</span></div>
+    <div>
+      <h2>Narration</h2>
+      <div class="llm">
+        <span class="tag">model call · narration · 500 max tokens</span>
+        Top 5 with scores and evidence in, 2–4 plain sentences out. No markdown, no lists, no
+        invented details.
+      </div>
+      <p>
+        If <em>no</em> retailer answered, the model is skipped entirely and a written-in-code
+        sentence says the search did not run. "Nothing matched" is a claim about the market, and
+        nothing was learned about the market.
+      </p>
+      <div class="db">
+        <span class="tag">table · conversations · write</span>
+<pre>history_json  += user turn + assistant narration
+criteria_json  = the criteria object from step 02
+results_json   = [{name, url, price, in_stock, store_id,
+                   distance_miles, retailer, reviews}, …]  <span class="c">// top 5, by index</span></pre>
+      </div>
+      <p>
+        Scores are not stored — the client already has them from the response. The index into
+        <code>results_json</code> is the <code>product_id</code> a Track click sends back.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">12</span><span class="cost">instant</span></div>
+    <div>
+      <h2>The response</h2>
+<pre>{
+  "type": "results",
+  "narration": "The Logitech M317 at $11.99 is …",
+  "retailers_answered": true,      <span class="c">// false ⇒ empty list is a FAILURE, not an answer</span>
+  "products": [{
+    "product_id": 0,               <span class="c">// index into results_json, not a db id</span>
+    "name": "Logitech M317 Mouse - Blue Aurora",
+    "url": "https://…", "price": 11.99, "in_stock": true,
+    "retailer": "target", "store_id": null, "distance_miles": null,
+    "rating": 4.38, "review_count": 392,
+    "rating_source": "target",     <span class="c">// "*_inherited" ⇒ borrowed from another listing</span>
+    "final_score": 0.90,
+    "spec_match": 1.0, "review_score": 0.83, "price_score": 0.94,
+    "distance_score": 0.96, "nice_to_have_score": 0.0,
+    "specs_inherited_from": null,
+    "video_url": null,             <span class="c">// only if the tie-break reached it</span>
+    "variants": [],
+    "sources": [{"source": "reddit", "url": "…", "rating": null,
+                 "review_count": null, "mention_count": 8,
+                 "summary": "…600 chars…"}],
+    "sentiment": "positive"
+  }],
+  "debug": { <span class="c">…full trace…</span> }
+}</pre>
+      <h3>The trace, polled live while all of the above runs</h3>
+      <p class="cap">GET /api/chat/progress/{conversation_id} — every ~900ms</p>
+<pre>{"running": true, "stage": "collect_candidates", "elapsed_ms": 15230,
+ "retailers": [{"retailer": "bestbuy", "outcome": "SEARCHING", "candidates_kept": null},
+               {"retailer": "target",  "outcome": "OK",        "candidates_kept": 3}],
+ "products_in": null, "qualified": null, "researched": 0}</pre>
+      <p>
+        <code>{"running": false}</code> is the stop signal. All four retailers appear immediately
+        as <span class="pill">SEARCHING</span> because with them concurrent nothing reports for
+        25 seconds. It reads the same trace object the run is filling in, so the waiting screen
+        cannot disagree with the debug panel.
+      </p>
+      <p>
+        The full <code>debug</code> block carries every search URL, page size, raw row count,
+        per-stage milliseconds, every dropped candidate with its reason, and the
+        <code>too_close</code> verdict. In memory only, last 5 runs, gone on restart.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">13</span><span class="cost">instant</span></div>
+    <div>
+      <h2>Track</h2>
+      <p class="cap">POST /api/chat/decision</p>
+<pre>{"conversation_id": "8f2a-…", "product_id": 0, "decision": "watch"}</pre>
+      <p>Four tables written in one transaction. This is the only path that persists a product.</p>
+      <div class="db">
+        <span class="tag">tables · items → listings → price_history → reviews</span>
+<pre>items      id PK, name, category, criteria_json, budget_max, target_price,
+           fulfillment_preference, radius_miles, min_review_count,
+           status ("watching"|"archived"), created_at
+
+listings   id PK, item_id FK, retailer, store_id, store_name, distance_miles,
+           url, price, in_stock, shipping_days_est, scraped_at
+           UNIQUE(item_id, retailer, store_id, url)
+
+price_history  id PK, listing_id FK, price, recorded_at
+
+reviews    id PK, item_id FK, source, rating, review_count, verified_ratio,
+           rating_distribution_json, authenticity_flag, url,
+           summary_text, fetched_at</pre>
+      </div>
+      <p>
+        A product with no URL is refused: the listings unique key is meaningless without one and
+        a rescan could never re-find it.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">14</span><span class="cost">ongoing</span></div>
+    <div>
+      <h2>The background jobs</h2>
+      <p>APScheduler, in-process, started with the server.</p>
+      <div class="wide">
+        <table>
+          <thead><tr><th>Job</th><th>Schedule</th><th>Does</th></tr></thead>
+          <tbody>
+            <tr><td class="num">scrape</td><td class="num">every 6h</td><td>Re-run the pipeline per watched item; upsert listings; a changed price appends a price_history row.</td></tr>
+            <tr><td class="num">review_check</td><td class="num">cron 03:00</td><td>Find alternatives cheaper than anything already stored. Max 3 alerts per item per run.</td></tr>
+            <tr><td class="num">digest</td><td class="num">cron 08:00</td><td>Email every alert with <code>sent_at IS NULL</code>, then stamp them.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="db">
+        <span class="tag">table · alerts</span>
+<pre>id PK, item_id FK, listing_id FK,
+reason ("price_drop"|"target_hit"|"new_alternative"),
+sent_at DATETIME   <span class="c">// NULL = queued for the digest</span></pre>
+      </div>
+      <p>
+        Only <code>target_hit</code> emails immediately. The cheaper-than-anything-stored rule
+        and the cap exist because a rescan across four retailers finds ~20 URLs it has not seen
+        before, and alerting on each sent 21 notices about one USB hub in a single email.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">§</span></div>
+    <div>
+      <h2>The other flow: projects</h2>
+      <p>
+        Paste a Claude conversation at <code>/api/projects/import</code>. One model call extracts
+        a shopping list; each ticked item runs the same pipeline sequentially, 5 per run, with
+        <code>research_top_n=0</code> so no Reddit or YouTube quota is spent.
+      </p>
+      <div class="db">
+        <span class="tag">tables · projects, project_items</span>
+<pre>projects       id PK, name, source ("paste"|"share_link"), source_url,
+               created_at, updated_at
+
+project_items  id PK, project_id FK, name, why, criteria_json, quantity,
+               essential, selected,
+               status ("pending"|"searching"|"done"|"failed"),
+               results_json, error, searched_at</pre>
+      </div>
+      <p>
+        <code>results_json</code> holds ProductOut-shaped dicts — <code>run_pipeline</code>
+        persists nothing itself, so without it the page would be empty after a reload.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="marker"><span class="n">§</span></div>
+    <div>
+      <h2>Where 80 seconds goes</h2>
+      <p>Real run. Green is waiting on someone else's server; amber is a model call.</p>
+      <div class="wide">
+        <div class="waterfall">
+          <span class="lbl">criteria</span><span class="track"><span class="bar model" style="left:0%;width:2.5%"></span></span><span class="ms">2.0s</span>
+          <span class="lbl">4 retailers</span><span class="track"><span class="bar" style="left:2.5%;width:33.8%"></span></span><span class="ms">27.2s</span>
+          <span class="lbl">product_filter</span><span class="track"><span class="bar model" style="left:36.3%;width:12.1%"></span></span><span class="ms">9.8s</span>
+          <span class="lbl">reddit ×5</span><span class="track"><span class="bar" style="left:48.4%;width:34.2%"></span></span><span class="ms">27.5s</span>
+          <span class="lbl">sentiment</span><span class="track"><span class="bar model" style="left:82.6%;width:13.5%"></span></span><span class="ms">10.9s</span>
+          <span class="lbl">youtube</span><span class="track"><span class="bar" style="left:96.1%;width:2.9%"></span></span><span class="ms">2.4s</span>
+          <span class="lbl">narration</span><span class="track"><span class="bar model" style="left:99%;width:1%"></span></span><span class="ms">0.8s</span>
+        </div>
+      </div>
+      <p style="margin-top:1rem">
+        Retailers and Reddit are 68% of it, both waiting rather than thinking. Retailers are
+        already parallel. Reddit is deliberately not.
+      </p>
+    </div>
+  </div>
+
+  <footer>
+    4–8 Claude calls per search: criteria, 0–3 spec recoveries, qualification, 1–2 sentiment,
+    narration. Every timing read from the app's own debug trace on a real run.
+  </footer>
+
+</div>
+
+</body>
+</html>

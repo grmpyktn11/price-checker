@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { AppShell } from "@/components/shopper/AppShell";
@@ -7,14 +8,15 @@ export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
       { title: "How Shopper works" },
-      {
-        name: "description",
-        content: "The steps of a search, how the score is built, and what Shopper cannot do.",
-      },
+      { name: "description", content: "The short version, or the whole pipeline." },
     ],
   }),
   component: HowItWorksPage,
 });
+
+// the full walkthrough is a standalone page in public/, not a react route: it is a document
+// with its own typography, and wrapping it in the app shell would fight both
+const LONG_URL = "/pipeline.html";
 
 // the order is the point: cheap work first, expensive research only on what survives
 const steps = [
@@ -56,17 +58,56 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 }
 
 function HowItWorksPage() {
+  const [short, setShort] = useState(false);
+
+  if (!short) {
+    return (
+      <AppShell title="How Shopper works" subtitle="How much detail do you want?">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <button
+            onClick={() => setShort(true)}
+            className="sticker rounded-3xl bg-butter p-6 text-left transition-transform hover:-translate-y-0.5"
+          >
+            <span className="font-display block text-2xl font-extrabold">Short way</span>
+            <span className="mt-1 block text-sm">
+              Seven steps, the scoring, and what it cannot do. A minute.
+            </span>
+          </button>
+
+          <a
+            href={LONG_URL}
+            className="sticker block rounded-3xl bg-sky p-6 transition-transform hover:-translate-y-0.5"
+          >
+            <span className="font-display block text-2xl font-extrabold">Long way</span>
+            <span className="mt-1 block text-sm">
+              Every stage with its payloads, the database tables, and where the 80 seconds goes.
+            </span>
+          </a>
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
-    <AppShell
-      title="How Shopper works"
-      subtitle="What happens when you search."
-    >
+    <AppShell title="How Shopper works" subtitle="The short version.">
       <div className="space-y-8">
+        <div className="flex flex-wrap items-center gap-4">
+          <button
+            onClick={() => setShort(false)}
+            className="text-sm font-bold underline underline-offset-4"
+          >
+            Back
+          </button>
+          <a href={LONG_URL} className="text-sm font-bold underline underline-offset-4">
+            Long way instead
+          </a>
+        </div>
+
         <Card>
           <p className="text-base">
             Shopper <strong>searches</strong> four retailers, researches the best candidates and
-            ranks them. Anything you <strong>track</strong> gets re-checked every six hours, and you
-            get an email when the price drops.
+            ranks them. Anything you <strong>track</strong> gets re-checked every six hours, and
+            you get an email when the price drops.
           </p>
           <p className="mt-2 text-base">
             Planned a project with Claude? Paste the conversation into <strong>Projects</strong>
@@ -77,7 +118,7 @@ function HowItWorksPage() {
         <Section title="A search, step by step">
           <ol className="space-y-2">
             {steps.map((step, index) => (
-              <li key={step} className="sticker flex items-start gap-3 rounded-3xl bg-card p-4">
+              <li key={step} className="panel flex items-start gap-3 rounded-3xl bg-card p-4">
                 <span className="sticker grid h-8 w-8 shrink-0 place-items-center rounded-full bg-butter text-sm font-extrabold">
                   {index + 1}
                 </span>
@@ -86,7 +127,7 @@ function HowItWorksPage() {
             ))}
           </ol>
           <p className="mt-3 text-sm text-muted-foreground">
-            About thirty to sixty seconds, almost all of it waiting on the retailers.
+            About 80 seconds, almost all of it waiting on the retailers.
           </p>
         </Section>
 
