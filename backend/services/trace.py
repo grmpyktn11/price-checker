@@ -29,6 +29,9 @@ OUTCOME_DETAIL = {
 MAX_TRACES = 5   # in memory only, no table, cleared on restart
 
 _recent: deque = deque(maxlen=MAX_TRACES)
+# traces of runs still in flight, by caller-supplied key, so a client can poll what its own
+# search is doing. a finished run leaves this and lands in _recent instead
+_live: dict = {}
 # per asyncio task, so one request's trace can never be another's. deliberately not reset at
 # finish: the handler that ran the pipeline reads its own trace back with current()
 _current: ContextVar = ContextVar("current_trace", default=None)
@@ -51,6 +54,8 @@ def search_outcome(blocked: bool, empty_page: bool, rows: int) -> str:
 class Trace:
     def __init__(self, query: str, criteria: dict):
         self.started = time.monotonic()
+        self.key: str | None = None   # set when the caller wants live progress
+        self.stage_name: str | None = None
         # reported by whichever scraper ran, claimed by the pipeline stage that asked for it
         self.searches: list[dict] = []
         self.data = {
@@ -77,8 +82,11 @@ def current() -> Trace | None:
     return _current.get()
 
 
-def start(query: str, criteria: dict) -> Trace:
+def start(query: str, criteria: dict, key: str | None = None) -> Trace:
     trace = Trace(query, criteria)
+    trace.key = key
+    if key:
+        _live[key] = trace
     _current.set(trace)
     return trace
 
@@ -87,6 +95,9 @@ def finish(products_returned: int) -> dict | None:
     trace = _current.get()
     if trace is None:
         return None
+    # dropped before the data is filled in, so a poll that races the last line of the run
+    # gets "no run in flight" and the client stops polling rather than showing a stale stage
+    _live.pop(trace.key, None)
     data = trace.data
     data["products_returned"] = products_returned
     data["total_ms"] = elapsed_ms(trace.started)
@@ -203,12 +214,47 @@ def drop(stage: str, name: str | None, retailer_name: str, reason: str) -> None:
 @contextmanager
 def stage(name: str):
     started = time.monotonic()
+    entered = _current.get()
+    if entered is not None:
+        entered.stage_name = name
     try:
         yield
     finally:
         trace = _current.get()
         if trace is not None:
             trace.data["stages_ms"][name] = elapsed_ms(started)
+
+
+# what a run still in flight has done so far. everything here is already accumulating on the
+# trace as the pipeline works, so this is a read, not a second bookkeeping path that could
+# disagree with the debug trace. None once the run finishes, which is the client's stop signal
+def live(key: str) -> dict | None:
+    trace = _live.get(key)
+    if trace is None:
+        return None
+    data = trace.data
+    return {
+        "stage": trace.stage_name,
+        "elapsed_ms": elapsed_ms(trace.started),
+        "retailers": [{"retailer": row["retailer"], "outcome": row["outcome"],
+                       "candidates_kept": row.get("candidates_kept")}
+                      for row in data["retailers"]],
+        "qualified": data["product_filter"].get("qualified"),
+        "products_in": data["product_filter"].get("products_in"),
+        "researched": len(data["research"]),
+    }
+
+
+# how a retailer's main search ended, while the run is still going. the review lookup uses
+# this to not spend more searches on a retailer that already answered with a bot wall
+def outcome_so_far(retailer_name: str) -> str | None:
+    trace = _current.get()
+    if trace is None:
+        return None
+    for row in trace.data["retailers"]:
+        if row["retailer"] == retailer_name:
+            return row["outcome"]
+    return None
 
 
 # {retailer: outcome} for the three main searches, which is what narration needs to tell a

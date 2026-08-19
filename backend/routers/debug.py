@@ -14,3 +14,12 @@ def get_last_trace() -> dict:
     if last is None:
         raise HTTPException(404, "no search has run since the backend started")
     return last
+
+
+# what this conversation's in-flight search is doing, for the waiting screen. read off the
+# same trace the run is already filling in, so it cannot disagree with the debug panel.
+# {"running": false} once the run ends, which is how the client knows to stop polling
+@router.get("/chat/progress/{conversation_id}")
+def get_progress(conversation_id: str) -> dict:
+    live = trace.live(conversation_id)
+    return {"running": True, **live} if live else {"running": False}

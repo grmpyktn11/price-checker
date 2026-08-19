@@ -205,3 +205,21 @@ def test_bad_decision_value_is_422(client, db):
     set_location(db)
     search(client)
     assert decide(client, 0, "maybe").status_code == 422
+
+
+# the waiting screen polls this while a search runs. running:false is its stop signal, so a
+# conversation with nothing in flight must answer that rather than 404
+def test_progress_is_not_running_when_nothing_is_in_flight(client):
+    response = client.get("/api/chat/progress/conv-nothing")
+    assert response.status_code == 200
+    assert response.json() == {"running": False}
+
+
+def test_progress_reports_a_run_in_flight(client):
+    trace.start("rgb mouse", {}, key="conv-live")
+    try:
+        body = client.get("/api/chat/progress/conv-live").json()
+        assert body["running"] is True
+        assert "elapsed_ms" in body
+    finally:
+        trace.finish(0)

@@ -48,6 +48,11 @@ the browser's own location.
    a decisive search costs zero YouTube quota (each search is 100 of ~10000 daily units).
 5. Re-rank on what the research found, then narrate.
 
+While a search runs, the chat page polls `GET /api/chat/progress/{conversation_id}` and shows the
+stage it is on, each retailer as its search returns, and the qualification and research counts.
+That is read off the same trace object the run is already filling in, so the waiting screen and the
+debug panel can never disagree.
+
 Every run records a **debug trace**: per retailer the search url, the outcome, the page size and the
 row counts; the qualification call's in/out counts and the model's reason for each rejected product;
 which products got Reddit and whether YouTube was triggered; every dropped candidate with its

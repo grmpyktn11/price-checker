@@ -205,3 +205,38 @@ def test_debug_last_returns_the_most_recent_finished_trace(client):
     body = client.get("/api/debug/last").json()
     assert body["trace_id"] == finished["trace_id"]
     assert body["retailers"][0]["outcome"] == trace.BLOCKED
+
+
+# the waiting screen reads the same trace the run is filling in, so it can never disagree
+# with the debug panel that shows up afterwards
+def test_live_progress_reports_the_run_in_flight():
+    trace.start("rgb mouse", {}, key="conv-1")
+    with trace.stage("collect_candidates"):
+        trace.record_search("target", "u", trace.OK, 4)
+        trace.retailer("target", ms=10, candidates=3)
+        live = trace.live("conv-1")
+    assert live["stage"] == "collect_candidates"
+    assert live["retailers"] == [
+        {"retailer": "target", "outcome": trace.OK, "candidates_kept": 3}
+    ]
+    assert live["elapsed_ms"] >= 0
+
+
+def test_only_the_asking_conversation_sees_its_own_run():
+    trace.start("rgb mouse", {}, key="conv-1")
+    assert trace.live("conv-2") is None
+
+
+# the client stops polling on this, so a finished run must not keep reporting a stale stage
+def test_a_finished_run_is_no_longer_live():
+    trace.start("rgb mouse", {}, key="conv-1")
+    trace.finish(3)
+    assert trace.live("conv-1") is None
+
+
+# the scheduler passes no key: nothing is watching a rescan, and an unkeyed run must not
+# leak into some other conversation's progress
+def test_a_run_with_no_key_is_never_live():
+    trace.start("rescan", {})
+    assert trace.live(None) is None
+    trace.finish(0)

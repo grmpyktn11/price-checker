@@ -12,6 +12,7 @@ import {
 import { AppShell } from "@/components/shopper/AppShell";
 import { DebugPanel } from "@/components/shopper/DebugPanel";
 import { ProductCard } from "@/components/shopper/ProductCard";
+import { SearchProgress } from "@/components/shopper/SearchProgress";
 import { timeAgo } from "@/lib/format";
 
 export const Route = createFileRoute("/")({ component: ChatPage });
@@ -175,14 +176,7 @@ function ChatPage() {
                 Say what you want, roughly. Shopper asks for anything it still needs.
               </p>
             ) : null}
-            {searching ? (
-              <div className="flex justify-start">
-                <p className="sticker max-w-[85%] rounded-3xl rounded-bl-md bg-secondary px-4 py-2.5 text-sm font-semibold">
-                  <span className="wobble inline-block">🍏</span> Searching Best Buy, Target and
-                  Amazon, then reading the reviews. This takes 30-60 seconds.
-                </p>
-              </div>
-            ) : null}
+            {searching ? <SearchProgress conversationId={conversationId} /> : null}
             <div ref={endRef} />
           </div>
 

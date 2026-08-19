@@ -1,6 +1,10 @@
+import asyncio
+
 import pytest
 
+from backend.services import trace
 from backend.services.pipeline import (
+    amazon_review_tiles,
     evidence_count,
     filter_on_reviews,
     research_payload,
@@ -81,3 +85,18 @@ def test_research_payload_labels_each_source():
 def test_research_rows_are_the_discussion_rows():
     rows = research_rows(candidate(reviews=[RATING_ROW, REDDIT_ROW]))
     assert [row["source"] for row in rows] == ["reddit"]
+
+
+# a bot wall does not lift between one search and the next, so the review lookup must not
+# spend its remaining searches on a retailer that already answered with one
+def test_review_lookup_skips_a_blocked_amazon():
+    trace.start("mouse", {})
+    trace.record_search("amazon", "u", trace.BLOCKED, 0)
+    trace.retailer("amazon", ms=1, candidates=0)
+
+    class Boom:
+        async def search(self, query):
+            raise AssertionError("must not search a blocked retailer again")
+
+    assert asyncio.run(amazon_review_tiles([candidate("Anker 737", [])], Boom())) == []
+    assert trace.finish(0)["review_lookup"]["skipped"]

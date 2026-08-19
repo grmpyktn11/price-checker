@@ -104,8 +104,10 @@ model call reads that discussion per product. If it reports the top of the ranki
 call, YouTube is searched for the top 2 and the call is repeated; a decisive search spends zero
 YouTube quota. `narration` reflects the post-research order.
 
-A live search takes **~30-60 seconds**. Show a pending state and disable the input; do not let a second
-message start while one is in flight.
+A live search takes **30-60 seconds, and over 100 when a retailer is slow**. Show a pending state
+and disable the input; do not let a second message start while one is in flight. Poll
+`/api/chat/progress/{conversation_id}` (below) to show what it is actually doing rather than a
+bare spinner.
 
 **Errors:** `400` location not set (see profile), `404` unknown conversation, `502` model call failed.
 
@@ -244,6 +246,23 @@ short".
 page reports no count at all, and that is unknown rather than zero — it is not a reason to drop
 the product, since the alternative deletes the best matches at whichever retailer is walled off
 that day. `candidates[].evidence_count` is `null` in exactly that case.
+
+### GET /api/chat/progress/{conversation_id}
+
+What that conversation's in-flight search is doing, for a waiting screen. Poll it about once a
+second while a `/chat/message` call is outstanding.
+
+```json
+{ "running": true, "stage": "research_reddit", "elapsed_ms": 80969,
+  "retailers": [ { "retailer": "bestbuy", "outcome": "OK", "candidates_kept": 3 },
+                 { "retailer": "target", "outcome": "BLOCKED", "candidates_kept": 0 } ],
+  "products_in": 6, "qualified": 3, "researched": 2 }
+```
+
+`{"running": false}` when nothing is in flight — that is the stop-polling signal, not an error,
+and it is also what an unknown conversation id gets. This is read off the same trace the run is
+already filling in, so it can never disagree with the `debug` block on the final response. The
+results themselves only ever arrive on the `/chat/message` response.
 
 **`stages_ms` / `total_ms`** — milliseconds per stage, for attributing a slow search. Stage names
 are `collect_candidates`, `amazon_review_tiles`, `product_filter`, `lookup_missing_reviews`,

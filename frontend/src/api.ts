@@ -41,6 +41,18 @@ export type MessageResponse = FollowupResponse | ResultsResponse;
 // rather than typed field by field: unknown values, narrowed at the point of display
 export type DebugTrace = Record<string, unknown>;
 
+// live state of an in-flight search, polled by the waiting screen. running:false means the
+// run has ended - the /chat/message response is what carries the results, not this
+export interface SearchProgress {
+  running: boolean;
+  stage?: string | null;
+  elapsed_ms?: number;
+  retailers?: { retailer: string; outcome: string; candidates_kept: number | null }[];
+  products_in?: number | null;
+  qualified?: number | null;
+  researched?: number;
+}
+
 // buy_now carries no item_id key
 export interface BuyNowResponse {
   decision: "buy_now";
@@ -243,6 +255,10 @@ export function getConversation(conversationId: string): Promise<ConversationDet
 // the trace of the most recent search, for the debug panel. 404s until a search has run
 export function getLastDebug(): Promise<DebugTrace> {
   return request<DebugTrace>("/api/debug/last");
+}
+
+export function getSearchProgress(conversationId: string): Promise<SearchProgress> {
+  return request<SearchProgress>(`/api/chat/progress/${conversationId}`);
 }
 
 export function getProfile(): Promise<Profile> {

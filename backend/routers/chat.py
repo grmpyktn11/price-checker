@@ -186,7 +186,8 @@ async def post_message(body: MessageIn, db: Session = Depends(get_db)) -> Messag
         raise HTTPException(400, "Set your location first: PATCH /api/profile/location")
 
     ranked = await run_pipeline(
-        item_criteria, profile.lat, profile.lon, item_criteria["radius_miles"]
+        item_criteria, profile.lat, profile.lon, item_criteria["radius_miles"],
+        progress_key=body.conversation_id,
     )
     # the trace this run just recorded, on this task's context var
     current_trace = trace.current()

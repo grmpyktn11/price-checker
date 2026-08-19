@@ -141,6 +141,14 @@ def judgment_payload(retailer: str, product: dict, specs: dict) -> dict:
 async def amazon_review_tiles(candidates: list[RankedProduct], scraper) -> list[dict]:
     tiles = []
     searches_left = AMAZON_REVIEW_SEARCHES_PER_RUN
+    # measured: two more searches into a bot wall cost 20s of a 107s run and returned nothing.
+    # the wall does not lift between one search and the next
+    if trace.outcome_so_far("amazon") == trace.BLOCKED:
+        logger.info("amazon search was blocked this run, skipping the review lookup")
+        trace.note("review_lookup", {"searches": trace.unclaimed_searches(), "tiles_kept": 0,
+                                     "searches_left": searches_left,
+                                     "skipped": "amazon search was blocked this run"})
+        return tiles
     for candidate in candidates:
         # an Amazon candidate with no rating means its own product page already failed, so a
         # second search would almost certainly fail too and would starve the cap
@@ -462,8 +470,11 @@ def research_rows(candidate: RankedProduct) -> list[dict]:
 # db and item_id are optional: a first chat search has neither and must still work. with both,
 # the winner's research is persisted; without either, nothing is written
 async def run_pipeline(item_criteria: dict, lat: float, lon: float, radius_mi: int,
-                       db=None, item_id: int | None = None) -> list[RankedProduct]:
-    trace.start(build_query(item_criteria), item_criteria)
+                       db=None, item_id: int | None = None,
+                       progress_key: str | None = None) -> list[RankedProduct]:
+    # progress_key is the conversation, so that conversation can poll its own run. the
+    # scheduler passes none: nothing is watching a rescan
+    trace.start(build_query(item_criteria), item_criteria, key=progress_key)
     budget_max = item_criteria.get("budget_max")
     with trace.stage("collect_candidates"):
         candidates = await collect_candidates(item_criteria, lat, lon, radius_mi)
