@@ -166,7 +166,7 @@ def test_target_hit_is_sent_immediately(db, seeded_profile, sent):
     item = make_item(db, target_price=100000.0)
     result = asyncio.run(scheduler.scrape_item(db, item))
     assert result["emails_sent"] >= 1
-    assert sent[0][0].startswith("Deal Tracker: target price hit")
+    assert sent[0][0].startswith("Shopper: target price hit")
     hits = db.query(Alert).filter(Alert.reason == "target_hit").all()
     assert hits and all(alert.sent_at is not None for alert in hits)
 

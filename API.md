@@ -1,4 +1,4 @@
-# Deal Tracker API
+# Shopper API
 
 Backend contract for building a frontend. FastAPI on `http://localhost:8000`, all routes prefixed `/api`.
 Interactive docs at `/docs` while the server runs.

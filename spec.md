@@ -1,3 +1,9 @@
+> **This is the original plan, not documentation of the finished app.**
+> It is kept because the app disagrees with it in most of the interesting places: the "LLM in
+> exactly 5 places, everything else deterministic" rule lost, deterministic spec matching was
+> replaced by model judgment, three retailers became four, and the offline fixture mode was
+> deleted entirely. See [README.md](README.md) for what was actually built.
+
 # Deal Tracker — MVP Spec
 
 ## Overview

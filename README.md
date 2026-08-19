@@ -1,9 +1,20 @@
-# Deal Tracker
+# Shopper
 
-Personal deal-tracking app. Chat describes what you want, four retailers get searched, results are
-ranked and narrated. Watched items are re-scanned on a schedule and price drops raise email alerts.
+Describe what you want in a sentence. Shopper searches Best Buy, Target, Amazon and Micro Center,
+researches the best candidates on Reddit and YouTube, ranks them, and tells you which to buy and
+why. Track anything and it re-checks the price every six hours and emails you when it drops.
 
-See [API.md](API.md) for the endpoint contract and [spec.md](spec.md) for the original design.
+Personal-use app, runs on your own machine, one SQLite file. Python/FastAPI backend, React
+frontend, Claude for the judgment calls.
+
+![A search for a wireless mouse under $40, with five ranked results](docs/search.png)
+
+**A search takes about 80 seconds**, almost all of it waiting on retailers. The chat shows which
+retailer is answering while it works.
+
+See [API.md](API.md) for the endpoint contract. [spec.md](spec.md) is what I planned before
+building any of it — kept deliberately, because the finished app disagrees with it in most of the
+interesting places.
 
 ## Running it
 
@@ -128,6 +139,50 @@ retailer, kept permanently as frozen test input, with `<script>`/`<style>` strip
 carries markup rather than two megabytes of minified vendor JS. Nothing mocks the model and nothing replays a
 scrape at runtime: a test either exercises pure logic on a literal payload, or it makes the real
 calls and is marked `live`.
+
+## Things that were wrong, and how they were found
+
+Every one of these was found by measuring, not by reading the code.
+
+**Every product said "no rating found."** Ratings were read from the product page — which is
+exactly the page Best Buy blocks with Akamai and Amazon throttles first. All four retailers print
+the rating on their **search** page, the one that reliably loads. It had been thrown away and
+re-fetched from the page we could not get.
+
+**A search for an RGB mouse returned three mice without RGB.** Two bugs compounding. The filter
+only treated stated *quantities* as strict, so "rgb" could never disqualify anything. Then the
+review floor deleted the two mice that did have RGB, because Best Buy publishes no review count
+and `0` was being read as "zero reviews" rather than "we could not see." A count nobody published
+now cannot fall below a threshold.
+
+**The four retailers ran one after another.** The trace made it obvious: 27s + 4s + 13s + 18s
+summed exactly to the 63-second stage. They are four different hosts, so nothing was being
+rate-limited by the wait. Running them concurrently took a search from 115s to 80s.
+
+**Two keyboards at $60.04 and $60.09 scored 1.0 and 0.0 on price.** Price is scored relative to
+the result set, and the set spanned five cents. A spread under 5% of the cheapest candidate now
+scores everything equally.
+
+**One email contained 21 "new alternative" alerts about a single USB hub.** A rescan across four
+retailers finds ~20 URLs it has not stored before, and each became an alert. An alternative now
+has to be cheaper than anything already found, capped at three per item.
+
+**An import said "no products were found in that conversation"** about a conversation that was a
+list of PC peripherals. Cloudflare had served a bot check instead of the page; the challenge was
+370 characters and the "is this a real transcript" threshold was 200, so it sailed through to the
+model, which truthfully reported no products in it. The worst kind of error message: it blamed the
+user for something never read.
+
+**Every search hit `NotImplementedError` inside the app while working fine from a script.**
+`uvicorn --reload` selects a Windows event loop that cannot spawn subprocesses, and Playwright
+launches Chromium as one.
+
+## On scraping
+
+No stealth plugins, no proxies, no user-agent rotation, no retry escalation, no captcha solving.
+When a retailer blocks us it is reported — with which one and why — and the run continues on
+whatever answered. "Nothing matched your criteria" is only ever said when a retailer actually
+answered; when none did, the reply says the search did not run.
 
 ## Retailers
 

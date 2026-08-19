@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Deal Tracker", lifespan=lifespan)
+app = FastAPI(title="Shopper", lifespan=lifespan)
 
 # single user, single process, no migrations
 Base.metadata.create_all(bind=engine)

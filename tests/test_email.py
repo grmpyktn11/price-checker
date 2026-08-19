@@ -44,9 +44,9 @@ def test_missing_url_renders_no_link():
 
 
 def test_subjects():
-    assert digest_subject([ROW]) == "Deal Tracker: 1 alert"
-    assert digest_subject([ROW, ROW]) == "Deal Tracker: 2 alerts"
-    assert immediate_subject(ROW) == "Deal Tracker: target price hit on portable charger"
+    assert digest_subject([ROW]) == "Shopper: 1 alert"
+    assert digest_subject([ROW, ROW]) == "Shopper: 2 alerts"
+    assert immediate_subject(ROW) == "Shopper: target price hit on portable charger"
 
 
 # conftest blanks the key: no request is made and the caller learns nothing was sent

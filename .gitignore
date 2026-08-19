@@ -19,3 +19,6 @@ mc*.html
 dbg*.json
 res.json
 convo*.txt
+
+# screenshots for the README are the one image the repo does carry
+!docs/*.png
