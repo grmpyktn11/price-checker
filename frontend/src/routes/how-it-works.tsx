@@ -62,13 +62,14 @@ function HowItWorksPage() {
 
   if (!short) {
     return (
-      <AppShell title="How Shopper works" subtitle="Pick one.">
-        {/* deliberately unlabelled: two buttons that only say how long it takes is funnier,
-            and more honest, than two paragraphs explaining which one to want */}
-        <div className="flex flex-wrap gap-3">
+      <AppShell title="How Shopper works" subtitle="Pick one." align="center">
+        {/* deliberately unlabelled: two buttons that only say how long it takes reads better
+            than two paragraphs explaining which one to want. both carry the same weight
+            because neither is the recommended one */}
+        <div className="flex flex-wrap justify-center gap-3 py-16">
           <button
             onClick={() => setShort(true)}
-            className="sticker rounded-full bg-primary px-5 py-2.5 text-sm font-extrabold text-primary-foreground transition-transform hover:-translate-y-0.5"
+            className="sticker rounded-full bg-card px-5 py-2.5 text-sm font-extrabold transition-transform hover:-translate-y-0.5"
           >
             Short way
           </button>

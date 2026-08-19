@@ -16,10 +16,13 @@ export function AppShell({
   children,
   title,
   subtitle,
+  // pages are left-aligned; the one that is just a choice between two buttons is centred
+  align = "left",
 }: {
   children: ReactNode;
   title: string;
   subtitle?: string;
+  align?: "left" | "center";
 }) {
   const [open, setOpen] = useState(false);
   // watch the path rather than closing in a Link onClick: tapping the route you are already on
@@ -125,7 +128,7 @@ export function AppShell({
       ) : null}
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
-        <div className="mb-6">
+        <div className={`mb-6 ${align === "center" ? "text-center" : ""}`}>
           <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
             {title}
           </h1>
