@@ -189,18 +189,14 @@ function WatchlistPage() {
                     <span className="font-display text-lg font-bold">
                       {retailerLabel(listing.retailer)}
                     </span>{" "}
+                    {/* one screen, one reading: the delta is part of the display, the way a
+                        stock ticker draws it, not a separate badge in another material */}
                     <span className="lcd ml-1 inline-block rounded px-1.5">
                       {money(listing.price)}
+                      {delta !== null
+                        ? ` ${delta < 0 ? "▼" : "▲"}${Math.abs(delta).toFixed(2)}`
+                        : ""}
                     </span>
-                    {delta !== null ? (
-                      <span
-                        className={`ml-2 inline-block rounded-full px-2 py-0.5 text-xs font-extrabold ${
-                          delta < 0 ? "bg-primary text-primary-foreground" : "bg-strawberry text-accent-foreground"
-                        }`}
-                      >
-                        {delta < 0 ? "▼" : "▲"} {money(Math.abs(delta))}
-                      </span>
-                    ) : null}
                     {/* stock is only news when it is bad or unknown */}
                     {listing.in_stock === null ? " · stock unknown" : ""}
                     {listing.in_stock === false ? " · out of stock" : ""}
