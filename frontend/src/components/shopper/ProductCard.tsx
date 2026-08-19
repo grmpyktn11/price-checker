@@ -147,24 +147,23 @@ export function ProductCard({
           </button>
           {showSources ? (
             <>
-            {/* the five sub-scores live here rather than on the face of every card: five
-                percentages per product is thirty numbers on a results page, and they are
-                only wanted when someone is checking why something ranked where it did */}
-            <ul className="mt-2 flex flex-wrap gap-1.5">
-              {breakdown.map((part) => (
-                <li key={part.key} className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold">
-                  {part.label} {Math.round(product[part.key] * 100)}%
-                </li>
-              ))}
-            </ul>
-            <ul className="mt-2 space-y-2">
+            {/* the five sub-scores as one quiet line: they are reference numbers for someone
+                checking a ranking, not five pills competing with the sources below */}
+            <p className="mt-2 text-xs font-semibold text-muted-foreground">
+              {breakdown
+                .map((part) => `${part.label} ${Math.round(product[part.key] * 100)}%`)
+                .join(" · ")}
+            </p>
+            {/* flat rows, divider-separated. the summary is clamped to two lines: the claim
+                and the link out are the point, the full text lives one click away */}
+            <ul className="mt-1 divide-y divide-border/50">
               {product.sources.map((row, index) => {
                 const link = safeUrl(row.url);
                 return (
-                  <li key={index} className="rounded-2xl bg-secondary px-3 py-2 text-xs">
+                  <li key={index} className="py-2 text-xs">
                     <p className="font-bold">
                       {/* the source name is the link, so the thread is one tap from the claim
-                          it is supporting rather than a "read it" hidden under the summary */}
+                          it is supporting */}
                       {link ? (
                         <a
                           href={link}
@@ -181,19 +180,22 @@ export function ProductCard({
                       {row.review_count ? ` · ${row.review_count.toLocaleString()} reviews` : ""}
                       {row.mention_count ? ` · ${row.mention_count} threads` : ""}
                       {isInherited(row.source) ? " · borrowed" : ""}
+                      {link ? (
+                        <>
+                          {" · "}
+                          <a
+                            href={link}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            className="underline"
+                          >
+                            {sourceAction(row.source)} &rarr;
+                          </a>
+                        </>
+                      ) : null}
                     </p>
                     {row.summary ? (
-                      <p className="mt-1 whitespace-pre-line text-muted-foreground">{row.summary}</p>
-                    ) : null}
-                    {link ? (
-                      <a
-                        href={link}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="mt-1 inline-block font-bold underline"
-                      >
-                        {sourceAction(row.source)} &rarr;
-                      </a>
+                      <p className="mt-0.5 line-clamp-2 text-muted-foreground">{row.summary}</p>
                     ) : null}
                   </li>
                 );

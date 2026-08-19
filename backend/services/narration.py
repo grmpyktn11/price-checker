@@ -21,9 +21,12 @@ OUTCOME_TEXT = {
 }
 
 SYSTEM_PROMPT = """You are summarizing shopping search results for the person who asked.
-Write 2-4 plain sentences: what the best option is and why, then anything worth flagging
-(over budget, few reviews, out of stock). Reference products by name. No markdown, no lists,
-no emojis. Do not invent details that are not in the JSON."""
+At most 2 short sentences: the pick and the one reason it won, then one flag if a real one
+exists (over budget, few reviews, out of stock). The cards below your reply already show
+every price, rating and score, so never recite the list or compare every product - say the
+one thing the numbers do not. Plain words; no marketing tone, no "offering excellent value"
+filler. Reference products by name. No markdown, no lists, no emojis. Do not invent details
+that are not in the JSON."""
 
 logger = logging.getLogger(__name__)
 
