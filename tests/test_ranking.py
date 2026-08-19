@@ -8,6 +8,7 @@ from backend.services.ranking import (
     RankedProduct,
     apply_authenticity_flags,
     assign_price_scores,
+    collapse_variants,
     build_query,
     compute_distance_score,
     compute_final_score,
@@ -29,9 +30,10 @@ EXTERNAL_ROWS = [
 ]
 
 # minimal candidate; only the fields the function under test reads matter
-def make_candidate(price, spec_match=0.0, review_score=0.0):
+def make_candidate(price, spec_match=0.0, review_score=0.0, group=None):
     return RankedProduct(
-        product={"name": "x", "price": price, "distance_miles": None},
+        product={"name": "x", "url": "https://example.com/x", "price": price,
+                 "distance_miles": None},
         retailer="bestbuy",
         specs={},
         reviews=[],
@@ -39,6 +41,7 @@ def make_candidate(price, spec_match=0.0, review_score=0.0):
         review_score=review_score,
         nice_to_have_score=0.5,
         distance_score=0.5,
+        group=group,
     )
 
 
@@ -252,3 +255,28 @@ def test_over_budget_product_still_wins():
 
     assert ranked[0] is anker
     assert [c.final_score for c in ranked] == pytest.approx([0.685, 0.584, 0.513], abs=1e-3)
+
+
+# the pink and the white Womier Q61 PRO came back as two separate recommendations. they are
+# one product to a shopper, so the better-scoring one is shown and the other becomes a variant
+def test_colour_variants_collapse_to_one_recommendation():
+    pink = make_candidate(60.04, group="g1")
+    pink.product["name"] = "Womier Q61 PRO - Pink"
+    pink.final_score = 0.87
+    white = make_candidate(60.09, group="g1")
+    white.product["name"] = "Womier Q61 PRO - White"
+    white.final_score = 0.67
+
+    kept = collapse_variants([pink, white])
+    assert [c.product["name"] for c in kept] == ["Womier Q61 PRO - Pink"]
+    assert kept[0].variants == [
+        {"name": "Womier Q61 PRO - White", "url": white.product["url"],
+         "price": 60.09, "retailer": white.retailer}
+    ]
+
+
+# no group means the model said nothing about identity, which is not evidence that two
+# listings are the same thing. collapsing on it would silently hide real alternatives
+def test_ungrouped_candidates_are_never_collapsed():
+    first, second = make_candidate(10.0), make_candidate(20.0)
+    assert len(collapse_variants([first, second])) == 2

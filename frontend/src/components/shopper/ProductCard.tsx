@@ -1,6 +1,19 @@
+import { useState } from "react";
 import type { Product } from "@/api";
 import { safeUrl } from "@/api";
 import { isInherited, money, retailerLabel } from "@/lib/format";
+
+// what a source row is called on the card. anything else shows its raw name
+const SOURCE_LABEL: Record<string, string> = {
+  reddit: "Reddit",
+  youtube: "YouTube",
+};
+
+function sourceLabel(source: string | null): string {
+  if (!source) return "unknown";
+  const base = source.replace(/_inherited$/, "");
+  return SOURCE_LABEL[base] ?? retailerLabel(base);
+}
 
 // the ranking weights, so the breakdown reads as "this is why it scored what it scored"
 const breakdown = [
@@ -22,6 +35,7 @@ export function ProductCard({
   pending: "buy_now" | "watch" | null;
   disabled: boolean;
 }) {
+  const [showSources, setShowSources] = useState(false);
   const href = safeUrl(product.url);
   const buyLink = href;
   // scraped/model-supplied url, so it goes through the same guard as the listing
@@ -95,6 +109,73 @@ export function ProductCard({
         <p className="text-xs font-bold text-muted-foreground">
           specs borrowed from {retailerLabel(product.specs_inherited_from)}
         </p>
+      ) : null}
+
+      {/* the same product in another colour, or at another retailer. collapsed into this card
+          so one product is recommended once, but the shopper still gets to see the option */}
+      {product.variants.length ? (
+        <ul className="mt-2 space-y-0.5 text-xs font-semibold">
+          {product.variants.map((variant, index) => {
+            const link = safeUrl(variant.url);
+            return (
+              <li key={index} className="text-muted-foreground">
+                also{" "}
+                {link ? (
+                  <a href={link} target="_blank" rel="noreferrer noopener" className="underline">
+                    {variant.name ?? "another option"}
+                  </a>
+                ) : (
+                  (variant.name ?? "another option")
+                )}{" "}
+                — {money(variant.price)} at {retailerLabel(variant.retailer)}
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+
+      {/* the evidence the score was built from, so it can be checked rather than trusted */}
+      {product.sources.length ? (
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => setShowSources(!showSources)}
+            className="text-xs font-bold underline underline-offset-4"
+          >
+            {showSources ? "Hide" : "What the sources say"} ({product.sources.length})
+          </button>
+          {showSources ? (
+            <ul className="mt-2 space-y-2">
+              {product.sources.map((row, index) => {
+                const link = safeUrl(row.url);
+                return (
+                  <li key={index} className="rounded-2xl bg-secondary px-3 py-2 text-xs">
+                    <p className="font-bold">
+                      {sourceLabel(row.source)}
+                      {row.rating !== null ? ` · ★ ${row.rating}` : ""}
+                      {row.review_count ? ` · ${row.review_count.toLocaleString()} reviews` : ""}
+                      {row.mention_count ? ` · ${row.mention_count} threads` : ""}
+                      {isInherited(row.source) ? " · borrowed" : ""}
+                    </p>
+                    {row.summary ? (
+                      <p className="mt-1 whitespace-pre-line text-muted-foreground">{row.summary}</p>
+                    ) : null}
+                    {link ? (
+                      <a
+                        href={link}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="mt-1 inline-block font-bold underline"
+                      >
+                        read it
+                      </a>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+        </div>
       ) : null}
 
       {/* Buy is a plain link out; only Track writes anything. Video appears only for the

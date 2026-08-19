@@ -50,10 +50,14 @@ Reply with a single JSON object and nothing else:
   being a mouse. Every keyword counts here, including ones that also appear in nice_to_haves.
 - nice_fit: 0.0-1.0, the same judgement for nice_to_haves. 0.5 when there are none, or when the
   listing says nothing either way.
-- group: a short id you invent, shared by listings of the SAME product at different retailers -
-  same manufacturer, same model, same variant. A different capacity, size, switch type, colour
-  or generation is a different product and gets its own group. Every product gets a group, even
-  when it is alone in it.
+- group: a short id you invent, shared by listings that a shopper would call the same product.
+  That means the same model at two retailers, AND the same model in a different colour or
+  finish. "Womier Q61 PRO - Pink" and "Womier Q61 PRO - White" are one group: nobody wants both
+  offered as two separate recommendations. Only the group's best listing is shown, with the
+  rest offered as its variants.
+  A different capacity, size, switch type or generation is genuinely a different product and
+  gets its own group - those change what you are buying, colour does not. Every product gets a
+  group, even when it is alone in it.
 - reason: one short phrase saying why, when qualifies is false. "" when it qualifies. This is
   shown to the shopper as the reason the product was dropped, so name the specific mismatch.
 

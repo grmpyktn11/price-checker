@@ -63,7 +63,18 @@ Results:
       "distance_score": 0.98,
       "nice_to_have_score": 0.5,
       "specs_inherited_from": "amazon",
-      "video_url": "https://www.youtube.com/watch?v=..."
+      "video_url": "https://www.youtube.com/watch?v=...",
+      "variants": [
+        { "name": "Womier Q61 PRO - White", "url": "https://...", "price": 60.09,
+          "retailer": "bestbuy" }
+      ],
+      "sources": [
+        { "source": "bestbuy", "url": null, "rating": 4.4, "review_count": 965,
+          "mention_count": null, "summary": null },
+        { "source": "reddit", "url": "https://reddit.com/...", "rating": null,
+          "review_count": null, "mention_count": 8, "summary": "held up for two years..." }
+      ],
+      "sentiment": "positive"
     }
   ]
 }
@@ -92,6 +103,16 @@ Fields worth understanding:
   actually reached have one, and that stage only runs when the ranking is too close to call, so
   **null is the normal case**. Hide the control rather than showing a dead one. Treat it like any
   other scraped url: it is model-supplied, so scheme-check it before putting it in an `href`.
+- `variants` — other listings of the **same product** folded into this one: another colour, or
+  the same model at another retailer. Only the best-scoring listing of a product is returned, so
+  a shopper is never offered the pink and the white version as two separate recommendations.
+  Usually empty. Show them as alternatives on the winner's card, not as their own results.
+- `sources` — one row per source that said something about this product: the retailer's star
+  rating, and the Reddit/YouTube discussion for the few products research reached. `summary` is
+  the actual evidence the ranking used, so surfacing it is how a shopper checks the reasoning
+  instead of trusting the score. A `source` ending `_inherited` was attributed from another
+  listing. Trimmed to 600 characters; `url` links to the full thing.
+- `sentiment` — the model's read of that discussion, or null when the product was not researched.
 - the five sub-scores are the ranking breakdown and always sum to `final_score` at
   `0.35 / 0.25 / 0.20 / 0.10 / 0.10`. Useful to show; not required.
 - `distance_score` is per-**retailer**, not per-product: it scores how far the nearest Target or

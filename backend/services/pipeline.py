@@ -21,6 +21,7 @@ from backend.services.ranking import (
     apply_authenticity_flags,
     assign_price_scores,
     build_query,
+    collapse_variants,
     compute_distance_score,
     compute_final_score,
     compute_review_score,
@@ -334,7 +335,9 @@ def rank(candidates: list[RankedProduct], budget_max: float | None) -> list[Rank
     for candidate in candidates:
         score_candidate(candidate)
         candidate.final_score = compute_final_score(candidate)
-    return sorted(candidates, key=lambda c: c.final_score, reverse=True)
+    ordered = sorted(candidates, key=lambda c: c.final_score, reverse=True)
+    # after sorting, so the highest-scoring listing of a product is the one that survives
+    return collapse_variants(ordered)
 
 
 # one reddit search per product, on that product's own name, paced: reddit rate-limits and

@@ -20,6 +20,8 @@ from backend.services.ranking import RankedProduct
 router = APIRouter(prefix="/api", tags=["chat"])
 
 TITLE_MAX_CHARS = 80   # conversation list only, the full first message stays in history
+# reddit summaries run long; a card shows the gist and links out for the rest
+SOURCE_SUMMARY_CHARS = 600
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +97,13 @@ class ProductOut(BaseModel):
     nice_to_have_score: float
     specs_inherited_from: str | None   # retailer these specs were attributed from, if any
     video_url: str | None             # a review video, only for products research reached
+    # other listings of this same product - other colours, or the same model at another
+    # retailer - folded into this one so it is recommended once. usually empty
+    variants: list[dict]
+    # what each source actually said about this product, so the score can be read rather than
+    # trusted. only the researched top few carry reddit/youtube rows
+    sources: list[dict]
+    sentiment: str | None             # the model's read of the discussion, when it was researched
 
 
 class MessageOut(BaseModel):
@@ -130,7 +139,27 @@ def video_url(ranked: RankedProduct) -> str | None:
     return None
 
 
-# specs and the full reviews list are not serialized: nothing displays them and they are large
+# one row per source that said something about this product, trimmed to what a card shows.
+# summary_text is the evidence the ranking used, so showing it is how a shopper checks the
+# reasoning rather than taking the score on faith
+def sources(ranked: RankedProduct) -> list[dict]:
+    rows = []
+    for row in ranked.reviews:
+        summary = row.get("summary_text")
+        if not summary and row.get("rating") is None:
+            continue
+        rows.append({
+            "source": row.get("source"),
+            "url": row.get("url"),
+            "rating": row.get("rating"),
+            "review_count": row.get("review_count"),
+            "mention_count": row.get("mention_count"),
+            "summary": (summary or "")[:SOURCE_SUMMARY_CHARS] or None,
+        })
+    return rows
+
+
+# specs and the full spec dict are not serialized: nothing displays them and they are large
 def to_product_out(product_id: int, ranked: RankedProduct) -> ProductOut:
     review = primary_review(ranked)
     return ProductOut(
@@ -153,6 +182,9 @@ def to_product_out(product_id: int, ranked: RankedProduct) -> ProductOut:
         nice_to_have_score=ranked.nice_to_have_score,
         specs_inherited_from=ranked.specs_inherited_from,
         video_url=video_url(ranked),
+        variants=ranked.variants,
+        sources=sources(ranked),
+        sentiment=ranked.sentiment,
     )
 
 

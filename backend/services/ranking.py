@@ -1,6 +1,6 @@
 import logging
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from math import log10
 
 logger = logging.getLogger(__name__)
@@ -43,6 +43,9 @@ class RankedProduct:
     # researched top few carry it; everything below stays None
     sentiment: str | None = None
     sentiment_summary: str | None = None
+    # the other listings of this same product - other colours, or the same thing at another
+    # retailer - that collapse_variants folded into this one. only the winner carries them
+    variants: list[dict] = field(default_factory=list)
 
 
 # name plus keywords, lowercased, whitespace collapsed. must_haves are filters, not search terms
@@ -108,6 +111,33 @@ def inherit_reviews(candidates: list[RankedProduct]) -> None:
         row = donors.get(candidate.group)
         if row:
             candidate.reviews.insert(0, inherited_row(row, INHERITED_SUFFIX))
+
+
+# one listing per product. the model groups the same model across retailers and across
+# colours, and a shopper asking for a keyboard does not want the pink and the white one
+# offered as two separate recommendations - they want the better one, and to know the other
+# colour exists. the winner is whichever scored highest; the rest become its variants.
+# ungrouped candidates are always kept: no group means the model said nothing about identity,
+# which is not evidence that two listings are the same thing
+def collapse_variants(ranked: list[RankedProduct]) -> list[RankedProduct]:
+    winners: dict[str, RankedProduct] = {}
+    kept = []
+    for candidate in ranked:
+        if not candidate.group:
+            kept.append(candidate)
+            continue
+        winner = winners.get(candidate.group)
+        if winner is None:
+            winners[candidate.group] = candidate
+            kept.append(candidate)
+            continue
+        winner.variants.append({
+            "name": candidate.product.get("name"),
+            "url": candidate.product.get("url"),
+            "price": candidate.product.get("price"),
+            "retailer": candidate.retailer,
+        })
+    return kept
 
 
 # a high 5-star share alone is normal for a good product; the hollow middle is the actual

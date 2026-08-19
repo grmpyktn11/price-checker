@@ -17,8 +17,21 @@ export interface Product {
   price_score: number;
   distance_score: number;
   nice_to_have_score: number;
-  specs_inherited_from: string | null;
-  video_url: string | null; // review video, only for products the research stage reached // retailer these specs were attributed from, if any
+  specs_inherited_from: string | null; // retailer these specs were attributed from, if any
+  video_url: string | null; // a review video, only for products the research stage reached
+  // other listings of the same product folded into this one - other colours, or the same
+  // model at another retailer. usually empty
+  variants: { name: string | null; url: string | null; price: number | null; retailer: string }[];
+  // what each source said. only the researched top few carry reddit/youtube rows
+  sources: {
+    source: string | null;
+    url: string | null;
+    rating: number | null;
+    review_count: number | null;
+    mention_count: number | null;
+    summary: string | null;
+  }[];
+  sentiment: string | null;
 }
 
 // the backend serializes with exclude_unset, so followups carry no narration/products keys
