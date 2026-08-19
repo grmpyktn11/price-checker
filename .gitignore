@@ -22,3 +22,6 @@ convo*.txt
 
 # screenshots for the README are the one image the repo does carry
 !docs/*.png
+
+!docs/*.gif
+!docs/*.mp4

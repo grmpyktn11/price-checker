@@ -7,14 +7,22 @@ why. Track anything and it re-checks the price every six hours and emails you wh
 Personal-use app, runs on your own machine, one SQLite file. Python/FastAPI backend, React
 frontend, Claude for the judgment calls.
 
-![A search for a wireless mouse under $40, with five ranked results](docs/search.png)
+![Typing a request, four retailers answering, and five ranked results](docs/demo.gif)
+
+*[Full walkthrough, 78s](docs/demo.mp4) — search, research, tracking, price history, importing a
+Claude conversation, and the alert email arriving.*
 
 **A search takes about 80 seconds**, almost all of it waiting on retailers. The chat shows which
 retailer is answering while it works.
 
-See [API.md](API.md) for the endpoint contract. [spec.md](spec.md) is what I planned before
-building any of it — kept deliberately, because the finished app disagrees with it in most of the
-interesting places.
+362 tests, no network and no model calls in the default run. `pytest -m live` is the separate
+suite that hits the real retailers and the real API.
+
+See [API.md](API.md) for the endpoint contract and
+[the pipeline walkthrough](frontend/public/pipeline.html) for every stage with its payloads, the
+database tables, and where the 80 seconds actually goes. [spec.md](spec.md) is what I planned
+before building any of it — kept deliberately, because the finished app disagrees with it in most
+of the interesting places.
 
 ## Running it
 
