@@ -110,10 +110,21 @@ def wanted_spec_fields(item_criteria: dict) -> list[str]:
     return list(dict.fromkeys([*fields, "Model Number"]))
 
 
+# {rating, review_count} the search tile already carried, or nothing. Best Buy and Amazon both
+# print these on the search page, which is the page that actually loads for us
+def tile_reviews(product: dict) -> dict:
+    rating = product.get("rating")
+    return {} if rating is None else {"rating": rating,
+                                      "review_count": product.get("review_count")}
+
+
 # the retailer's own rating row, or nothing. external discussion is not gathered here: it is
-# per product and only the top of the ranking earns it, further down
+# per product and only the top of the ranking earns it, further down.
+# the product page is tried first because it also carries the star distribution, but its
+# absence is no longer the end of it: a blocked product page falls back to the numbers the
+# search tile already gave us, which is why a Best Buy card can show a rating at all
 async def gather_reviews(retailer: str, scraper, product: dict) -> list[dict]:
-    data = await scraper.get_reviews(product["url"])
+    data = await scraper.get_reviews(product["url"]) or tile_reviews(product)
     return [{"source": retailer, **data}] if data else []
 
 

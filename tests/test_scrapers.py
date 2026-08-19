@@ -5,7 +5,11 @@ from backend.scrapers.base import load_fixture, load_fixture_text
 from backend.scrapers.browser import looks_blocked, page_text
 from backend.services import trace
 
-SEARCH_KEYS = {"name", "url", "price", "in_stock", "store_id", "distance_miles"}
+# every retailer prints the star rating on its search page, and for Best Buy and Amazon that
+# is the only page of theirs that reliably loads, so the two rating keys are part of the
+# search contract rather than something only the product page can answer
+SEARCH_KEYS = {"name", "url", "price", "in_stock", "store_id", "distance_miles",
+               "rating", "review_count"}
 BIDI_MARKS = ("‎", "‏")
 
 BESTBUY_SEARCH = load_fixture_text("bestbuy_search.html")
@@ -158,3 +162,33 @@ def test_search_outcomes(case):
 def test_tcin_from_url():
     assert target.tcin_from_url("https://www.target.com/p/anker/-/A-91803760") == "91803760"
     assert target.tcin_from_url("https://www.target.com/s?searchTerm=x") is None
+
+
+# the whole point of reading the rating off the search page: these are the pages that load.
+# Best Buy's product page is Akamai-blocked and Amazon's is the first to be throttled, so a
+# rating that needed a product page was a rating we mostly never got
+@pytest.mark.parametrize("retailer", SEARCH_RESULTS)
+def test_search_rows_carry_the_star_rating(retailer):
+    rated = [row for row in SEARCH_RESULTS[retailer] if row["rating"] is not None]
+    assert rated, f"{retailer} search parsed no ratings"
+    for row in rated:
+        assert 0.0 < row["rating"] <= 5.0
+        assert row["review_count"] is None or row["review_count"] >= 0
+
+
+# the abbreviated "(84.7K)" on the tile would lose 700 reviews; the aria-label is exact
+def test_amazon_review_count_is_the_exact_number():
+    counts = [row["review_count"] for row in SEARCH_RESULTS["amazon"]
+              if row["review_count"]]
+    assert 84753 in counts
+
+
+# target sends 0.0 stars from 0 reviews for a product nobody has rated. taken at face value
+# that is the worst-rated product in the set rather than an unrated one
+def test_targets_zero_star_unrated_products_read_as_no_rating():
+    unrated = {"tcin": "1", "item": {"product_description": {"title": "New Thing"}},
+               "price": {"current_retail": 9.99},
+               "ratings_and_reviews": {"statistics": {"rating": {"average": 0.0, "count": 0}}}}
+    row = target.parse_search({"data": {"search": {"products": [unrated]}}})[0]
+    assert row["rating"] is None
+    assert row["review_count"] is None

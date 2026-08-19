@@ -206,6 +206,29 @@ def test_assign_price_scores_edge_cases():
     assert [c.price_score for c in mixed] == pytest.approx([0.0, 1.0, 0.0], abs=1e-3)
 
 
+# a real search returned two keyboards at $60.04 and $60.09 and scored them 1.0 and 0.0.
+# five cents is not a price difference, and 20% of the ranking must not turn on it
+def test_prices_within_noise_of_each_other_all_score_full():
+    near = [make_candidate(60.04), make_candidate(60.09)]
+    assign_price_scores(near, None)
+    assert [c.price_score for c in near] == [1.0, 1.0]
+
+
+# but a spread that is real still separates them, which is the whole point of the score
+def test_a_real_spread_still_separates():
+    spread = [make_candidate(60.0), make_candidate(120.0)]
+    assign_price_scores(spread, None)
+    assert [c.price_score for c in spread] == pytest.approx([1.0, 0.0], abs=1e-9)
+
+
+# the tie is judged before the budget penalty, so a cluster that is all over budget is still
+# scored down rather than every candidate quietly getting full marks
+def test_a_tied_cluster_over_budget_is_still_penalised():
+    over = [make_candidate(200.0), make_candidate(201.0)]
+    assign_price_scores(over, 100.0)
+    assert all(c.price_score < 0.55 for c in over)
+
+
 def test_compute_final_score_no_budget():
     anker = make_candidate(129.99, spec_match=0.5, review_score=0.940)
     belkin = make_candidate(39.99, spec_match=0.0, review_score=0.853)

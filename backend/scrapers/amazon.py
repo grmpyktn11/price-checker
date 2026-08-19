@@ -58,6 +58,26 @@ def parse_price(tile) -> float | None:
         return None
 
 
+# the search tile already carries the star rating and the ratings count. reading them here is
+# the only rating Amazon reliably gives us: the product page carries the same numbers but is
+# the page most likely to be blocked, and a blocked page used to leave the product with none
+def parse_tile_rating(tile) -> dict:
+    rating = None
+    stars = tile.select_one(".a-icon-alt")
+    if stars:
+        match = re.search(r"([\d.]+) out of 5", stars.get_text(strip=True))
+        if match:
+            rating = float(match.group(1))
+    review_count = None
+    # the visible count is abbreviated ("84.7K"); the aria-label carries the exact number
+    for link in tile.select("a[aria-label]"):
+        match = re.match(r"([\d,]+)\s+ratings?$", link["aria-label"].strip())
+        if match:
+            review_count = int(match.group(1).replace(",", ""))
+            break
+    return {"rating": rating, "review_count": review_count}
+
+
 # .s-result-item alone also matches ad shells and layout spacers, so read the tiles with
 # a data-asin instead. the tile href is a per-load tracking url and is useless as the
 # listings unique key, so the url is built from the stable ASIN.
@@ -80,6 +100,7 @@ def parse_search(html: str) -> list[dict]:
             "in_stock": price is not None,
             "store_id": None,
             "distance_miles": None,
+            **parse_tile_rating(tile),
         })
     return rows
 

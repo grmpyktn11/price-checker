@@ -56,6 +56,19 @@ def clean_text(raw: str) -> str:
 
 # plp_search_v2 no longer returns a fulfillment block, so there is no per-product store or
 # distance data: in_stock reflects the purchasable-only filter the request asks for
+# the search payload already carries the star rating, so a matching product needs no pdp call
+# to show one. every scraper's search rows carry these two keys for the same reason
+def parse_tile_rating(product: dict) -> dict:
+    rating = (((product.get("ratings_and_reviews") or {}).get("statistics") or {})
+              .get("rating") or {})
+    average, count = rating.get("average"), rating.get("count")
+    # target reports an unrated product as 0.0 stars from 0 reviews rather than omitting it.
+    # passed through, that reads as the worst-rated product in the set instead of an unknown
+    if not average or not count:
+        return {"rating": None, "review_count": None}
+    return {"rating": average, "review_count": count}
+
+
 def parse_search(payload: dict) -> list[dict]:
     products = (payload.get("data") or {}).get("search", {}).get("products", []) or []
     rows = []
@@ -74,6 +87,7 @@ def parse_search(payload: dict) -> list[dict]:
             "in_stock": price is not None,
             "store_id": None,
             "distance_miles": None,
+            **parse_tile_rating(product),
         })
     return rows
 

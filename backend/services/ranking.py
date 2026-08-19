@@ -186,6 +186,12 @@ def over_budget_penalty(price: float, budget_max: float | None) -> float:
     return budget_max / price
 
 
+# a spread this small, as a fraction of the cheapest candidate, is not a real price difference.
+# without it the span is stretched across noise: two keyboards at $60.04 and $60.09 scored
+# 1.0 and 0.0, a hundred points of the price weight for five cents
+MEANINGFUL_SPREAD = 0.05
+
+
 # budget_max is a penalty, never a filter: over-budget candidates stay in the set and in the span.
 # scores are relative to this run's candidate set, so they are not comparable across runs.
 # deals.py works on absolute prices, so nothing alert-related depends on them.
@@ -196,9 +202,11 @@ def assign_price_scores(candidates: list[RankedProduct], budget_max: float | Non
     prices = [c.product["price"] for c in priced]
     min_price, max_price = min(prices), max(prices)
     span = max_price - min_price
+    # every candidate costs about the same, so price cannot separate them and must not pretend to
+    tied = min_price <= 0 or span / min_price < MEANINGFUL_SPREAD
     for candidate in priced:
         price = candidate.product["price"]
-        raw_score = 1.0 if span == 0 else (max_price - price) / span
+        raw_score = 1.0 if tied else (max_price - price) / span
         candidate.price_score = raw_score * over_budget_penalty(price, budget_max)
 
 

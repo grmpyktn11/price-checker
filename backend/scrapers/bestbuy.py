@@ -59,6 +59,21 @@ def product_url(href: str) -> str | None:
     return url if urlparse(url).netloc == urlparse(BASE).netloc else None
 
 
+# "Rating 4.4 out of 5 stars with 32 reviews", on the search tile itself. this is the only
+# rating Best Buy gives us at all - the product page that carries it is Akamai-blocked, which
+# is why every Best Buy card used to read "no rating found"
+TILE_RATING_RE = re.compile(r"Rating ([\d.]+) out of 5 stars with ([\d,]+) review")
+
+
+def parse_tile_rating(tile) -> dict:
+    block = tile.select_one(".c-ratings-reviews")
+    match = TILE_RATING_RE.search(block.get_text(" ", strip=True)) if block else None
+    if not match:
+        return {"rating": None, "review_count": None}
+    return {"rating": float(match.group(1)),
+            "review_count": int(match.group(2).replace(",", ""))}
+
+
 # search is national inventory: no store, no distance
 def parse_search(html: str) -> list[dict]:
     soup = BeautifulSoup(html, "lxml")
@@ -83,6 +98,7 @@ def parse_search(html: str) -> list[dict]:
             "in_stock": None if cart is None else "sold out" not in cart.get_text(" ", strip=True).lower(),
             "store_id": None,
             "distance_miles": None,
+            **parse_tile_rating(tile),
         })
     return rows
 
