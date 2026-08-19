@@ -48,21 +48,16 @@ export function ProductCard({
         match {Math.round(product.final_score * 100)}%
       </span>
 
-      <div className="flex items-start gap-3">
-        <div className="sticker grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-sky text-2xl">
-          🛍️
-        </div>
-        <div className="min-w-0">
-          <h3 className="font-display text-lg font-bold leading-tight break-words">
-            {product.name ?? "Unnamed listing"}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {retailerLabel(product.retailer)}
-            {" · "}
-            {product.in_stock === null ? "stock unknown" : product.in_stock ? "in stock" : "out of stock"}
-            {product.distance_miles !== null ? ` · ${product.distance_miles.toFixed(1)} mi` : ""}
-          </p>
-        </div>
+      <div className="min-w-0">
+        <h3 className="font-display text-lg font-bold leading-tight break-words">
+          {product.name ?? "Unnamed listing"}
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          {retailerLabel(product.retailer)}
+          {" · "}
+          {product.in_stock === null ? "stock unknown" : product.in_stock ? "in stock" : "out of stock"}
+          {product.distance_miles !== null ? ` · ${product.distance_miles.toFixed(1)} mi` : ""}
+        </p>
       </div>
 
       <div className="mt-3 flex flex-wrap items-baseline gap-2">

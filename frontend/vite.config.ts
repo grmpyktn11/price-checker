@@ -24,7 +24,10 @@ export default defineConfig({
     // vite rejects requests whose Host header it does not recognise, which is every tunnel.
     // a leading dot matches subdomains. narrow to the tunnels actually used rather than
     // `true`, which would turn the check off entirely
-    allowedHosts: [".ngrok-free.app", ".ngrok.app", ".ngrok.io", ".trycloudflare.com"],
+    // ngrok hands out .ngrok-free.dev now, not the .app domain the docs still show, and a
+    // missing entry surfaces as a 403 from vite rather than anything ngrok says
+    allowedHosts: [".ngrok-free.dev", ".ngrok.dev", ".ngrok-free.app", ".ngrok.app",
+                   ".ngrok.io", ".trycloudflare.com"],
     // over a tunnel the page is https on 443 while vite is http on 5173, so the hot-reload
     // socket has to be told where to connect or every page load hangs retrying
     hmr: { clientPort: Number(process.env.VITE_HMR_PORT) || undefined },

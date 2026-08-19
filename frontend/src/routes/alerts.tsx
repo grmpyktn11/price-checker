@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { Alert } from "@/api";
 import { ApiError, getAlerts, safeUrl } from "@/api";
 import { AppShell } from "@/components/shopper/AppShell";
-import { dealEmoji, dealLabel, money, retailerLabel, shortDateTime } from "@/lib/format";
+import { dealLabel, money, retailerLabel, shortDateTime } from "@/lib/format";
 
 export const Route = createFileRoute("/alerts")({ component: AlertsPage });
 
@@ -21,7 +21,7 @@ function AlertsPage() {
   }, []);
 
   return (
-    <AppShell title="Alerts" subtitle="Target hits send instantly. Everything else batches daily.">
+    <AppShell title="Alerts" subtitle="Target hits email immediately. Everything else once a day.">
       {error ? (
         <p className="sticker mb-4 rounded-3xl bg-strawberry px-4 py-2 text-sm font-semibold text-accent-foreground">
           {error}
@@ -37,9 +37,6 @@ function AlertsPage() {
               key={alert.id}
               className="sticker flex flex-wrap items-center gap-3 rounded-3xl bg-card p-4"
             >
-              <span className="sticker grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-butter text-lg">
-                {dealEmoji[reason] ?? "🔔"}
-              </span>
               <div className="min-w-0">
                 <p className="font-display text-lg font-bold leading-tight break-words">
                   {alert.item_name ?? "Unknown item"}

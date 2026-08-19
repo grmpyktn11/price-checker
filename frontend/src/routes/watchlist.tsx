@@ -89,7 +89,7 @@ function WatchlistPage() {
   }
 
   return (
-    <AppShell title="Watchlist" subtitle="Rechecked on a schedule. Alerts land in your inbox.">
+    <AppShell title="Watchlist" subtitle="Rechecked every 6 hours.">
       <div className="sticker mb-6 flex flex-wrap gap-2 rounded-3xl bg-card p-4">
         <input
           value={draft}

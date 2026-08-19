@@ -6,12 +6,6 @@ export const dealLabel: Record<string, string> = {
   new_alternative: "New find",
 };
 
-export const dealEmoji: Record<string, string> = {
-  target_hit: "🎯",
-  price_drop: "📉",
-  new_alternative: "✨",
-};
-
 const retailerLabels: Record<string, string> = {
   amazon: "Amazon",
   bestbuy: "Best Buy",

@@ -68,7 +68,7 @@ export function SearchProgress({ conversationId }: { conversationId: string }) {
     <div className="flex justify-start">
       <div className="sticker max-w-[85%] rounded-3xl rounded-bl-md bg-secondary px-4 py-3">
         <p className="text-sm font-bold">
-          <span className="wobble inline-block">🍏</span> {stageLabel(progress?.stage)}…
+          {stageLabel(progress?.stage)}…
           {seconds ? <span className="font-semibold text-muted-foreground"> {seconds}s</span> : null}
         </p>
 

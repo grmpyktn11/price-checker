@@ -114,8 +114,7 @@ function ProjectPage() {
       wasRunning.current = true;
       if (result.skipped.length) {
         setNotice(
-          `Searching ${result.searching.length}. ${result.skipped.length} left for the next run — ` +
-            `${MAX_PER_RUN} at a time keeps the retailers from blocking us.`,
+          `Searching ${result.searching.length}. ${result.skipped.length} left for the next run.`,
         );
       }
     } catch (caught) {
@@ -151,7 +150,7 @@ function ProjectPage() {
   return (
     <AppShell
       title={project.name ?? "Project"}
-      subtitle="Tick what you actually need, then let Shopper go and find it."
+      subtitle="Pick what to search for."
     >
       <div className="space-y-6">
         <div className="sticker rounded-3xl bg-card p-4">
@@ -170,7 +169,7 @@ function ProjectPage() {
               Copy as markdown
             </button>
             <span className="text-sm text-muted-foreground">
-              {MAX_PER_RUN} per run, about a minute each.
+              {MAX_PER_RUN} at a time, about a minute each.
             </span>
           </div>
 
@@ -249,9 +248,7 @@ function ProjectPage() {
                   ))}
                 </div>
               ) : item.status === "done" ? (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Nothing matched. The debug panel on a chat search shows why.
-                </p>
+                <p className="mt-2 text-sm text-muted-foreground">Nothing matched.</p>
               ) : null}
             </section>
           );

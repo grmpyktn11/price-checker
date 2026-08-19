@@ -59,7 +59,7 @@ function HowItWorksPage() {
   return (
     <AppShell
       title="How Shopper works"
-      subtitle="You describe what you want. Shopper does the shopping around."
+      subtitle="What happens when you search."
     >
       <div className="space-y-8">
         <Card>

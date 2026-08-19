@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 const nav = [
-  { to: "/", label: "Chat", icon: "💬" },
-  { to: "/projects", label: "Projects", icon: "🧾" },
-  { to: "/watchlist", label: "Watchlist", icon: "👀" },
-  { to: "/alerts", label: "Alerts", icon: "🔔" },
-  { to: "/settings", label: "Settings", icon: "⚙️" },
-  { to: "/how-it-works", label: "How it works", icon: "🍏" },
+  { to: "/", label: "Chat" },
+  { to: "/projects", label: "Projects" },
+  { to: "/watchlist", label: "Watchlist" },
+  { to: "/alerts", label: "Alerts" },
+  { to: "/settings", label: "Settings" },
+  { to: "/how-it-works", label: "How it works" },
 ] as const;
 
 export function AppShell({
@@ -46,11 +46,8 @@ export function AppShell({
     <div className="flex min-h-screen flex-col dotgrid">
       <header className="border-b-[3px] border-foreground gingham">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="sticker wobble grid h-10 w-10 place-items-center rounded-full bg-strawberry text-lg">
-              🍏
-            </span>
-            <span className="font-display text-2xl font-extrabold tracking-tight">shopper</span>
+          <Link to="/" className="font-display text-2xl font-extrabold tracking-tight">
+            shopper
           </Link>
 
           {/* the row of pills is the desktop nav; a phone gets the drawer instead */}
@@ -119,7 +116,6 @@ export function AppShell({
                 }}
                 activeOptions={{ exact: n.to === "/" }}
               >
-                <span aria-hidden>{n.icon}</span>
                 {n.label}
               </Link>
             ))}
@@ -139,7 +135,7 @@ export function AppShell({
 
       <footer className="mt-12 border-t-[3px] border-foreground gingham-red">
         <div className="mx-auto max-w-5xl px-4 py-6 text-sm font-semibold">
-          shopper — deals, tracked.
+          shopper
         </div>
       </footer>
     </div>

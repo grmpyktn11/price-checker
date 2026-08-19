@@ -67,23 +67,17 @@ function ProjectsPage() {
   return (
     <AppShell
       title="Projects"
-      subtitle="Planned something with Claude? Bring the shopping list here."
+      subtitle="Turn a Claude conversation into a shopping list."
     >
       <div className="space-y-6">
         <div className="sticker rounded-3xl bg-card p-5">
           <label htmlFor="transcript" className="font-display text-lg font-bold">
             Paste the conversation
           </label>
+          {/* share links are accepted but claude.ai answers our browser with a bot check, so
+              paste is the path that works and the only one worth instructing */}
           <p className="mt-1 text-sm text-muted-foreground">
-            Select the chat in Claude, copy it, paste it here. Shopper pulls out the things you
-            would have to buy.
-          </p>
-          {/* share links are accepted but claude.ai is behind Cloudflare, which serves our
-              browser a bot check instead of the page. saying so up front beats letting someone
-              wait 30 seconds for a failure */}
-          <p className="mt-1 text-xs text-muted-foreground">
-            Share links usually don't work — claude.ai answers automated requests with a bot
-            check. Pasting the text always does.
+            Copy the whole chat from Claude and paste it below. Share links do not work.
           </p>
           <textarea
             id="transcript"
@@ -91,7 +85,7 @@ function ProjectsPage() {
             onChange={(event) => setDraft(event.target.value)}
             rows={8}
             disabled={importing}
-            placeholder="Paste the whole conversation here…"
+            placeholder="Paste the conversation"
             className="sticker mt-3 w-full rounded-2xl bg-background px-3 py-2 text-sm disabled:opacity-60"
           />
           <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -100,13 +94,9 @@ function ProjectsPage() {
               disabled={importing || !draft.trim()}
               className="sticker rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground transition-transform hover:-translate-y-0.5 disabled:opacity-50"
             >
-              {importing ? "Reading it…" : "Import"}
+              {importing ? "Importing…" : "Import"}
             </button>
-            {importing ? (
-              <span className="text-sm font-semibold text-muted-foreground">
-                One model call, a few seconds.
-              </span>
-            ) : null}
+
           </div>
           {error ? (
             <p className="mt-3 rounded-2xl bg-strawberry px-3 py-2 text-sm font-semibold text-accent-foreground">

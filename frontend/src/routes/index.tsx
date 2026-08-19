@@ -152,8 +152,8 @@ function ChatPage() {
 
   return (
     <AppShell
-      title="What are you hunting for?"
-      subtitle="Describe it once. Shopper does the digging."
+      title="Search"
+      subtitle="Say what you want to buy."
     >
       <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
         <section className="sticker rounded-3xl bg-card p-4">
@@ -216,7 +216,7 @@ function ChatPage() {
             ))}
             {turns.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                Say what you want, roughly. Shopper asks for anything it still needs.
+                Say what you want to buy, and your budget.
               </p>
             ) : null}
             {searching ? <SearchProgress conversationId={conversationId} /> : null}
@@ -272,7 +272,7 @@ function ChatPage() {
           ))}
           {products.length === 0 ? (
             <p className="sticker rounded-3xl bg-card p-4 text-sm font-semibold text-muted-foreground">
-              Nothing ranked yet. Picks show up here once a search finishes.
+              No results yet.
             </p>
           ) : null}
         </section>

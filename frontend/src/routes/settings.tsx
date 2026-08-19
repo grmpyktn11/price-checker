@@ -202,7 +202,7 @@ function SettingsPage() {
   const located = profile !== null && profile.lat !== null && profile.lon !== null;
 
   return (
-    <AppShell title="Settings" subtitle="Just you, one location.">
+    <AppShell title="Settings" subtitle="Your location, used to find nearby stores.">
       <div className="grid gap-4 md:grid-cols-2">
         <section className="sticker space-y-4 rounded-3xl bg-card p-4">
           <h2 className="font-display text-xl font-extrabold">Location</h2>
