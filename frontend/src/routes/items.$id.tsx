@@ -26,7 +26,7 @@ export const Route = createFileRoute("/items/$id")({ component: ItemDetailPage }
 
 // the chart draws on an LCD, so every series is a dark pixel tone against the lime glass
 const LCD_INK = "oklch(0.3 0.08 135)";
-const seriesColors = [LCD_INK, "oklch(0.45 0.11 135)", "oklch(0.5 0.12 30)", "oklch(0.4 0.06 90)"];
+const seriesColors = [LCD_INK, "oklch(0.48 0.11 135)", "oklch(0.55 0.08 100)", "oklch(0.42 0.05 60)"];
 
 // one row per timestamp, one column per listing. sparse by construction: a point is only
 // written when that listing's price changed, so most cells are undefined and the lines are
@@ -84,7 +84,7 @@ function PriceChart({ chart }: { chart: Chart }) {
           labelFormatter={(value: number) => new Date(value).toLocaleString()}
           formatter={(value: number) => `$${value.toFixed(2)}`}
         />
-        <Legend wrapperStyle={{ fontSize: 11, fontWeight: 700 }} />
+        <Legend wrapperStyle={{ fontSize: 11, fontWeight: 700, color: LCD_INK }} />
         {chart.series.map((line, index) => (
           <Line
             key={line.key}

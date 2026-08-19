@@ -226,7 +226,7 @@ export function ProductCard({
             href={videoLink}
             target="_blank"
             rel="noreferrer"
-            className="rounded-full px-4 py-2 text-center text-sm font-bold underline underline-offset-4"
+            className="sticker rounded-full bg-card px-4 py-2 text-center text-sm font-extrabold"
           >
             Video
           </a>
@@ -234,7 +234,7 @@ export function ProductCard({
         <button
           disabled={disabled}
           onClick={() => onDecision(product.product_id, "watch")}
-          className="rounded-full px-4 py-2 text-sm font-bold underline underline-offset-4 disabled:opacity-50"
+          className="sticker rounded-full bg-card px-4 py-2 text-sm font-extrabold disabled:opacity-50"
         >
           {pending === "watch" ? "..." : "Track"}
         </button>

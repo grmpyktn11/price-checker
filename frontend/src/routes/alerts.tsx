@@ -35,7 +35,7 @@ function AlertsPage() {
           return (
             <li
               key={alert.id}
-              className="sticker flex flex-wrap items-center gap-3 rounded-3xl bg-card p-4"
+              className="panel flex flex-wrap items-center gap-3 rounded-3xl bg-card p-4"
             >
               <div className="min-w-0">
                 <p className="font-display text-lg font-bold leading-tight break-words">
@@ -59,7 +59,7 @@ function AlertsPage() {
                 </p>
               </div>
               <div className="ml-auto flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-extrabold">
+                <span className="rounded-md bg-strawberry px-2 py-0.5 text-xs font-extrabold text-accent-foreground">
                   {dealLabel[reason] ?? reason}
                 </span>
                 <span className="text-xs font-semibold text-muted-foreground">
