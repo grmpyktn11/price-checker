@@ -224,6 +224,55 @@
   box-shadow: var(--shadow-sticker);
 }
 
+/* a page is an application window: hard outline, hard drop, titlebar above the body */
+@utility window-frame {
+  border: 2px solid var(--foreground);
+  box-shadow: 5px 6px 0 oklch(0.32 0.05 30 / 0.28);
+}
+
+@utility titlebar {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, white 18%, var(--primary)),
+    color-mix(in oklab, var(--foreground) 28%, var(--primary))
+  );
+  color: var(--primary-foreground);
+}
+
+@utility winbtn {
+  display: grid;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 0.2rem;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: var(--foreground);
+  background: var(--card);
+  border: 1px solid;
+  border-color:
+    color-mix(in oklab, white 65%, var(--card))
+    color-mix(in oklab, var(--foreground) 35%, var(--card))
+    color-mix(in oklab, var(--foreground) 35%, var(--card))
+    color-mix(in oklab, white 65%, var(--card));
+}
+
+/* the game-boy screen: lime glass, dark green pixels, an inset glow */
+@utility lcd {
+  background: var(--butter);
+  color: oklch(0.32 0.07 128);
+  font-family: var(--font-display);
+  border: 2px solid oklch(0.45 0.02 95);
+  box-shadow: inset 0 0 18px oklch(0.32 0.07 128 / 0.22);
+}
+
+/* chunky 90s plastic press-down for anything clickable that carries sticker */
+button.sticker:active,
+a.sticker:active {
+  transform: translateY(2px);
+  box-shadow: 1px 1px 0 oklch(0.32 0.05 30 / 0.85);
+}
+
 @utility wobble {
   animation: wobble 4s ease-in-out infinite;
 }

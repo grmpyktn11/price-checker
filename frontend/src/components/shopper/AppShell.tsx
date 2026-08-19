@@ -128,13 +128,29 @@ export function AppShell({
       ) : null}
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
-        <div className={`mb-6 ${align === "center" ? "text-center" : ""}`}>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-            {title}
-          </h1>
-          {subtitle ? <p className="mt-1 text-muted-foreground">{subtitle}</p> : null}
+        {/* the page is an application window: its title lives in the titlebar */}
+        <div className="window-frame overflow-hidden rounded-xl bg-card">
+          <div className="titlebar flex items-center gap-1.5 px-4 py-2">
+            <h1 className="font-display flex-1 truncate text-lg tracking-wide">{title}</h1>
+            <span aria-hidden="true" className="winbtn">
+              —
+            </span>
+            <span aria-hidden="true" className="winbtn">
+              □
+            </span>
+            <span aria-hidden="true" className="winbtn">
+              ×
+            </span>
+          </div>
+          <div className="p-4 sm:p-6">
+            {subtitle ? (
+              <p className={`mb-5 text-muted-foreground ${align === "center" ? "text-center" : ""}`}>
+                {subtitle}
+              </p>
+            ) : null}
+            {children}
+          </div>
         </div>
-        {children}
       </main>
 
       <footer className="mt-12 border-t-[3px] border-foreground gingham-red">

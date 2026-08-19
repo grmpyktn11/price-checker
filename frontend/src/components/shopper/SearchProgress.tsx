@@ -30,8 +30,8 @@ function stageIndex(stage: string | null | undefined): number {
 }
 
 const OUTCOME_MARK: Record<string, string> = {
-  SEARCHING: "·",
-  OK: "✓",
+  SEARCHING: "□",
+  OK: "■",
   OK_BUT_EMPTY: "—",
   BLOCKED: "✕",
   SELECTORS_RETURNED_NOTHING: "✕",
@@ -67,15 +67,16 @@ export function SearchProgress({ conversationId }: { conversationId: string }) {
 
   return (
     <div className="flex justify-start">
-      <div className="panel max-w-[85%] rounded-3xl rounded-bl-md bg-secondary px-4 py-3">
-        <p className="text-sm font-bold">
+      {/* the waiting screen is an LCD: lime glass, dark pixels, square markers */}
+      <div className="lcd max-w-[85%] rounded-xl px-4 py-3">
+        <p className="text-sm">
           {stageLabel(progress?.stage)}…
-          {seconds ? <span className="font-semibold text-muted-foreground"> {seconds}s</span> : null}
+          {seconds ? <span className="opacity-70"> {seconds}s</span> : null}
         </p>
 
-        <div className="mt-2 h-2 w-64 max-w-full overflow-hidden rounded-full bg-card">
+        <div className="mt-2 h-2 w-64 max-w-full overflow-hidden rounded-sm border border-current/40">
           <div
-            className="h-full rounded-full bg-sky transition-[width] duration-500"
+            className="h-full bg-current transition-[width] duration-500"
             style={{ width: `${percent}%` }}
           />
         </div>
@@ -85,7 +86,7 @@ export function SearchProgress({ conversationId }: { conversationId: string }) {
           <ul className="mt-2 space-y-0.5 text-xs font-semibold">
             {retailers.map((row) => (
               <li key={row.retailer}>
-                {OUTCOME_MARK[row.outcome] ?? "·"} {retailerLabel(row.retailer)}
+                {OUTCOME_MARK[row.outcome] ?? "□"} {retailerLabel(row.retailer)}
                 {row.outcome === "OK"
                   ? ` — ${row.candidates_kept ?? 0} kept`
                   : row.outcome === "SEARCHING"

@@ -68,7 +68,7 @@ export function ProductCard({
       </div>
 
       <div className="mt-3 flex flex-wrap items-baseline gap-2">
-        <span className="font-display text-3xl font-extrabold">{money(product.price)}</span>
+        <span className="lcd rounded-lg px-2.5 py-0.5 text-2xl">{money(product.price)}</span>
         {/* price and match are the two numbers being compared, so they share a line rather
             than one floating outside the card border */}
         <span className="rounded-full bg-butter px-2.5 py-1 text-xs font-extrabold">
