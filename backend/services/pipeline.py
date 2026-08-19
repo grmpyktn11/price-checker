@@ -225,6 +225,9 @@ async def judge_candidates(item_criteria: dict, candidates: list[RankedProduct],
     survivors = []
     for candidate, assessment in zip(candidates, assessments):
         candidate.group = assessment["group"]
+        # the same judgment call also reads the keyword-dump title into a real name
+        if assessment.get("display_name"):
+            candidate.product["display_name"] = assessment["display_name"]
         candidate.spec_match = assessment["spec_fit"]
         candidate.nice_to_have_score = assessment["nice_fit"]
         if not assessment["qualifies"]:

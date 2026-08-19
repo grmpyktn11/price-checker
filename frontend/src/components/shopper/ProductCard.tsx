@@ -62,7 +62,7 @@ export function ProductCard({
           className="font-sans line-clamp-2 text-base font-bold leading-snug break-words"
           title={product.name ?? undefined}
         >
-          {(product.name ?? "Unnamed listing").split("|")[0].trim()}
+          {product.display_name ?? (product.name ?? "Unnamed listing").split("|")[0].trim()}
         </h3>
         <p className="text-sm text-muted-foreground">
           {retailerLabel(product.retailer)}
@@ -76,7 +76,7 @@ export function ProductCard({
         <span className="lcd rounded-lg px-2.5 py-0.5 text-2xl">{money(product.price)}</span>
         {/* price and match are the two numbers being compared, so they share a line rather
             than one floating outside the card border */}
-        <span className="rounded-full bg-butter px-2.5 py-1 text-xs font-extrabold">
+        <span className="text-sm font-bold text-muted-foreground">
           match {Math.round(product.final_score * 100)}%
         </span>
         {href ? (

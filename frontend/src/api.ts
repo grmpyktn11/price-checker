@@ -2,6 +2,8 @@
 export interface Product {
   product_id: number; // index into this conversation's last results
   name: string | null;
+  // the filter's cleaned reading of the retailer's keyword-dump title, when it offered one
+  display_name: string | null;
   url: string | null;
   price: number | null;
   in_stock: boolean | null;

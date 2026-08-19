@@ -47,6 +47,7 @@ Results:
     {
       "product_id": 0,
       "name": "Anker 737 Power Bank 24,000 mAh",
+      "display_name": "Anker 737 Power Bank",
       "url": "https://www.bestbuy.com/...",
       "price": 129.99,
       "in_stock": true,

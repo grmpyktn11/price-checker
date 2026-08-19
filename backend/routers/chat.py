@@ -78,6 +78,9 @@ class MessageIn(BaseModel):
 class ProductOut(BaseModel):
     product_id: int          # index into this conversation's last results, used by /chat/decision
     name: str | None
+    # the filter's cleaned reading of the retailer's keyword-dump title; None when the model
+    # did not offer one
+    display_name: str | None = None
     url: str | None
     price: float | None
     in_stock: bool | None
@@ -165,6 +168,7 @@ def to_product_out(product_id: int, ranked: RankedProduct) -> ProductOut:
     return ProductOut(
         product_id=product_id,
         name=ranked.product.get("name"),
+        display_name=ranked.product.get("display_name"),
         url=ranked.product.get("url"),
         price=ranked.product.get("price"),
         in_stock=ranked.product.get("in_stock"),

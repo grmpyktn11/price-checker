@@ -19,7 +19,7 @@ of the specs the requirements name, so the title is usually the only evidence th
 
 Reply with a single JSON object and nothing else:
 {"products": [{"index": 0, "qualifies": true, "spec_fit": 0.0, "nice_fit": 0.0, "group": "g1",
-"reason": ""}]}
+"display_name": "", "reason": ""}]}
 
 - qualifies: the strict check, and only the strict check.
   * A stated quantity is strict. 20,000mAh, at least 140W, under 2 pounds, 4 ports: a listing
@@ -58,6 +58,10 @@ Reply with a single JSON object and nothing else:
   A different capacity, size, switch type or generation is genuinely a different product and
   gets its own group - those change what you are buying, colour does not. Every product gets a
   group, even when it is alone in it.
+- display_name: the product's actual name, cleaned. Retailer titles are keyword dumps;
+  return the brand and model plus the one or two words that say what it is - "KANMABPC Silent
+  Wireless Mouse", not the whole title. At most eight words. Never invent anything that is not
+  in the title.
 - reason: one short phrase saying why, when qualifies is false. "" when it qualifies. This is
   shown to the shopper as the reason the product was dropped, so name the specific mismatch.
 
@@ -83,7 +87,7 @@ def requirements(criteria: dict) -> dict:
 # nobody asked for
 def neutral_assessment() -> dict:
     return {"qualifies": True, "spec_fit": NEUTRAL_FIT, "nice_fit": NEUTRAL_FIT, "group": None,
-            "reason": ""}
+            "display_name": None, "reason": ""}
 
 
 def clamped_fit(value) -> float:
@@ -100,6 +104,7 @@ def read_assessment(row: dict) -> dict:
         "spec_fit": clamped_fit(row.get("spec_fit")),
         "nice_fit": clamped_fit(row.get("nice_fit")),
         "group": str(row["group"]) if row.get("group") else None,
+        "display_name": str(row["display_name"]).strip() if row.get("display_name") else None,
         # only ever displayed, so a missing or odd value is just an empty string
         "reason": str(row.get("reason") or ""),
     }
