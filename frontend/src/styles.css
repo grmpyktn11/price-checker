@@ -60,50 +60,50 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* heisei retro: pale pink console plastic (#FCDFD9), brick red (#D95A4B), and a lime LCD
-   green (#CEE386) that carries the game-boy screens. ink is a warm dark brown */
+/* heisei retro, melon float: warm vanilla ground, melon-soda green for buttons and
+   LCDs, cherry pink secondary, deep melon-leaf ink */
 :root {
   --radius: 0.85rem;
-  --background: oklch(0.925 0.033 32);
-  --foreground: oklch(0.32 0.05 30);
-  --card: oklch(0.97 0.018 32);
-  --card-foreground: oklch(0.32 0.05 30);
-  --popover: oklch(0.97 0.018 32);
-  --popover-foreground: oklch(0.32 0.05 30);
-  --primary: oklch(0.885 0.104 122);
-  --primary-foreground: oklch(0.32 0.07 128);
-  --secondary: oklch(0.89 0.045 30);
-  --secondary-foreground: oklch(0.32 0.05 30);
-  --muted: oklch(0.9 0.03 32);
-  --muted-foreground: oklch(0.51 0.05 30);
+  --background: oklch(0.965 0.022 85);
+  --foreground: oklch(0.31 0.055 140);
+  --card: oklch(0.988 0.01 85);
+  --card-foreground: oklch(0.31 0.055 140);
+  --popover: oklch(0.988 0.01 85);
+  --popover-foreground: oklch(0.31 0.055 140);
+  --primary: oklch(0.85 0.125 133);
+  --primary-foreground: oklch(0.27 0.07 140);
+  --secondary: oklch(0.89 0.06 20);
+  --secondary-foreground: oklch(0.31 0.055 140);
+  --muted: oklch(0.94 0.018 85);
+  --muted-foreground: oklch(0.5 0.05 130);
   --accent: oklch(0.62 0.145 27);
   --accent-foreground: oklch(0.98 0.012 32);
   --destructive: oklch(0.58 0.17 27);
   --destructive-foreground: oklch(0.98 0.012 32);
-  --border: oklch(0.78 0.05 30);
-  --input: oklch(0.87 0.035 32);
-  --ring: oklch(0.5 0.09 122);
-  --cream: oklch(0.925 0.033 32);
-  --butter: oklch(0.885 0.104 122);
-  --sky: oklch(0.91 0.06 122);
+  --border: oklch(0.79 0.05 120);
+  --input: oklch(0.91 0.025 85);
+  --ring: oklch(0.5 0.1 135);
+  --cream: oklch(0.965 0.022 85);
+  --butter: oklch(0.89 0.1 133);
+  --sky: oklch(0.93 0.05 133);
   --strawberry: oklch(0.62 0.145 27);
-  --leaf: oklch(0.5 0.09 122);
-  --gingham-red: color-mix(in oklab, oklch(0.62 0.145 27) 24%, transparent);
-  --gingham-green: color-mix(in oklab, oklch(0.885 0.104 122) 52%, transparent);
-  --chart-1: oklch(0.5 0.09 122);
+  --leaf: oklch(0.5 0.1 135);
+  --gingham-red: color-mix(in oklab, oklch(0.62 0.145 27) 22%, transparent);
+  --gingham-green: color-mix(in oklab, oklch(0.85 0.125 133) 55%, transparent);
+  --chart-1: oklch(0.5 0.1 135);
   --chart-2: oklch(0.62 0.145 27);
-  --chart-3: oklch(0.885 0.104 122);
-  --chart-4: oklch(0.925 0.033 32);
+  --chart-3: oklch(0.85 0.125 133);
+  --chart-4: oklch(0.89 0.06 20);
   --chart-5: oklch(0.45 0.12 27);
-  --sidebar: oklch(0.925 0.033 32);
-  --sidebar-foreground: oklch(0.32 0.05 30);
-  --sidebar-primary: oklch(0.885 0.104 122);
-  --sidebar-primary-foreground: oklch(0.32 0.07 128);
-  --sidebar-accent: oklch(0.89 0.045 30);
-  --sidebar-accent-foreground: oklch(0.32 0.05 30);
-  --sidebar-border: oklch(0.78 0.05 30);
-  --sidebar-ring: oklch(0.5 0.09 122);
-  --shadow-sticker: 3px 3px 0 oklch(0.32 0.05 30 / 0.85);
+  --sidebar: oklch(0.965 0.022 85);
+  --sidebar-foreground: oklch(0.31 0.055 140);
+  --sidebar-primary: oklch(0.85 0.125 133);
+  --sidebar-primary-foreground: oklch(0.27 0.07 140);
+  --sidebar-accent: oklch(0.89 0.06 20);
+  --sidebar-accent-foreground: oklch(0.31 0.055 140);
+  --sidebar-border: oklch(0.79 0.05 120);
+  --sidebar-ring: oklch(0.5 0.1 135);
+  --shadow-sticker: 3px 3px 0 oklch(0.31 0.055 140 / 0.85);
 }
 
 .dark {
@@ -181,7 +181,7 @@
     z-index: 50;
     background: repeating-linear-gradient(
       0deg,
-      oklch(0.32 0.05 30 / 0.028) 0 1px,
+      oklch(0.31 0.055 140 / 0.028) 0 1px,
       transparent 1px 3px
     );
   }
