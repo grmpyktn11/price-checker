@@ -124,7 +124,8 @@ pytest -m live      # 29 tests that hit the real retailers and the real Claude A
 ```
 
 The default run is pure logic against the saved captures in `tests/fixtures/` — one real scrape per
-retailer, kept permanently as frozen test input. Nothing mocks the model and nothing replays a
+retailer, kept permanently as frozen test input, with `<script>`/`<style>` stripped so the repo
+carries markup rather than two megabytes of minified vendor JS. Nothing mocks the model and nothing replays a
 scrape at runtime: a test either exercises pure logic on a literal payload, or it makes the real
 calls and is marked `live`.
 

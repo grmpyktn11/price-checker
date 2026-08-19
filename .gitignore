@@ -12,3 +12,10 @@ dist/
 shopper-loveable-frontend/
 # TanStack Router plugin scratch dir (the generated routeTree.gen.ts itself is committed)
 .tanstack/
+# scratch from live debugging: page captures, screenshots, trace dumps
+*.png
+share.html
+mc*.html
+dbg*.json
+res.json
+convo*.txt
