@@ -100,10 +100,20 @@ function PriceChart({ chart }: { chart: Chart }) {
   );
 }
 
+// a reddit summary is several whole threads stitched together - thousands of characters. shown
+// in full it buries the rest of the page, and on a phone it is several screens of scrolling
+// before you reach the listings
+const SUMMARY_PREVIEW_CHARS = 280;
+
+
 function ReviewRow({ review }: { review: Review }) {
+  const [expanded, setExpanded] = useState(false);
   const href = safeUrl(review.url);
   // reddit and youtube rows are discussion, not ratings: they carry no stars to show
   const isDiscussion = review.rating === null;
+  const summary = review.summary_text ?? "";
+  const isLong = summary.length > SUMMARY_PREVIEW_CHARS;
+  const shown = expanded || !isLong ? summary : `${summary.slice(0, SUMMARY_PREVIEW_CHARS)}…`;
   return (
     <li className="rounded-2xl bg-secondary/60 p-3">
       <p className="font-bold">
@@ -124,7 +134,20 @@ function ReviewRow({ review }: { review: Review }) {
           ? "discussion, not a star rating"
           : `★ ${review.rating} across ${(review.review_count ?? 0).toLocaleString()} reviews`}
       </p>
-      {review.summary_text ? <p className="mt-1 text-sm">{review.summary_text}</p> : null}
+      {summary ? (
+        <>
+          <p className="mt-1 whitespace-pre-line text-sm font-normal">{shown}</p>
+          {isLong ? (
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="mr-3 mt-1 text-xs font-bold underline underline-offset-2"
+            >
+              {expanded ? "Show less" : `Show all ${summary.length.toLocaleString()} characters`}
+            </button>
+          ) : null}
+        </>
+      ) : null}
       {href ? (
         <a
           href={href}
@@ -219,8 +242,12 @@ function ItemDetailPage() {
         </section>
       </div>
 
-      <section className="sticker mt-6 overflow-x-auto rounded-3xl bg-card p-4">
+      <section className="sticker mt-6 rounded-3xl bg-card p-4">
         <h2 className="font-display text-xl font-extrabold">Listings</h2>
+        {/* the table is wider than a phone. saying it scrolls beats a cut-off column, which
+            reads as a bug rather than as something you can drag */}
+        <p className="text-xs text-muted-foreground sm:hidden">Scroll sideways for more →</p>
+        <div className="overflow-x-auto">
         <table className="mt-3 w-full min-w-[560px] text-left text-sm font-semibold">
           <thead className="text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
@@ -280,6 +307,7 @@ function ItemDetailPage() {
             ) : null}
           </tbody>
         </table>
+        </div>
       </section>
     </AppShell>
   );

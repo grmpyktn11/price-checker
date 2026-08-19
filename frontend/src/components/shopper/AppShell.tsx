@@ -30,14 +30,16 @@ export function AppShell({
             <span className="font-display text-2xl font-extrabold tracking-tight">shopper</span>
           </Link>
 
-          <nav className="ml-auto flex flex-wrap items-center gap-2">
+          {/* one scrolling row on a phone, where wrapping ate a third of the first screen.
+              -mx-4 px-4 lets it bleed to the screen edges so it reads as scrollable */}
+          <nav className="no-scrollbar -mx-4 ml-auto flex w-full snap-x items-center gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:pb-0">
             {nav.map((n) => (
               <Link
                 key={n.to}
                 to={n.to}
-                className="sticker rounded-full bg-card px-3 py-1.5 text-sm font-bold transition-transform hover:-translate-y-0.5"
+                className="sticker shrink-0 snap-start rounded-full bg-card px-3 py-1.5 text-sm font-bold transition-transform hover:-translate-y-0.5"
                 activeProps={{
-                  className: "sticker rounded-full bg-butter px-3 py-1.5 text-sm font-bold",
+                  className: "sticker shrink-0 snap-start rounded-full bg-butter px-3 py-1.5 text-sm font-bold",
                 }}
                 activeOptions={{ exact: n.to === "/" }}
               >

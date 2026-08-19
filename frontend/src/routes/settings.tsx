@@ -234,7 +234,7 @@ function SettingsPage() {
           {/* radius is per watched item, not a profile setting, so there is no control for it here */}
           <p className="text-sm text-muted-foreground">
             Search radius is set per watched item, not here. The location is what Google Places
-            uses to find the nearest Target and Best Buy.
+            uses to find the nearest Target, Best Buy and Micro Center.
           </p>
           {error ? (
             <p className="rounded-2xl bg-strawberry p-3 text-sm font-semibold text-accent-foreground">

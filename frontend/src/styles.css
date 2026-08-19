@@ -203,3 +203,13 @@
   0%, 100% { transform: rotate(-2deg) translateY(0); }
   50% { transform: rotate(2deg) translateY(-6px); }
 }
+
+/* the nav scrolls sideways on a phone; the scrollbar is chrome nobody needs over a gingham
+   header, and the row is short enough that the cut-off pill is its own affordance */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
