@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as DebugRouteImport } from './routes/debug'
+import { Route as EmailPreviewRouteImport } from './routes/email-preview'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as WatchlistRouteImport } from './routes/watchlist'
@@ -32,6 +33,11 @@ const AlertsRoute = AlertsRouteImport.update({
 const DebugRoute = DebugRouteImport.update({
   id: '/debug',
   path: '/debug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmailPreviewRoute = EmailPreviewRouteImport.update({
+  id: '/email-preview',
+  path: '/email-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
   '/debug': typeof DebugRoute
+  '/email-preview': typeof EmailPreviewRoute
   '/how-it-works': typeof HowItWorksRoute
   '/settings': typeof SettingsRoute
   '/watchlist': typeof WatchlistRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
   '/debug': typeof DebugRoute
+  '/email-preview': typeof EmailPreviewRoute
   '/how-it-works': typeof HowItWorksRoute
   '/settings': typeof SettingsRoute
   '/watchlist': typeof WatchlistRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
   '/debug': typeof DebugRoute
+  '/email-preview': typeof EmailPreviewRoute
   '/how-it-works': typeof HowItWorksRoute
   '/settings': typeof SettingsRoute
   '/watchlist': typeof WatchlistRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alerts'
     | '/debug'
+    | '/email-preview'
     | '/how-it-works'
     | '/settings'
     | '/watchlist'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alerts'
     | '/debug'
+    | '/email-preview'
     | '/how-it-works'
     | '/settings'
     | '/watchlist'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alerts'
     | '/debug'
+    | '/email-preview'
     | '/how-it-works'
     | '/settings'
     | '/watchlist'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlertsRoute: typeof AlertsRoute
   DebugRoute: typeof DebugRoute
+  EmailPreviewRoute: typeof EmailPreviewRoute
   HowItWorksRoute: typeof HowItWorksRoute
   SettingsRoute: typeof SettingsRoute
   WatchlistRoute: typeof WatchlistRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/debug'
       fullPath: '/debug'
       preLoaderRoute: typeof DebugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/email-preview': {
+      id: '/email-preview'
+      path: '/email-preview'
+      fullPath: '/email-preview'
+      preLoaderRoute: typeof EmailPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/how-it-works': {
@@ -219,6 +239,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlertsRoute: AlertsRoute,
   DebugRoute: DebugRoute,
+  EmailPreviewRoute: EmailPreviewRoute,
   HowItWorksRoute: HowItWorksRoute,
   SettingsRoute: SettingsRoute,
   WatchlistRoute: WatchlistRoute,

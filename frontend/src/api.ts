@@ -372,6 +372,11 @@ export function updateEmail(email: string): Promise<Profile> {
   return request<Profile>("/api/profile/email", "PATCH", { email });
 }
 
+// the next digest, rendered by the same code that sends it. live=false means it is the sample
+export function getEmailPreview(): Promise<{ subject: string; html: string; live: boolean }> {
+  return request("/api/debug/email-preview");
+}
+
 export function getDebugStatus(): Promise<DebugStatus> {
   return request<DebugStatus>("/api/debug/status");
 }

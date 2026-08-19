@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { DebugStatus } from "@/api";
 import { ApiError, getDebugStatus, runJob, sendTestEmail } from "@/api";
 import { AppShell } from "@/components/shopper/AppShell";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/debug")({
   component: DebugPage,
@@ -67,6 +68,9 @@ function DebugPage() {
   return (
     <AppShell title="Debug" subtitle="POST /api/debug/*">
       <div className="space-y-4 font-mono text-sm">
+        <Link to="/email-preview" className="inline-block font-bold underline underline-offset-4">
+          email-preview
+        </Link>
         <section className="panel rounded-2xl bg-card p-3">
           <table className="w-full tabular-nums">
             <tbody>

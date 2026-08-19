@@ -107,6 +107,37 @@ async def send_test_email(db: Session = Depends(get_db)) -> MailOut:
                                      else "resend rejected it, see server log")
 
 
+class PreviewOut(BaseModel):
+    subject: str
+    html: str
+    live: bool          # true when these are real queued alerts rather than the sample
+
+
+# what the next digest would look like, rendered by the same functions that send it. real
+# pending alerts when there are any, otherwise a sample - so the preview can never drift from
+# the mail that actually goes out
+@router.get("/debug/email-preview", response_model=PreviewOut)
+def email_preview(db: Session = Depends(get_db)) -> PreviewOut:
+    pending = db.query(Alert).filter(Alert.sent_at.is_(None)).order_by(Alert.id).all()
+    if pending:
+        rows = [scheduler.alert_row(db, alert) for alert in pending]
+        return PreviewOut(subject=email.digest_subject(rows),
+                          html=email.render_digest(rows), live=True)
+    rows = [
+        {"item_name": "wireless mouse", "reason": "target_hit", "retailer": "amazon",
+         "price": 5.98, "target_price": 8.00, "url": "https://www.amazon.com/dp/example",
+         "in_stock": True, "store_name": None, "distance_miles": None},
+        {"item_name": "mechanical keyboard", "reason": "price_drop", "retailer": "microcenter",
+         "price": 59.99, "target_price": None, "url": "https://www.microcenter.com/product/example",
+         "in_stock": True, "store_name": None, "distance_miles": 12.4},
+        {"item_name": "usb hub", "reason": "new_alternative", "retailer": "bestbuy",
+         "price": 6.99, "target_price": None, "url": "https://www.bestbuy.com/site/example",
+         "in_stock": True, "store_name": None, "distance_miles": 0.6},
+    ]
+    return PreviewOut(subject=email.digest_subject(rows),
+                      html=email.render_digest(rows), live=False)
+
+
 class StatusOut(BaseModel):
     jobs: list[dict]              # id, next run time
     pending_alerts: int           # queued for the next digest
