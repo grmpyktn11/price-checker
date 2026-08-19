@@ -43,7 +43,7 @@ const limits = [
 ];
 
 function Card({ children }: { children: ReactNode }) {
-  return <div className="sticker rounded-3xl bg-card p-5">{children}</div>;
+  return <div className="panel rounded-3xl bg-card p-5">{children}</div>;
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {

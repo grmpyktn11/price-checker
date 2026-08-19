@@ -185,9 +185,16 @@
   background-size: 22px 22px;
 }
 
+/* the page background is flat on purpose: gingham in the header and footer is enough pattern,
+   and a dot grid behind high-contrast cards was a third thing competing for attention */
 @utility dotgrid {
-  background-image: radial-gradient(var(--gingham-green) 1.6px, transparent 1.6px);
-  background-size: 16px 16px;
+  background-image: none;
+}
+
+/* the light frame for surfaces that are not a product card. when every container carried the
+   3px sticker border, four levels of nesting all shouted equally and nothing stood out */
+@utility panel {
+  border: 2px solid color-mix(in oklab, var(--foreground) 18%, transparent);
 }
 
 @utility sticker {

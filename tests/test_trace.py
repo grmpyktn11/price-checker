@@ -240,3 +240,43 @@ def test_a_run_with_no_key_is_never_live():
     trace.start("rescan", {})
     assert trace.live(None) is None
     trace.finish(0)
+
+
+# with the retailers running concurrently nothing reports for ~25 seconds. a waiting screen
+# that lists nothing for 25 seconds reads as broken, so every expected retailer shows up on
+# the first poll and is replaced by its real outcome as it lands
+def test_expected_retailers_show_as_searching_before_they_report():
+    trace.start("mouse", {}, key="conv-1")
+    trace.expect_retailers(["bestbuy", "target", "amazon", "microcenter"])
+
+    live = trace.live("conv-1")
+    assert [row["retailer"] for row in live["retailers"]] == [
+        "bestbuy", "target", "amazon", "microcenter"
+    ]
+    assert {row["outcome"] for row in live["retailers"]} == {trace.SEARCHING}
+
+    trace.record_search("target", "u", trace.OK, 4)
+    trace.retailer("target", ms=10, candidates=3)
+    live = trace.live("conv-1")
+    by_name = {row["retailer"]: row for row in live["retailers"]}
+    assert by_name["target"]["outcome"] == trace.OK
+    assert by_name["target"]["candidates_kept"] == 3
+    # the order is the order they were started, not the order they finished
+    assert [row["retailer"] for row in live["retailers"]][0] == "bestbuy"
+    assert by_name["bestbuy"]["outcome"] == trace.SEARCHING
+
+
+# a retailer that reported without being expected is still listed rather than dropped
+def test_an_unexpected_retailer_still_appears():
+    trace.start("mouse", {}, key="conv-1")
+    trace.expect_retailers(["bestbuy"])
+    trace.record_search("target", "u", trace.BLOCKED, 0)
+    trace.retailer("target", ms=1, candidates=0)
+    names = [row["retailer"] for row in trace.live("conv-1")["retailers"]]
+    assert names == ["bestbuy", "target"]
+
+
+# SEARCHING is a live-progress state, never a recorded outcome, so it must not count as an
+# answer when narration decides whether the search actually ran
+def test_searching_is_not_an_answered_outcome():
+    assert trace.SEARCHING not in trace.ANSWERED

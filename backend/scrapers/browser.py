@@ -5,6 +5,8 @@ import random
 import sys
 import time
 
+from collections import OrderedDict
+
 from bs4 import BeautifulSoup
 from playwright.async_api import Error as PlaywrightError
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
@@ -32,9 +34,12 @@ CACHE_SECONDS = 60
 # ("Target crashed"). the shared-memory and gpu flags are the usual cure
 LAUNCH_ARGS = ["--disable-dev-shm-usage", "--disable-gpu", "--no-sandbox"]
 
-# get_specs and get_reviews load the same product page seconds apart: fetching it twice
-# doubles the cost and is itself a bot signal. size one, no eviction policy.
-_LAST_PRODUCT_PAGE = {"url": None, "html": None, "fetched_at": 0.0}
+# get_specs, get_reviews and get_page_text load the same product page seconds apart: fetching
+# it three times triples the cost and is itself a bot signal. keyed by url and small rather
+# than a single slot - with the retailers running concurrently, one slot is thrashed by the
+# next retailer's product before the first retailer asks for it again
+PRODUCT_PAGE_CACHE_SIZE = 12
+_PRODUCT_PAGES: "OrderedDict[str, tuple[str, float]]" = OrderedDict()
 
 logger = logging.getLogger(__name__)
 
@@ -109,11 +114,15 @@ async def open_page(url: str, wait_for: str | None = None) -> str:
 
 # reuse only the same url, only within the cache window
 async def fetch_product_html(url: str) -> str:
-    fresh = time.monotonic() - _LAST_PRODUCT_PAGE["fetched_at"] < CACHE_SECONDS
-    if _LAST_PRODUCT_PAGE["url"] == url and fresh:
-        return _LAST_PRODUCT_PAGE["html"]
+    cached = _PRODUCT_PAGES.get(url)
+    if cached and time.monotonic() - cached[1] < CACHE_SECONDS:
+        _PRODUCT_PAGES.move_to_end(url)
+        return cached[0]
     html = await fetch_html(url)
-    _LAST_PRODUCT_PAGE.update({"url": url, "html": html, "fetched_at": time.monotonic()})
+    _PRODUCT_PAGES[url] = (html, time.monotonic())
+    _PRODUCT_PAGES.move_to_end(url)
+    while len(_PRODUCT_PAGES) > PRODUCT_PAGE_CACHE_SIZE:
+        _PRODUCT_PAGES.popitem(last=False)
     return html
 
 

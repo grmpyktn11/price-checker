@@ -138,7 +138,7 @@ function ProjectPage() {
   if (!project) {
     return (
       <AppShell title="Project">
-        <p className="sticker rounded-3xl bg-card p-4 text-sm font-semibold">
+        <p className="panel rounded-3xl bg-card p-4 text-sm font-semibold">
           {error ?? "Loading…"}
         </p>
       </AppShell>
@@ -153,7 +153,7 @@ function ProjectPage() {
       subtitle="Pick what to search for."
     >
       <div className="space-y-6">
-        <div className="sticker rounded-3xl bg-card p-4">
+        <div className="panel rounded-3xl bg-card p-4">
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => void startSearch()}
@@ -204,7 +204,7 @@ function ProjectPage() {
         {project.items.map((item) => {
           const picks: Product[] = project.results[String(item.id)] ?? [];
           return (
-            <section key={item.id} className="sticker rounded-3xl bg-card p-4">
+            <section key={item.id} className="panel rounded-3xl bg-card p-4">
               <label className="flex cursor-pointer items-start gap-3">
                 <input
                   type="checkbox"
@@ -236,7 +236,7 @@ function ProjectPage() {
               ) : null}
 
               {picks.length ? (
-                <div className="mt-3 space-y-3">
+                <div className="mt-3 space-y-3 border-l-2 border-foreground/15 pl-3 sm:pl-4">
                   {picks.map((product) => (
                     <ProductCard
                       key={`${item.id}-${product.product_id}`}

@@ -70,7 +70,7 @@ function ProjectsPage() {
       subtitle="Turn a Claude conversation into a shopping list."
     >
       <div className="space-y-6">
-        <div className="sticker rounded-3xl bg-card p-5">
+        <div className="panel rounded-3xl bg-card p-5">
           <label htmlFor="transcript" className="font-display text-lg font-bold">
             Paste the conversation
           </label>
@@ -86,7 +86,7 @@ function ProjectsPage() {
             rows={8}
             disabled={importing}
             placeholder="Paste the conversation"
-            className="sticker mt-3 w-full rounded-2xl bg-background px-3 py-2 text-sm disabled:opacity-60"
+            className="panel mt-3 w-full rounded-2xl bg-background px-3 py-2 text-sm disabled:opacity-60"
           />
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <button
@@ -108,7 +108,7 @@ function ProjectsPage() {
         <section>
           <h2 className="font-display mb-3 text-2xl font-extrabold">Your projects</h2>
           {projects.length === 0 ? (
-            <p className="sticker rounded-3xl bg-card p-4 text-sm font-semibold text-muted-foreground">
+            <p className="panel rounded-3xl bg-card p-4 text-sm font-semibold text-muted-foreground">
               Nothing imported yet.
             </p>
           ) : (

@@ -72,7 +72,7 @@ function AlertsPage() {
       </ul>
 
       {!loading && alerts.length === 0 ? (
-        <p className="sticker rounded-3xl bg-card p-4 text-sm font-semibold text-muted-foreground">
+        <p className="panel rounded-3xl bg-card p-4 text-sm font-semibold text-muted-foreground">
           No alerts yet. They appear when a watched price drops or hits your target.
         </p>
       ) : null}

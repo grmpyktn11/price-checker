@@ -44,10 +44,6 @@ export function ProductCard({
   // only exists for watched listings and lives on the item detail page
   return (
     <article className="sticker relative rounded-3xl bg-card p-4">
-      <span className="sticker absolute -right-2 -top-3 rotate-3 rounded-full bg-butter px-3 py-1 text-xs font-extrabold">
-        match {Math.round(product.final_score * 100)}%
-      </span>
-
       <div className="min-w-0">
         <h3 className="font-display text-lg font-bold leading-tight break-words">
           {product.name ?? "Unnamed listing"}
@@ -62,6 +58,11 @@ export function ProductCard({
 
       <div className="mt-3 flex flex-wrap items-baseline gap-2">
         <span className="font-display text-3xl font-extrabold">{money(product.price)}</span>
+        {/* price and match are the two numbers being compared, so they share a line rather
+            than one floating outside the card border */}
+        <span className="rounded-full bg-butter px-2.5 py-1 text-xs font-extrabold">
+          match {Math.round(product.final_score * 100)}%
+        </span>
         {href ? (
           <a
             href={href}
@@ -75,17 +76,6 @@ export function ProductCard({
           <span className="text-sm font-semibold text-muted-foreground">no link</span>
         )}
       </div>
-
-      <ul className="mt-3 flex flex-wrap gap-1.5">
-        {breakdown.map((part) => (
-          <li
-            key={part.key}
-            className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold"
-          >
-            {part.label} {Math.round(product[part.key] * 100)}%
-          </li>
-        ))}
-      </ul>
 
       <p className="mt-3 text-sm font-semibold">
         {product.rating === null
@@ -140,6 +130,17 @@ export function ProductCard({
             {showSources ? "Hide" : "What the sources say"} ({product.sources.length})
           </button>
           {showSources ? (
+            <>
+            {/* the five sub-scores live here rather than on the face of every card: five
+                percentages per product is thirty numbers on a results page, and they are
+                only wanted when someone is checking why something ranked where it did */}
+            <ul className="mt-2 flex flex-wrap gap-1.5">
+              {breakdown.map((part) => (
+                <li key={part.key} className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold">
+                  {part.label} {Math.round(product[part.key] * 100)}%
+                </li>
+              ))}
+            </ul>
             <ul className="mt-2 space-y-2">
               {product.sources.map((row, index) => {
                 const link = safeUrl(row.url);
@@ -169,6 +170,7 @@ export function ProductCard({
                 );
               })}
             </ul>
+            </>
           ) : null}
         </div>
       ) : null}
@@ -195,7 +197,7 @@ export function ProductCard({
             href={videoLink}
             target="_blank"
             rel="noreferrer"
-            className="sticker flex-1 rounded-full bg-sky px-3 py-2 text-center text-sm font-extrabold transition-transform hover:-translate-y-0.5"
+            className="rounded-full px-4 py-2 text-center text-sm font-bold underline underline-offset-4"
           >
             Video
           </a>
@@ -203,7 +205,7 @@ export function ProductCard({
         <button
           disabled={disabled}
           onClick={() => onDecision(product.product_id, "watch")}
-          className="sticker flex-1 rounded-full bg-card px-3 py-2 text-sm font-extrabold transition-transform hover:-translate-y-0.5 disabled:opacity-50"
+          className="rounded-full px-4 py-2 text-sm font-bold underline underline-offset-4 disabled:opacity-50"
         >
           {pending === "watch" ? "..." : "Track"}
         </button>

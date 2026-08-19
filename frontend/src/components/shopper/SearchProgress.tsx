@@ -30,6 +30,7 @@ function stageIndex(stage: string | null | undefined): number {
 }
 
 const OUTCOME_MARK: Record<string, string> = {
+  SEARCHING: "·",
   OK: "✓",
   OK_BUT_EMPTY: "—",
   BLOCKED: "✕",
@@ -66,7 +67,7 @@ export function SearchProgress({ conversationId }: { conversationId: string }) {
 
   return (
     <div className="flex justify-start">
-      <div className="sticker max-w-[85%] rounded-3xl rounded-bl-md bg-secondary px-4 py-3">
+      <div className="panel max-w-[85%] rounded-3xl rounded-bl-md bg-secondary px-4 py-3">
         <p className="text-sm font-bold">
           {stageLabel(progress?.stage)}…
           {seconds ? <span className="font-semibold text-muted-foreground"> {seconds}s</span> : null}
@@ -87,7 +88,9 @@ export function SearchProgress({ conversationId }: { conversationId: string }) {
                 {OUTCOME_MARK[row.outcome] ?? "·"} {retailerLabel(row.retailer)}
                 {row.outcome === "OK"
                   ? ` — ${row.candidates_kept ?? 0} kept`
-                  : ` — ${row.outcome.toLowerCase().replace(/_/g, " ")}`}
+                  : row.outcome === "SEARCHING"
+                    ? " — searching…"
+                    : ` — ${row.outcome.toLowerCase().replace(/_/g, " ")}`}
               </li>
             ))}
           </ul>

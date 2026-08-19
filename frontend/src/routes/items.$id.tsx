@@ -206,7 +206,7 @@ function ItemDetailPage() {
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-        <section className="sticker rounded-3xl bg-card p-4">
+        <section className="panel rounded-3xl bg-card p-4">
           <h2 className="font-display text-xl font-extrabold">Price history</h2>
           <p className="text-xs font-semibold text-muted-foreground">
             One line per listing. A point is only recorded when the price changed.
@@ -229,7 +229,7 @@ function ItemDetailPage() {
           </div>
         </section>
 
-        <section className="sticker rounded-3xl bg-card p-4">
+        <section className="panel rounded-3xl bg-card p-4">
           <h2 className="font-display text-xl font-extrabold">Review signals</h2>
           <ul className="mt-3 space-y-2 text-sm font-semibold">
             {reviews.map((review) => (
@@ -242,7 +242,7 @@ function ItemDetailPage() {
         </section>
       </div>
 
-      <section className="sticker mt-6 rounded-3xl bg-card p-4">
+      <section className="panel mt-6 rounded-3xl bg-card p-4">
         <h2 className="font-display text-xl font-extrabold">Listings</h2>
         {/* the table is wider than a phone. saying it scrolls beats a cut-off column, which
             reads as a bug rather than as something you can drag */}

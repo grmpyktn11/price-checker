@@ -89,6 +89,23 @@ YOUTUBE_TOP_N = 2
 logger = logging.getLogger(__name__)
 
 
+# the per-run cap on LLM spec extraction, shared by the concurrent retailers. a plain int
+# would be copied into each closure and every retailer would get the full budget
+class SpecExtractionBudget:
+    def __init__(self, limit: int) -> None:
+        self.left = limit
+
+    def take(self) -> bool:
+        if self.left <= 0:
+            return False
+        self.left -= 1
+        return True
+
+    # the page turned out to be unreadable, so nothing was spent
+    def give_back(self) -> None:
+        self.left += 1
+
+
 # ScraperBase defines find_nearby_stores for everyone, so hasattr cannot detect Amazon's opt-out
 async def nearby_store_ids(scraper, lat: float, lon: float, radius_mi: int) -> list[str] | None:
     try:
@@ -279,11 +296,13 @@ async def collect_candidates(item_criteria: dict, lat: float, lon: float,
         "ms": trace.elapsed_ms(started),
     })
 
-    candidates = []
-    spec_extractions = 0
-    for retailer, scraper in SCRAPERS:
+    # shared across the concurrent retailers so the whole run stays inside the cap. asyncio is
+    # single-threaded and take() never awaits, so the check and the decrement cannot interleave
+    budget = SpecExtractionBudget(SPEC_EXTRACTION_PER_RUN)
+
+    async def collect_from(retailer: str, scraper) -> list[RankedProduct]:
         started = time.monotonic()
-        found_before = len(candidates)
+        found_here: list[RankedProduct] = []
         error = None
         # one broken retailer must not kill the run
         try:
@@ -295,12 +314,13 @@ async def collect_candidates(item_criteria: dict, lat: float, lon: float,
                 specs = await scraper.get_specs(product["url"])
                 # first-party recovery: a page we did reach but could not parse. runs before
                 # inheritance, and what it returns counts as first-party
-                if not specs and spec_extractions < SPEC_EXTRACTION_PER_RUN:
+                if not specs and budget.take():
                     page_text = await scraper.get_page_text(product["url"])
                     if page_text:
-                        spec_extractions += 1
                         specs = await spec_extraction.extract(page_text, wanted_fields)
-                candidates.append(
+                    else:
+                        budget.give_back()
+                found_here.append(
                     RankedProduct(
                         product=product,
                         retailer=retailer,
@@ -320,8 +340,17 @@ async def collect_candidates(item_criteria: dict, lat: float, lon: float,
             logger.exception("%s failed", retailer)
             error = f"{type(failure).__name__}: {failure}"
         trace.retailer(retailer, ms=trace.elapsed_ms(started),
-                       candidates=len(candidates) - found_before, error=error)
-    return candidates
+                       candidates=len(found_here), error=error)
+        return found_here
+
+    # concurrently, not one after another. measured sequentially: best buy 27s + target 4s +
+    # amazon 13s + micro center 18s = 63s of a 115s search, spent mostly waiting. they are
+    # four different hosts, so nothing is rate-limited by running them together - the pacing
+    # that matters is per-retailer, and each retailer's own products are still serial
+    trace.expect_retailers([retailer for retailer, _ in SCRAPERS])
+    per_retailer = await asyncio.gather(*(collect_from(r, s) for r, s in SCRAPERS))
+    # flattened in SCRAPERS order, not completion order, so a run is reproducible
+    return [candidate for group in per_retailer for candidate in group]
 
 
 # reddit and youtube rows carry no rating, so they only reach the score through the

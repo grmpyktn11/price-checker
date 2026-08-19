@@ -122,7 +122,7 @@ function WatchlistPage() {
           const listing = best[item.id];
           const reason = latestReason(item.id);
           return (
-            <article key={item.id} className="sticker rounded-3xl bg-card p-4">
+            <article key={item.id} className="panel rounded-3xl bg-card p-4">
               <div className="flex items-start gap-2">
                 <div className="min-w-0">
                   <h2 className="font-display text-xl font-extrabold leading-tight break-words">
@@ -197,7 +197,7 @@ function WatchlistPage() {
       </div>
 
       {!loading && items.length === 0 ? (
-        <p className="sticker rounded-3xl bg-card p-4 text-sm font-semibold text-muted-foreground">
+        <p className="panel rounded-3xl bg-card p-4 text-sm font-semibold text-muted-foreground">
           Nothing watched yet. Add one above, or pick Watch on a chat result.
         </p>
       ) : null}

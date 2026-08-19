@@ -156,7 +156,7 @@ function ChatPage() {
       subtitle="Say what you want to buy."
     >
       <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-        <section className="sticker rounded-3xl bg-card p-4">
+        <section className="panel rounded-3xl bg-card p-4">
           <details className="mb-3">
             <summary className="cursor-pointer text-sm font-extrabold">
               Past conversations ({past.length})
@@ -271,7 +271,7 @@ function ChatPage() {
             />
           ))}
           {products.length === 0 ? (
-            <p className="sticker rounded-3xl bg-card p-4 text-sm font-semibold text-muted-foreground">
+            <p className="panel rounded-3xl bg-card p-4 text-sm font-semibold text-muted-foreground">
               No results yet.
             </p>
           ) : null}

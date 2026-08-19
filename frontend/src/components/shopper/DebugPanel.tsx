@@ -102,7 +102,7 @@ export function DebugPanel({ trace }: { trace?: DebugTrace }) {
   const stages = group(data ?? {}, "stages_ms");
 
   return (
-    <div className="sticker mt-6 rounded-3xl bg-card p-4">
+    <div className="panel mt-6 rounded-3xl bg-card p-4">
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"

@@ -13,6 +13,8 @@ OK_BUT_EMPTY = "OK_BUT_EMPTY"                               # real answer, genui
 BLOCKED = "BLOCKED"                                         # captcha/403/challenge page
 SELECTORS_RETURNED_NOTHING = "SELECTORS_RETURNED_NOTHING"   # real page, parser found no rows
 ERROR = "ERROR"                                             # raised before anything was parsed
+# not an outcome: the live-progress state for a search that has not come back yet
+SEARCHING = "SEARCHING"
 # outcomes where the retailer actually answered the question. anything else means the search
 # did not happen, which is not the same as "nothing matched"
 ANSWERED = (OK, OK_BUT_EMPTY)
@@ -56,6 +58,10 @@ class Trace:
         self.started = time.monotonic()
         self.key: str | None = None   # set when the caller wants live progress
         self.stage_name: str | None = None
+        # every retailer this run intends to search. with the searches running concurrently
+        # nothing reports for ~25 seconds, and a waiting screen that lists nothing for 25
+        # seconds looks broken rather than busy
+        self.expected: list[str] = []
         # reported by whichever scraper ran, claimed by the pipeline stage that asked for it
         self.searches: list[dict] = []
         self.data = {
@@ -233,12 +239,19 @@ def live(key: str) -> dict | None:
     if trace is None:
         return None
     data = trace.data
+    done = {row["retailer"]: row for row in data["retailers"]}
+    # every expected retailer appears immediately as SEARCHING and is replaced by its real
+    # outcome as it lands. anything that reported without being expected is still listed
+    names = trace.expected + [name for name in done if name not in trace.expected]
     return {
         "stage": trace.stage_name,
         "elapsed_ms": elapsed_ms(trace.started),
-        "retailers": [{"retailer": row["retailer"], "outcome": row["outcome"],
-                       "candidates_kept": row.get("candidates_kept")}
-                      for row in data["retailers"]],
+        "retailers": [
+            {"retailer": name,
+             "outcome": done[name]["outcome"] if name in done else SEARCHING,
+             "candidates_kept": done[name].get("candidates_kept") if name in done else None}
+            for name in names
+        ],
         "qualified": data["product_filter"].get("qualified"),
         "products_in": data["product_filter"].get("products_in"),
         "researched": len(data["research"]),
@@ -247,6 +260,13 @@ def live(key: str) -> dict | None:
 
 # how a retailer's main search ended, while the run is still going. the review lookup uses
 # this to not spend more searches on a retailer that already answered with a bot wall
+# the retailers this run will search, in the order they were started
+def expect_retailers(names: list[str]) -> None:
+    trace = _current.get()
+    if trace is not None:
+        trace.expected = list(names)
+
+
 def outcome_so_far(retailer_name: str) -> str | None:
     trace = _current.get()
     if trace is None:
