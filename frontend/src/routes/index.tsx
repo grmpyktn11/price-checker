@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import type { ConversationSummary, DebugTrace, Product } from "@/api";
 import {
   ApiError,
+  deleteAllConversations,
+  deleteConversation,
   getConversation,
   getConversations,
   sendDecision,
@@ -59,6 +61,31 @@ function ChatPage() {
     setProducts([]);
     setDebug(null);
     setNotice(message);
+  }
+
+  // deleting the open conversation would leave the transcript on screen pointing at a row
+  // that no longer exists, so that case resets the page too
+  async function forget(doomed: string) {
+    setError(null);
+    try {
+      await deleteConversation(doomed);
+      if (doomed === conversationId) resetConversation("Deleted that conversation.");
+      else setNotice("Deleted that conversation.");
+      void refreshPast();
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "Could not delete that");
+    }
+  }
+
+  async function forgetAll() {
+    setError(null);
+    try {
+      const result = await deleteAllConversations();
+      resetConversation(`Cleared ${result.deleted} conversations.`);
+      void refreshPast();
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "Could not clear those");
+    }
   }
 
   async function send() {
@@ -136,15 +163,23 @@ function ChatPage() {
             </summary>
             <ul className="mt-2 space-y-1">
               {past.map((conversation) => (
-                <li key={conversation.id}>
+                <li key={conversation.id} className="flex items-center gap-1">
                   <button
                     onClick={() => void restore(conversation.id)}
-                    className="w-full rounded-2xl bg-secondary/60 px-3 py-1.5 text-left text-sm font-semibold hover:bg-secondary"
+                    className="min-w-0 flex-1 rounded-2xl bg-secondary/60 px-3 py-1.5 text-left text-sm font-semibold hover:bg-secondary"
                   >
                     {conversation.title || "(no message yet)"}
                     <span className="ml-2 text-xs text-muted-foreground">
                       {timeAgo(conversation.updated_at)}
                     </span>
+                  </button>
+                  <button
+                    onClick={() => void forget(conversation.id)}
+                    title="Delete this conversation"
+                    aria-label={`Delete ${conversation.title || "conversation"}`}
+                    className="shrink-0 rounded-full px-2 py-1 text-sm font-extrabold text-muted-foreground hover:text-strawberry"
+                  >
+                    ×
                   </button>
                 </li>
               ))}
@@ -152,6 +187,14 @@ function ChatPage() {
                 <li className="text-sm text-muted-foreground">Nothing here yet.</li>
               ) : null}
             </ul>
+            {past.length ? (
+              <button
+                onClick={() => void forgetAll()}
+                className="mt-2 text-xs font-bold text-muted-foreground underline"
+              >
+                Clear all conversations
+              </button>
+            ) : null}
           </details>
 
           <div className="space-y-3">

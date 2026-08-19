@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 from backend.db import Base, get_db
 from backend.main import app
-from backend.models import Item, Listing, PriceHistory, Profile, Review
+from backend.models import Conversation, Item, Listing, PriceHistory, Profile, Review
 from backend.services import trace
 
 
@@ -223,3 +223,39 @@ def test_progress_reports_a_run_in_flight(client):
         assert "elapsed_ms" in body
     finally:
         trace.finish(0)
+
+
+# built directly rather than through /chat/message: the delete path needs no model call, and
+# a paid call has no place in the free suite
+def make_conversation(db, conversation_id):
+    db.add(Conversation(id=conversation_id, history_json='[{"role": "user", "content": "hi"}]',
+                        results_json="[]"))
+    db.commit()
+
+
+def test_a_conversation_can_be_deleted(client, db):
+    make_conversation(db, "conv-doomed")
+    assert client.get("/api/conversations/conv-doomed").status_code == 200
+    assert client.delete("/api/conversations/conv-doomed").json() == {"deleted": 1}
+    assert client.get("/api/conversations/conv-doomed").status_code == 404
+
+
+def test_deleting_an_unknown_conversation_is_a_404(client):
+    assert client.delete("/api/conversations/nope").status_code == 404
+
+
+def test_conversations_can_be_cleared_all_at_once(client, db):
+    make_conversation(db, "conv-a")
+    make_conversation(db, "conv-b")
+    assert client.delete("/api/conversations").json()["deleted"] == 2
+    assert client.get("/api/conversations").json() == []
+
+
+# a watched product is a watchlist item of its own by the time the chat is deleted. clearing
+# history must not silently stop tracking a price
+def test_deleting_a_conversation_leaves_watched_items_alone(client, db):
+    db.add(Item(name="a thing", status="watching"))
+    db.commit()
+    make_conversation(db, "conv-x")
+    client.delete("/api/conversations/conv-x")
+    assert db.query(Item).filter(Item.status == "watching").count() == 1

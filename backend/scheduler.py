@@ -14,6 +14,11 @@ from backend.services.pipeline import run_pipeline
 from backend.services.ranking import RankedProduct
 
 SCRAPE_INTERVAL_HOURS = 6   # spec.md, Scheduler Jobs
+# a rescan sees every candidate the pipeline ranked, and with four retailers that is ~20 urls
+# it has not stored before. alerting on each one sent 21 "new alternative" notices for a single
+# usb hub in one run. an alternative is only worth telling someone about if it beats what they
+# are already tracking, and only the best few of those
+MAX_NEW_ALTERNATIVES_PER_ITEM = 3
 REVIEW_CHECK_HOUR = 3       # daily
 DIGEST_HOUR = 8             # daily
 DEFAULT_RADIUS_MILES = 25   # only used when an item somehow has none stored
@@ -192,8 +197,17 @@ async def run_scrape_job() -> None:
 
 # the pipeline never filtered on known urls, so "broader" is the same call: the diff is here,
 # against the urls already stored for this item
+# the cheapest price already stored for this item, which is what a new find has to beat to be
+# worth an email. None when nothing is priced yet, and then anything new is worth knowing about
+def cheapest_known_price(db: Session, item_id: int) -> float | None:
+    prices = [price for (price,) in db.query(Listing.price)
+              .filter(Listing.item_id == item_id, Listing.price.isnot(None))]
+    return min(prices) if prices else None
+
+
 async def check_new_alternatives(db: Session, item: Item) -> list[Alert]:
     known_urls = {url for (url,) in db.query(Listing.url).filter(Listing.item_id == item.id)}
+    beat = cheapest_known_price(db, item.id)
     ranked = await rank_for_item(db, item)
     new_alerts = []
     for candidate in ranked:
@@ -201,6 +215,13 @@ async def check_new_alternatives(db: Session, item: Item) -> list[Alert]:
             continue
         listing = upsert_listing(db, item.id, candidate)
         if listing is None:
+            continue
+        # the listing is stored either way - it is real inventory and the watchlist should show
+        # it. only the alert is withheld, because "we found another usb hub" is not news
+        price = listing.price
+        if beat is not None and (price is None or price >= beat):
+            continue
+        if len(new_alerts) >= MAX_NEW_ALTERNATIVES_PER_ITEM:
             continue
         alert = record_alert(db, item.id, listing.id, "new_alternative")
         if alert:

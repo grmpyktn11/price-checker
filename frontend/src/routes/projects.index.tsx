@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import type { Project } from "@/api";
-import { ApiError, getProjects, importProject } from "@/api";
+import { ApiError, deleteProject, getProjects, importProject } from "@/api";
 import { AppShell } from "@/components/shopper/AppShell";
 
 export const Route = createFileRoute("/projects/")({
@@ -36,6 +36,16 @@ function ProjectsPage() {
       .then(setProjects)
       .catch(() => setProjects([]));
   }, []);
+
+  async function remove(projectId: number) {
+    setError(null);
+    try {
+      await deleteProject(projectId);
+      setProjects((current) => current.filter((p) => p.id !== projectId));
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "Could not delete that project");
+    }
+  }
 
   async function submit() {
     const value = draft.trim();
@@ -107,11 +117,11 @@ function ProjectsPage() {
           ) : (
             <ul className="space-y-2">
               {projects.map((project) => (
-                <li key={project.id}>
+                <li key={project.id} className="flex items-center gap-2">
                   <Link
                     to="/projects/$id"
                     params={{ id: String(project.id) }}
-                    className="sticker block rounded-3xl bg-card p-4 transition-transform hover:-translate-y-0.5"
+                    className="sticker block min-w-0 flex-1 rounded-3xl bg-card p-4 transition-transform hover:-translate-y-0.5"
                   >
                     <span className="font-display text-lg font-bold">
                       {project.name ?? "Untitled project"}
@@ -120,6 +130,13 @@ function ProjectsPage() {
                       {project.source === "share_link" ? "from a share link" : "pasted"}
                     </span>
                   </Link>
+                  <button
+                    onClick={() => void remove(project.id)}
+                    aria-label={`Delete ${project.name ?? "project"}`}
+                    className="sticker shrink-0 rounded-full bg-card px-3 py-2 text-sm font-extrabold text-muted-foreground hover:text-strawberry"
+                  >
+                    Delete
+                  </button>
                 </li>
               ))}
             </ul>

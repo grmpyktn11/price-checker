@@ -84,6 +84,33 @@ of them did, the reply says the search did not run instead.
 Buy and Micro Center to your saved location once per location, and the score falls linearly from the door to the
 edge of `radius_miles`. Amazon and any failed lookup score a neutral 0.5.
 
+## What persists, and the jobs
+
+Everything durable is in one SQLite file, `app.db` at the repo root: watched items, listings,
+price history, alerts, conversations and projects all survive a restart. The path is **resolved
+from the repo, not the working directory** — `sqlite:///./app.db` used to mean "wherever you
+launched uvicorn from", so starting the server elsewhere silently created a second empty
+database that looked exactly like losing everything.
+
+Only the debug traces (last 5, `trace._recent`) and an in-flight project run are memory-only.
+
+Items, conversations and projects can each be deleted from the UI. Deleting a conversation
+deliberately leaves anything you watched from it alone — a watched product is a watchlist item
+of its own by then, and clearing chat history must not silently stop tracking a price.
+
+Three background jobs, started with the server:
+
+| job | when | what |
+| --- | --- | --- |
+| `scrape` | every 6 hours from server start | re-price every watched item; a target-price hit emails immediately |
+| `review_check` | daily at 03:00 local | look for better alternatives to what you watch |
+| `digest` | daily at 08:00 local | one email with everything that queued up since yesterday |
+
+A price drop or a new alternative waits for the digest; only `target_hit` mails you on the spot.
+A new alternative only counts if it is **cheaper than anything already stored** for that item,
+capped at 3 per item per run — otherwise a rescan across four retailers reports every URL it
+has not seen before, which sent 21 "new alternative" notices for one USB hub in a single email.
+
 ## Tests
 
 ```bash

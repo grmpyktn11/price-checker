@@ -235,3 +235,62 @@ def test_failed_send_leaves_alerts_pending(job_db):
     job_db.commit()
     assert asyncio.run(scheduler.run_digest_job()) == 0
     assert job_db.query(Alert).filter(Alert.sent_at.is_(None)).count() == 1
+
+
+# a rescan sees every candidate the pipeline ranked. with four retailers that was ~20 urls the
+# item had never stored, and every one became an alert - 21 "new alternative" notices for a
+# single usb hub in one email. an alternative is only news if it beats what you already found
+def patch_rank(monkeypatch, candidates):
+    async def fake(db, item):
+        return candidates
+
+    monkeypatch.setattr(scheduler, "rank_for_item", fake)
+
+
+def test_only_cheaper_alternatives_raise_an_alert(db, monkeypatch):
+    item = make_item(db)
+    scheduler.upsert_listing(db, item.id, candidate(50.0, url="https://example.com/known"))
+    db.commit()
+
+    patch_rank(monkeypatch, [
+        candidate(70.0, url="https://example.com/dearer"),
+        candidate(40.0, url="https://example.com/cheaper"),
+        candidate(None, url="https://example.com/unpriced"),
+    ])
+    alerts = asyncio.run(scheduler.check_new_alternatives(db, item))
+
+    assert len(alerts) == 1
+    assert db.get(Listing, alerts[0].listing_id).price == 40.0
+
+
+# the listing is still stored either way: it is real inventory and the watchlist should show
+# it. only the alert is withheld
+def test_the_dearer_alternatives_are_still_stored(db, monkeypatch):
+    item = make_item(db)
+    scheduler.upsert_listing(db, item.id, candidate(50.0, url="https://example.com/known"))
+    db.commit()
+
+    patch_rank(monkeypatch, [candidate(70.0, url="https://example.com/dearer")])
+    asyncio.run(scheduler.check_new_alternatives(db, item))
+
+    urls = {url for (url,) in db.query(Listing.url).filter(Listing.item_id == item.id)}
+    assert "https://example.com/dearer" in urls
+
+
+def test_new_alternatives_are_capped_per_item(db, monkeypatch):
+    item = make_item(db)
+    scheduler.upsert_listing(db, item.id, candidate(90.0, url="https://example.com/known"))
+    db.commit()
+
+    patch_rank(monkeypatch, [candidate(float(n), url=f"https://example.com/{n}")
+                             for n in range(10, 10 + 8)])
+    alerts = asyncio.run(scheduler.check_new_alternatives(db, item))
+
+    assert len(alerts) == scheduler.MAX_NEW_ALTERNATIVES_PER_ITEM
+
+
+# nothing priced yet means there is no bar to clear, so a first find is worth knowing about
+def test_with_no_prices_stored_anything_new_alerts(db, monkeypatch):
+    item = make_item(db)
+    patch_rank(monkeypatch, [candidate(70.0, url="https://example.com/first")])
+    assert len(asyncio.run(scheduler.check_new_alternatives(db, item))) == 1

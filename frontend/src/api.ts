@@ -266,6 +266,14 @@ export function getConversation(conversationId: string): Promise<ConversationDet
 }
 
 // the trace of the most recent search, for the debug panel. 404s until a search has run
+export function deleteConversation(conversationId: string): Promise<{ deleted: number }> {
+  return request(`/api/conversations/${conversationId}`, "DELETE");
+}
+
+export function deleteAllConversations(): Promise<{ deleted: number }> {
+  return request("/api/conversations", "DELETE");
+}
+
 export function getLastDebug(): Promise<DebugTrace> {
   return request<DebugTrace>("/api/debug/last");
 }

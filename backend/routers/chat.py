@@ -316,6 +316,25 @@ def get_conversation(conversation_id: str, db: Session = Depends(get_db)) -> Con
     )
 
 
+@router.delete("/conversations/{conversation_id}")
+def delete_conversation(conversation_id: str, db: Session = Depends(get_db)) -> dict:
+    conversation = db.get(Conversation, conversation_id)
+    if conversation is None:
+        raise HTTPException(404, "conversation not found")
+    db.delete(conversation)
+    db.commit()
+    # anything watched from this conversation is a watchlist item of its own by now, so it
+    # is deliberately left alone: deleting a chat must not silently stop tracking a price
+    return {"deleted": 1}
+
+
+@router.delete("/conversations")
+def delete_all_conversations(db: Session = Depends(get_db)) -> dict:
+    removed = db.query(Conversation).delete()
+    db.commit()
+    return {"deleted": removed}
+
+
 # one item, one listing, one price_history row, for the picked product only.
 # finding better alternatives is the job of the separate new_alternative scan
 def watch_product(db: Session, item_criteria: dict, chosen: dict) -> Item:
