@@ -76,8 +76,8 @@ failed run.
 
 ## More
 
-- [Pipeline walkthrough](frontend/public/pipeline.html) — every stage with its payloads, the nine
-  tables, and where the 80 seconds goes
+- [Pipeline walkthrough](docs/pipeline.md) — every stage with its payloads, the nine tables,
+  and where the 80 seconds goes
 - [API.md](API.md) — the endpoint contract
 - [spec.md](spec.md) — what I planned before building it, kept because the finished app disagrees
   with it in most of the interesting places
