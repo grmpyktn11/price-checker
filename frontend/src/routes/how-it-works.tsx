@@ -115,7 +115,7 @@ function HowItWorksPage() {
           <ol className="space-y-2">
             {steps.map((step, index) => (
               <li key={step} className="panel flex items-start gap-3 rounded-3xl bg-card p-4">
-                <span className="sticker grid h-8 w-8 shrink-0 place-items-center rounded-full bg-butter text-sm font-extrabold">
+                <span className="lcd grid h-8 w-8 shrink-0 place-items-center rounded-md text-sm">
                   {index + 1}
                 </span>
                 <p className="min-w-0 text-sm">{step}</p>
@@ -128,28 +128,28 @@ function HowItWorksPage() {
         </Section>
 
         <Section title="How the score is built">
-          <Card>
+          <div className="lcd rounded-xl p-5">
             <ul className="space-y-2">
               {weights.map((weight) => (
                 <li key={weight.label} className="flex items-center gap-3">
-                  <span className="w-12 shrink-0 text-right font-display text-lg font-extrabold tabular-nums">
+                  <span className="w-12 shrink-0 text-right text-lg tabular-nums">
                     {weight.value}%
                   </span>
                   {/* the bar is the number, so it needs no separate legend */}
                   <span
-                    className="h-3 rounded-full bg-sky"
+                    className="h-3 rounded-sm bg-current opacity-80"
                     style={{ width: `${weight.value * 2}%` }}
                     aria-hidden
                   />
-                  <span className="text-sm font-semibold">{weight.label}</span>
+                  <span className="text-sm">{weight.label}</span>
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-sm text-muted-foreground">
+            <p className="mt-3 text-sm opacity-75">
               Every result card shows this breakdown. Going over budget costs points rather than
               disqualifying, so a pricier option that is clearly better still wins.
             </p>
-          </Card>
+          </div>
         </Section>
 
         <Section title="What it cannot do">

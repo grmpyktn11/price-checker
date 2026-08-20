@@ -189,6 +189,25 @@ def test_scrape_job_skips_archived_items(job_db, seeded_profile):
     assert job_db.query(Listing).count() == 0
 
 
+# an empty app must stay silent: no watched items means no scrapes, and no pending alerts
+# means no email is ever sent
+def test_empty_watchlist_scrapes_nothing(job_db, monkeypatch):
+    scanned = []
+
+    async def fake_scrape(db, item):
+        scanned.append(item.id)
+        return {}
+
+    monkeypatch.setattr(scheduler, "scrape_item", fake_scrape)
+    asyncio.run(scheduler.run_scrape_job())
+    assert scanned == []
+
+
+def test_digest_with_nothing_pending_sends_no_email(job_db, sent):
+    assert asyncio.run(scheduler.run_digest_job()) == 0
+    assert sent == []
+
+
 # no profile location is not a reason to skip: the rescan runs online-only with a neutral
 # distance score, same as a chat search
 def test_scrape_job_runs_without_location(job_db, monkeypatch):
