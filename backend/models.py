@@ -100,6 +100,9 @@ class Conversation(Base):
     # only what /chat/decision needs per product, indexed by product_id, not the whole
     # RankedProduct: the scores are already in the response the client kept
     results_json = Column(String)
+    # the full ProductOut list from the last search, so reopening a conversation shows the
+    # cards again instead of asking for a fresh 80-second search
+    products_json = Column(String)
     created_at = Column(DateTime, default=utcnow)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 

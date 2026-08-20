@@ -9,6 +9,7 @@ import {
   getConversation,
   getConversations,
   getProfile,
+  getSearchProgress,
   sendDecision,
   sendMessage,
 } from "@/api";
@@ -28,6 +29,9 @@ interface Turn {
 function newConversationId(): string {
   return crypto.randomUUID();
 }
+
+// so a search left running when the page unmounts can be found again on the way back
+const LAST_CONVERSATION_KEY = "shopper.last-conversation";
 
 function ChatPage() {
   const [conversationId, setConversationId] = useState(newConversationId);
@@ -49,6 +53,9 @@ function ChatPage() {
     getProfile()
       .then((profile) => setNoLocation(profile.lat == null || profile.lon == null))
       .catch(() => {});
+    const saved = localStorage.getItem(LAST_CONVERSATION_KEY);
+    if (saved) void resumeIfRunning(saved);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -102,6 +109,7 @@ function ChatPage() {
     setNotice(null);
     setTurns((current) => [...current, { role: "user", content: message }]);
     setSearching(true);
+    localStorage.setItem(LAST_CONVERSATION_KEY, conversationId);
     try {
       const response = await sendMessage(conversationId, message);
       if (response.type === "followup") {
@@ -140,19 +148,50 @@ function ChatPage() {
     }
   }
 
-  // restoring shows the transcript only: the ranked products are not part of the stored
-  // history, so the buy/watch buttons would have nothing valid to act on
+  // the cards are stored with the conversation, and /chat/decision reads its own stored
+  // records, so a reopened conversation's buy/track buttons genuinely work
   async function restore(id: string) {
     setError(null);
     try {
       const conversation = await getConversation(id);
       setConversationId(conversation.id);
       setTurns(conversation.history);
-      setProducts([]);
+      setProducts(conversation.products ?? []);
       setDebug(null);
-      setNotice("Reopened. Send a message to search again — earlier picks are not stored.");
+      setNotice("Reopened.");
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : "Request failed");
+    }
+  }
+
+  // a search left running when this page unmounted (another tab, a reload) keeps running on
+  // the server; coming back picks it up and shows the results it stored
+  async function resumeIfRunning(id: string) {
+    try {
+      if (!(await getSearchProgress(id)).running) return;
+      setConversationId(id);
+      const before = await getConversation(id).catch(() => null);
+      if (before) setTurns(before.history);
+      const knownTurns = before?.history.length ?? 0;
+      setSearching(true);
+      while ((await getSearchProgress(id)).running) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+      // the server writes the transcript and cards moments after the run ends (narration is
+      // its own model call), so wait for the history to actually grow
+      for (let poll = 0; poll < 40; poll++) {
+        const done = await getConversation(id);
+        if (done.history.length > knownTurns) {
+          setTurns(done.history);
+          setProducts(done.products ?? []);
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+    } catch {
+      /* a dead conversation is just a fresh page */
+    } finally {
+      setSearching(false);
     }
   }
 

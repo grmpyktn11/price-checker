@@ -236,6 +236,20 @@ def make_conversation(db, conversation_id):
     db.commit()
 
 
+# the cards ride along with the transcript, so reopening a conversation can show them again
+def test_reopening_a_conversation_returns_its_products(client, db):
+    db.add(Conversation(id="conv-kept", history_json='[{"role": "user", "content": "hi"}]',
+                        products_json='[{"product_id": 0, "name": "a mouse", "price": 9.99}]'))
+    db.commit()
+    body = client.get("/api/conversations/conv-kept").json()
+    assert body["products"] == [{"product_id": 0, "name": "a mouse", "price": 9.99}]
+
+
+def test_a_conversation_that_never_searched_has_null_products(client, db):
+    make_conversation(db, "conv-bare")
+    assert client.get("/api/conversations/conv-bare").json()["products"] is None
+
+
 def test_a_conversation_can_be_deleted(client, db):
     make_conversation(db, "conv-doomed")
     assert client.get("/api/conversations/conv-doomed").status_code == 200

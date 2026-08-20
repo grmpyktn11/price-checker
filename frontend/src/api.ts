@@ -103,6 +103,8 @@ export interface ConversationTurn {
 export interface ConversationDetail {
   id: string;
   history: ConversationTurn[];
+  // the last search's cards; null for a conversation that never reached results
+  products: Product[] | null;
   created_at: string;
   updated_at: string;
 }

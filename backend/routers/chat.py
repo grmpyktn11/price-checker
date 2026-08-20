@@ -44,12 +44,15 @@ def load_json(text: str | None, default):
 # not, so the timestamp is set explicitly
 def save_conversation(db: Session, conversation: Conversation, history: list[dict],
                       item_criteria: dict | None = None,
-                      results: list[dict] | None = None) -> None:
+                      results: list[dict] | None = None,
+                      products: list[dict] | None = None) -> None:
     conversation.history_json = json.dumps(history)
     if item_criteria is not None:
         conversation.criteria_json = json.dumps(item_criteria)
     if results is not None:
         conversation.results_json = json.dumps(results)
+    if products is not None:
+        conversation.products_json = json.dumps(products)
     conversation.updated_at = utcnow()
     db.commit()
 
@@ -229,12 +232,16 @@ async def post_message(body: MessageIn, db: Session = Depends(get_db)) -> Messag
     top = ranked[:TOP_N]
     narration = await narrate(item_criteria, top, trace.retailer_outcomes(debug))
     history.append({"role": "assistant", "content": narration})
+    products_out = [to_product_out(index, r) for index, r in enumerate(top)]
+    # the cards are stored too, so a reopened conversation (or one whose tab was left
+    # mid-search) shows the same results instead of demanding a fresh search
     save_conversation(db, conversation, history, item_criteria,
-                      [decision_record(r) for r in top])
+                      [decision_record(r) for r in top],
+                      products=[p.model_dump(mode="json") for p in products_out])
     return MessageOut(
         type="results",
         narration=narration,
-        products=[to_product_out(index, r) for index, r in enumerate(top)],
+        products=products_out,
         # no trace means nothing recorded the searches, not that they failed
         retailers_answered=debug["retailers_answered"] if debug else True,
         debug=debug,
@@ -282,6 +289,8 @@ class ConversationSummary(BaseModel):
 class ConversationOut(BaseModel):
     id: str
     history: list[dict]   # [{"role", "content"}], oldest first
+    # the last search's cards, ProductOut-shaped; null for a conversation that never searched
+    products: list[dict] | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -313,6 +322,7 @@ def get_conversation(conversation_id: str, db: Session = Depends(get_db)) -> Con
     return ConversationOut(
         id=conversation.id,
         history=load_json(conversation.history_json, []),
+        products=load_json(conversation.products_json, None),
         created_at=conversation.created_at,
         updated_at=conversation.updated_at,
     )

@@ -23,9 +23,11 @@ alerts, alerts go out by email.
 { "conversation_id": "any-uuid-you-generate", "message": "portable charger under $150" }
 ```
 
-`conversation_id` is generated client-side and held in memory on the server (max 50 conversations,
-oldest evicted, **cleared on restart**). There is no conversation list endpoint and no history to
-fetch — the client owns the visible transcript.
+`conversation_id` is generated client-side. Conversations persist in SQLite: `GET
+/api/conversations` lists them, `GET /api/conversations/{id}` returns the transcript plus
+`products` (the last search's cards, ProductOut-shaped, null if it never reached results), and
+`DELETE` removes one. `/chat/decision` works against a reopened conversation, so restored cards'
+buy/track buttons are live.
 
 Two response shapes, discriminated on `type`. Keys of the other branch are **absent**, not null.
 
@@ -556,7 +558,8 @@ const message = Array.isArray(detail)
 - **Never render a scraped url into an `href` unguarded.** They come from scraped pages. Allow only
   `https?://` and render anything else as plain text.
 - **Searches and rescans take ~30-60s.** Both need a visible pending state.
-- **Conversations do not survive a backend restart.** Handle the 404 with a reset affordance.
+- **Conversations persist in SQLite** and reopen with their cards. A 404 on a deleted
+  conversation still deserves a reset affordance.
 - Money is a plain float in USD. Timestamps are naive ISO strings in UTC.
 - Pages the current reference frontend implements: Chat, Watchlist, Item detail (chart + listings
   table + reviews), Alerts, Settings (location).
